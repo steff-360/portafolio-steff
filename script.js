@@ -1,834 +1,790 @@
 // ==========================================================================
-// STEFANI'S QUEST: THE CODE ADVENTURE (VIDEOJUEGO DE ROL PORTAFOLIO)
-// Desarrollado con HTML5 Canvas y Web Audio API nativo
+// PORTAFOLIO STEFANI SÁNCHEZ — Ultra-Animated Cinematic Version
+// Inspirado en: bruno-simon, brittany-chiang, p5aholic, itssharl.ee, vanholtz
 // ==========================================================================
 
-document.addEventListener("DOMContentLoaded", () => {
-  // ------------------------------------------------------------------------
-  // 1. SISTEMA DE AUDIO NATIVO CHIPTUNE & SFX (WEB AUDIO API)
-  // ------------------------------------------------------------------------
-  let audioCtx = null;
-  let sfxEnabled = localStorage.getItem("stefaniQuestSfx") === "true";
-  let bgmInterval = null;
+(function () {
+  "use strict";
 
-  function initAudio() {
-    if (!audioCtx) {
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      if (AudioContext) audioCtx = new AudioContext();
-    }
-    if (audioCtx && audioCtx.state === "suspended") {
-      audioCtx.resume();
-    }
+  // -------------------------------------------------------------------------
+  // HELPERS
+  // -------------------------------------------------------------------------
+  function lerp(a, b, t) {
+    return a + (b - a) * t;
   }
 
-  function play8bit(freq, type = "square", duration = 0.08, vol = 0.08) {
-    if (!sfxEnabled) return;
-    try {
-      initAudio();
-      if (!audioCtx) return;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-      gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + duration);
-    } catch (e) {}
+  function clamp(v, min, max) {
+    return Math.min(Math.max(v, min), max);
   }
 
-  function playBlip() {
-    play8bit(400 + Math.random() * 120, "triangle", 0.04, 0.04);
+  function easeOut(t) {
+    return 1 - Math.pow(1 - t, 3);
   }
 
-  function playChime() {
-    if (!sfxEnabled) return;
-    [523, 659, 784, 1046].forEach((f, i) => {
-      setTimeout(() => play8bit(f, "sine", 0.12, 0.08), i * 60);
-    });
+  function rand(min, max) {
+    return Math.random() * (max - min) + min;
   }
 
-  function playFanfare() {
-    if (!sfxEnabled) return;
-    [440, 554, 659, 880, 1108].forEach((f, i) => {
-      setTimeout(() => play8bit(f, "square", 0.2, 0.1), i * 90);
-    });
-  }
+  // -------------------------------------------------------------------------
+  // 1. LOADER SEQUENCE
+  // -------------------------------------------------------------------------
+  const loader = document.getElementById("loader");
+  const loaderBar = document.getElementById("loader-bar");
+  const loaderLabel = document.getElementById("loader-label");
 
-  // Música chiptune ambiental procedural suave (8-bit arpeggios)
-  function startBgm() {
-    stopBgm();
-    if (!sfxEnabled) return;
-    initAudio();
-    const notes = [261.63, 329.63, 392.00, 523.25, 440.00, 392.00, 329.63, 293.66];
-    let noteIdx = 0;
-    bgmInterval = setInterval(() => {
-      if (!sfxEnabled) { stopBgm(); return; }
-      play8bit(notes[noteIdx], "triangle", 0.15, 0.025);
-      noteIdx = (noteIdx + 1) % notes.length;
-    }, 280);
-  }
-
-  function stopBgm() {
-    if (bgmInterval) {
-      clearInterval(bgmInterval);
-      bgmInterval = null;
-    }
-  }
-
-  const audioBtn = document.querySelector("#audio-toggle-btn");
-  const audioIcon = document.querySelector("#audio-icon");
-
-  function updateAudioUI() {
-    if (audioIcon) audioIcon.textContent = sfxEnabled ? "🔊" : "🔇";
-    localStorage.setItem("stefaniQuestSfx", String(sfxEnabled));
-    if (sfxEnabled) startBgm();
-    else stopBgm();
-  }
-  updateAudioUI();
-
-  if (audioBtn) {
-    audioBtn.addEventListener("click", () => {
-      sfxEnabled = !sfxEnabled;
-      updateAudioUI();
-      if (sfxEnabled) {
-        playChime();
-        showToast("🔊 Audio Chiptune y efectos activados");
-      } else {
-        showToast("🔇 Audio silenciado");
-      }
-    });
-  }
-
-  // Toast flotante
-  const toast = document.querySelector("#game-toast");
-  let toastTimer = null;
-  function showToast(msg) {
-    if (!toast) return;
-    toast.textContent = msg;
-    toast.classList.add("is-visible");
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => toast.classList.remove("is-visible"), 2600);
-  }
-
-  // ------------------------------------------------------------------------
-  // 2. MODAL DE AYUDA Y VISTA RÁPIDA / DIARIO DE MISIONES (CV)
-  // ------------------------------------------------------------------------
-  const viewToggleBtn = document.querySelector("#view-toggle-btn");
-  const questLogDrawer = document.querySelector("#quest-log");
-  const questCloseBtn = document.querySelector("#quest-close");
-  const btnQuickCv = document.querySelector("#btn-quick-cv");
-  const helpBtn = document.querySelector("#help-btn");
-  const helpModal = document.querySelector("#help-modal");
-  const helpClose = document.querySelector("#help-close");
-
-  function openQuestLog() {
-    if (questLogDrawer) {
-      questLogDrawer.classList.add("is-open");
-      questLogDrawer.setAttribute("aria-hidden", "false");
-      playChime();
-    }
-  }
-
-  function closeQuestLog() {
-    if (questLogDrawer) {
-      questLogDrawer.classList.remove("is-open");
-      questLogDrawer.setAttribute("aria-hidden", "true");
-    }
-  }
-
-  if (viewToggleBtn) viewToggleBtn.addEventListener("click", openQuestLog);
-  if (btnQuickCv) btnQuickCv.addEventListener("click", openQuestLog);
-  if (questCloseBtn) questCloseBtn.addEventListener("click", closeQuestLog);
-
-  if (helpBtn) helpBtn.addEventListener("click", () => {
-    if (helpModal) {
-      helpModal.classList.add("is-open");
-      helpModal.setAttribute("aria-hidden", "false");
-      playChime();
-    }
-  });
-
-  if (helpClose) helpClose.addEventListener("click", () => {
-    if (helpModal) {
-      helpModal.classList.remove("is-open");
-      helpModal.setAttribute("aria-hidden", "true");
-    }
-  });
-
-  // Copiar correo en el diario de misiones
-  const btnCopyEmailCv = document.querySelector("#btn-copy-email-cv");
-  if (btnCopyEmailCv) {
-    btnCopyEmailCv.addEventListener("click", () => {
-      navigator.clipboard.writeText("steff.18random@gmail.com").then(() => {
-        playChime();
-        showToast("✓ Correo copiado: steff.18random@gmail.com");
-      });
-    });
-  }
-
-  // ------------------------------------------------------------------------
-  // 3. START GAME & PANTALLA DE TÍTULO
-  // ------------------------------------------------------------------------
-  const titleScreen = document.querySelector("#title-screen");
-  const btnStartGame = document.querySelector("#btn-start-game");
-  let gameStarted = false;
-
-  function startGame() {
-    gameStarted = true;
-    if (titleScreen) titleScreen.classList.add("is-hidden");
-    initAudio();
-    if (sfxEnabled) startBgm();
-    playFanfare();
-    showToast("⚔️ ¡Aventura iniciada! Explora las 5 zonas");
-  }
-
-  if (btnStartGame) btnStartGame.addEventListener("click", startGame);
-
-  // ------------------------------------------------------------------------
-  // 4. MOTOR DE JUEGO 2D (CANVAS RPG)
-  // ------------------------------------------------------------------------
-  const canvas = document.querySelector("#rpg-canvas");
-  const ctx = canvas.getContext("2d");
-
-  const WORLD_WIDTH = 1280;
-  const WORLD_HEIGHT = 720;
-  canvas.width = WORLD_WIDTH;
-  canvas.height = WORLD_HEIGHT;
-
-  // Estado del jugador (Stefani)
-  const player = {
-    x: 640,
-    y: 420,
-    targetX: 640,
-    targetY: 420,
-    size: 40,
-    speed: 4.8,
-    direction: "down", // 'down', 'up', 'left', 'right'
-    isMoving: false,
-    animFrame: 0,
-    animTimer: 0
-  };
-
-  // 5 Estaciones Interactivas del Mundo
-  const stations = [
-    {
-      id: "academia",
-      title: "ORIGEN: LA ACADEMIA PEDAGÓGICA",
-      subtitle: "Pedagogía + Programación",
-      icon: "🏛️",
-      x: 280,
-      y: 220,
-      width: 140,
-      height: 100,
-      color: "#38bdf8",
-      accent: "#0284c7",
-      dialogue: `
-        <h4>🏛️ Misión 1: El Origen Pedagógico</h4>
-        <p>¡Bienvenida viajera! Mi camino inició en la <strong>Pedagogía</strong>, donde descubrí que enseñar y programar comparten la misma esencia: <em>descomponer problemas complejos en pasos claros y significativos</em>.</p>
-        <p>Hoy aplico esa empatía didáctica para crear interfaces intuitivas, código limpio y experiencias interactivas que realmente conectan con los usuarios.</p>
-      `,
-      actions: [
-        { label: "📜 Ver Historia en Diario", type: "cv" },
-        { label: "Continuar Explorando ↗", type: "close" }
-      ]
-    },
-    {
-      id: "forja",
-      title: "LA FORJA DE CÓDIGO (INVENTARIO)",
-      subtitle: "Arsenal Tecnológico & Stats",
-      icon: "⚡",
-      x: 1000,
-      y: 220,
-      width: 140,
-      height: 100,
-      color: "#fbbf24",
-      accent: "#d97706",
-      dialogue: `
-        <h4>⚡ Arsenal de Habilidades & Equipamiento</h4>
-        <p>Aquí forjo arquitecturas con tecnologías de alto rendimiento:</p>
-        <p>
-          ⚔️ <strong>Node.js & Express:</strong> +95 Backend Power<br>
-          🛡️ <strong>PostgreSQL & SQL:</strong> +90 Persistencia Relacional<br>
-          📜 <strong>JavaScript & TypeScript:</strong> +92 Lógica & Tipado<br>
-          🐳 <strong>Docker & Compose:</strong> +85 Aprovisionamiento Seguro<br>
-          🎯 <strong>Jest:</strong> +88 Pruebas Automatizadas
-        </p>
-      `,
-      actions: [
-        { label: "📜 Abrir Inventario Completo", type: "cv" },
-        { label: "Cerrar Forja", type: "close" }
-      ]
-    },
-    {
-      id: "misiones",
-      title: "SALÓN DE MISIONES (PROYECTOS)",
-      subtitle: "Proyectos Destacados & Dungeons",
-      icon: "🏰",
-      x: 640,
-      y: 160,
-      width: 160,
-      height: 110,
-      color: "#f43f5e",
-      accent: "#e11d48",
-      dialogue: `
-        <h4>🏰 Misión Principal: Escape Room Educativo</h4>
-        <p>Videojuego web interactivo full stack con retos de programación en tiempo real, roles administrativos y base de datos PostgreSQL.</p>
-        <p>Otros proyectos en la bitácora: <em>API de Gestión de Postulaciones (Jest)</em>, <em>TechZone SQL</em>, <em>Algodones Maravilla</em> y <em>CampusLands CLI</em>.</p>
-      `,
-      actions: [
-        { label: "🎮 JUGAR ESCAPE ROOM EN VIVO ↗", type: "link", url: "https://steff-360.github.io/escape-room-programacion/" },
-        { label: "💻 Ver Código en GitHub ↗", type: "link", url: "https://github.com/steff-360/escape-room-programacion" },
-        { label: "📜 Ver Todos los Proyectos", type: "cv" }
-      ]
-    },
-    {
-      id: "arcade",
-      title: "SALA ARCADE (RETO DE REFLEJOS)",
-      subtitle: "Pausa Creativa de 15 Segundos",
-      icon: "🕹️",
-      x: 280,
-      y: 540,
-      width: 140,
-      height: 100,
-      color: "#a855f7",
-      accent: "#9333ea",
-      dialogue: `
-        <h4>🕹️ Máquina Arcade: Reto de 15 Segundos</h4>
-        <p>¿Tienes reflejos rápidos de programador? Presiona el botón para entrar a la cabina arcade y superar tu récord personal.</p>
-      `,
-      actions: [
-        { label: "🕹️ INSERT COIN / ABRIR ARCADE", type: "arcade" },
-        { label: "Más tarde", type: "close" }
-      ]
-    },
-    {
-      id: "enlace",
-      title: "TORRE DE ENLACE (CONTACTO)",
-      subtitle: "Alianzas & Contratación",
-      icon: "📡",
-      x: 1000,
-      y: 540,
-      width: 140,
-      height: 100,
-      color: "#34d399",
-      accent: "#059669",
-      dialogue: `
-        <h4>📡 Torre de Comunicación Interplanetaria</h4>
-        <p>¡Has llegado al punto de enlace! Estoy lista para unirme a equipos que valoren la innovación, los productos educativos y la arquitectura sólida.</p>
-        <p>📧 <strong>steff.18random@gmail.com</strong></p>
-      `,
-      actions: [
-        { label: "📋 Copiar Correo", type: "copy-email" },
-        { label: "🔗 Abrir LinkedIn ↗", type: "link", url: "https://www.linkedin.com/in/stefani-s%C3%A1nchez-b35b65279" },
-        { label: "💻 Ver GitHub ↗", type: "link", url: "https://github.com/steff-360" }
-      ]
-    }
+  const loaderLabels = [
+    "Compilando assets...",
+    "Cargando portafolio...",
+    "Preparando experiencia...",
+    "Listo.",
   ];
 
-  // Partículas mágicas flotantes en el mapa
-  const worldParticles = [];
-  for (let i = 0; i < 40; i++) {
-    worldParticles.push({
-      x: Math.random() * WORLD_WIDTH,
-      y: Math.random() * WORLD_HEIGHT,
-      size: Math.random() * 2 + 1,
-      speedY: -(Math.random() * 0.4 + 0.2),
-      alpha: Math.random() * 0.6 + 0.2
+  let loaderProgress = 0;
+  let loaderLabelIndex = 0;
+  let loaderDone = false;
+
+  function tickLoader() {
+    if (loaderDone) return;
+    loaderProgress += rand(1.2, 3.5);
+    if (loaderProgress >= 100) {
+      loaderProgress = 100;
+      loaderDone = true;
+    }
+    if (loaderBar) loaderBar.style.width = loaderProgress + "%";
+
+    // Cycle label text
+    const newIndex = Math.floor((loaderProgress / 100) * (loaderLabels.length - 1));
+    if (newIndex !== loaderLabelIndex && newIndex < loaderLabels.length) {
+      loaderLabelIndex = newIndex;
+      if (loaderLabel) loaderLabel.textContent = loaderLabels[loaderLabelIndex];
+    }
+
+    if (loaderDone) {
+      if (loaderLabel) loaderLabel.textContent = loaderLabels[loaderLabels.length - 1];
+      setTimeout(finishLoader, 500);
+    } else {
+      setTimeout(tickLoader, 50);
+    }
+  }
+
+  function finishLoader() {
+    if (loader) loader.classList.add("is-done");
+    // Trigger post-load features
+    setTimeout(() => {
+      startCounters();
+      initSkillBars();
+    }, 600);
+  }
+
+  // Start loader on DOMContentLoaded
+  setTimeout(tickLoader, 300);
+
+  // -------------------------------------------------------------------------
+  // 2. CUSTOM CURSOR
+  // -------------------------------------------------------------------------
+  const cursorDot = document.querySelector(".cursor-dot");
+  const cursorRing = document.querySelector(".cursor-ring");
+
+  let mouseX = -200, mouseY = -200;
+  let ringX = -200, ringY = -200;
+  let cursorRAF = null;
+
+  if (cursorDot && cursorRing) {
+    document.addEventListener("mousemove", (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      cursorDot.style.left = mouseX + "px";
+      cursorDot.style.top = mouseY + "px";
+    });
+
+    function animateCursor() {
+      ringX = lerp(ringX, mouseX, 0.12);
+      ringY = lerp(ringY, mouseY, 0.12);
+      cursorRing.style.left = ringX + "px";
+      cursorRing.style.top = ringY + "px";
+      cursorRAF = requestAnimationFrame(animateCursor);
+    }
+    animateCursor();
+
+    // Hover state on interactive elements
+    const hoverEls = document.querySelectorAll("a, button, .project-row, .ac-cell, .value-card");
+    hoverEls.forEach((el) => {
+      el.addEventListener("mouseenter", () => document.body.classList.add("cursor-hover"));
+      el.addEventListener("mouseleave", () => document.body.classList.remove("cursor-hover"));
+    });
+
+    // Hide cursor when leaving window
+    document.addEventListener("mouseleave", () => {
+      cursorDot.style.opacity = "0";
+      cursorRing.style.opacity = "0";
+    });
+    document.addEventListener("mouseenter", () => {
+      cursorDot.style.opacity = "";
+      cursorRing.style.opacity = "";
     });
   }
 
-  // Teclado
-  const keys = {};
-  window.addEventListener("keydown", (e) => {
-    keys[e.key.toLowerCase()] = true;
-    if (e.key === " " || e.key === "Enter") {
-      checkInteraction();
-    }
-    if (e.key === "Escape") {
-      closeDialogue();
-      closeArcadeModal();
-      closeQuestLog();
-    }
-  });
-  window.addEventListener("keyup", (e) => {
-    keys[e.key.toLowerCase()] = false;
-  });
+  // -------------------------------------------------------------------------
+  // 3. CANVAS PARTICLE SYSTEM (p5aholic style — interactive with mouse)
+  // -------------------------------------------------------------------------
+  const canvas = document.getElementById("bg-canvas");
+  if (canvas) {
+    const ctx = canvas.getContext("2d");
+    let W = window.innerWidth;
+    let H = window.innerHeight;
+    canvas.width = W;
+    canvas.height = H;
 
-  // Movimiento por clic o toque en el canvas
-  canvas.addEventListener("pointerdown", (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = WORLD_WIDTH / rect.width;
-    const scaleY = WORLD_HEIGHT / rect.height;
-    player.targetX = (e.clientX - rect.left) * scaleX;
-    player.targetY = (e.clientY - rect.top) * scaleY;
-  });
+    // Accent colors for particles
+    const particleColors = [
+      "rgba(255,107,107,",   // coral
+      "rgba(78,205,196,",    // cyan
+      "rgba(255,207,74,",    // gold
+      "rgba(100,255,218,",   // green mint
+      "rgba(180,120,255,",   // purple
+    ];
 
-  // Controles D-pad táctiles
-  const btnUp = document.querySelector("#btn-up");
-  const btnDown = document.querySelector("#btn-down");
-  const btnLeft = document.querySelector("#btn-left");
-  const btnRight = document.querySelector("#btn-right");
-  const btnInteract = document.querySelector("#btn-interact");
+    const PARTICLE_COUNT = 70;
+    const CONNECT_DIST = 130;
+    const REPEL_RADIUS = 110;
+    const REPEL_FORCE = 0.4;
 
-  function bindTouchBtn(btn, key) {
-    if (!btn) return;
-    btn.addEventListener("pointerdown", (e) => { e.preventDefault(); keys[key] = true; });
-    btn.addEventListener("pointerup", (e) => { e.preventDefault(); keys[key] = false; });
-    btn.addEventListener("pointerleave", (e) => { e.preventDefault(); keys[key] = false; });
-  }
-  bindTouchBtn(btnUp, "arrowup");
-  bindTouchBtn(btnDown, "arrowdown");
-  bindTouchBtn(btnLeft, "arrowleft");
-  bindTouchBtn(btnRight, "arrowright");
-  if (btnInteract) btnInteract.addEventListener("click", checkInteraction);
+    let particles = [];
+    let mouse = { x: -9999, y: -9999 };
 
-  // Sistema de interacción y diálogo
-  let nearbyStation = null;
-  const zoneBanner = document.querySelector("#zone-banner");
-  const zoneIcon = document.querySelector("#zone-icon");
-  const zoneTitle = document.querySelector("#zone-title");
-  const zoneDesc = document.querySelector("#zone-desc");
-  const interactPrompt = document.querySelector("#interact-prompt");
-  const dialogueBox = document.querySelector("#rpg-dialogue");
-  const dialogueBody = document.querySelector("#dialogue-body");
-  const dialogueActions = document.querySelector("#dialogue-actions");
-  const dialogueClose = document.querySelector("#dialogue-close");
-
-  function checkNearbyStations() {
-    let currentNear = null;
-    stations.forEach((st) => {
-      const centerX = st.x + st.width / 2;
-      const centerY = st.y + st.height / 2;
-      const dist = Math.hypot(player.x - centerX, player.y - centerY);
-      if (dist < 110) {
-        currentNear = st;
+    class Particle {
+      constructor() {
+        this.reset(true);
       }
-    });
-
-    if (currentNear !== nearbyStation) {
-      nearbyStation = currentNear;
-      if (nearbyStation) {
-        zoneIcon.textContent = nearbyStation.icon;
-        zoneTitle.textContent = nearbyStation.title;
-        zoneDesc.textContent = nearbyStation.subtitle;
-        zoneBanner.classList.add("is-visible");
-        interactPrompt.classList.add("is-visible");
-        playBlip();
-      } else {
-        zoneBanner.classList.remove("is-visible");
-        interactPrompt.classList.remove("is-visible");
+      reset(randomY = false) {
+        this.x = rand(0, W);
+        this.y = randomY ? rand(0, H) : rand(-20, 0);
+        this.vx = rand(-0.3, 0.3);
+        this.vy = rand(0.1, 0.4);
+        this.r = rand(1.5, 3.5);
+        this.color = particleColors[Math.floor(rand(0, particleColors.length))];
+        this.alpha = rand(0.4, 0.9);
+        this.baseAlpha = this.alpha;
       }
-    }
-  }
-
-  function checkInteraction() {
-    if (nearbyStation) {
-      openDialogue(nearbyStation);
-    }
-  }
-
-  function openDialogue(station) {
-    if (!dialogueBox) return;
-    playChime();
-    dialogueBox.classList.add("is-open");
-    dialogueBox.setAttribute("aria-hidden", "false");
-
-    // Escribir texto con efecto typewriter suave
-    dialogueBody.innerHTML = station.dialogue;
-
-    // Renderizar botones de acción
-    dialogueActions.innerHTML = "";
-    station.actions.forEach((act) => {
-      const btn = document.createElement("button");
-      btn.className = `dialogue-btn ${act.type === "link" || act.type === "arcade" ? "btn-primary-action" : "btn-secondary-action"}`;
-      btn.textContent = act.label;
-
-      btn.addEventListener("click", () => {
-        if (act.type === "link" && act.url) {
-          window.open(act.url, "_blank");
-        } else if (act.type === "cv") {
-          closeDialogue();
-          openQuestLog();
-        } else if (act.type === "arcade") {
-          closeDialogue();
-          openArcadeModal();
-        } else if (act.type === "copy-email") {
-          navigator.clipboard.writeText("steff.18random@gmail.com").then(() => {
-            playFanfare();
-            showToast("✓ Correo copiado: steff.18random@gmail.com");
-          });
-        } else if (act.type === "close") {
-          closeDialogue();
+      update() {
+        // Mouse repulsion
+        const dx = this.x - mouse.x;
+        const dy = this.y - mouse.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < REPEL_RADIUS && dist > 0) {
+          const force = (REPEL_RADIUS - dist) / REPEL_RADIUS * REPEL_FORCE;
+          this.vx += (dx / dist) * force;
+          this.vy += (dy / dist) * force;
         }
-      });
-      dialogueActions.appendChild(btn);
-    });
-  }
-
-  function closeDialogue() {
-    if (dialogueBox) {
-      dialogueBox.classList.remove("is-open");
-      dialogueBox.setAttribute("aria-hidden", "true");
-    }
-  }
-  if (dialogueClose) dialogueClose.addEventListener("click", closeDialogue);
-
-  // ------------------------------------------------------------------------
-  // 5. MINIJUEGO ARCADE INCORPORADO EN LA SALA ARCADE
-  // ------------------------------------------------------------------------
-  const arcadeModal = document.querySelector("#arcade-modal");
-  const arcadeClose = document.querySelector("#arcade-close");
-  const arcadeStartBtn = document.querySelector("#arcade-start-btn");
-  const arcadeBtns = document.querySelectorAll(".arcade-btn");
-  const arcadeScore = document.querySelector("#arcade-score");
-  const arcadeTime = document.querySelector("#arcade-time");
-  const arcadeBest = document.querySelector("#arcade-best");
-  const arcadeCombo = document.querySelector("#arcade-combo");
-  const arcadeMsg = document.querySelector("#arcade-msg");
-
-  let arcadeTimer = null;
-  let arcadeTargetTimer = null;
-  let arcadeSeconds = 15;
-  let aScore = 0;
-  let aCombo = 0;
-  let aTargetIdx = -1;
-  let arcadeActive = false;
-
-  function openArcadeModal() {
-    if (arcadeModal) {
-      arcadeModal.classList.add("is-open");
-      arcadeModal.setAttribute("aria-hidden", "false");
-      playChime();
-    }
-  }
-
-  function closeArcadeModal() {
-    if (arcadeModal) {
-      arcadeModal.classList.remove("is-open");
-      arcadeModal.setAttribute("aria-hidden", "true");
-      clearInterval(arcadeTimer);
-      clearInterval(arcadeTargetTimer);
-      arcadeActive = false;
-    }
-  }
-  if (arcadeClose) arcadeClose.addEventListener("click", closeArcadeModal);
-
-  function clearArcadeTarget() {
-    arcadeBtns.forEach(b => b.classList.remove("is-target", "is-miss"));
-  }
-
-  function moveArcadeTarget() {
-    clearArcadeTarget();
-    const next = Math.floor(Math.random() * arcadeBtns.length);
-    aTargetIdx = next === aTargetIdx ? (next + 1) % arcadeBtns.length : next;
-    arcadeBtns[aTargetIdx].classList.add("is-target");
-  }
-
-  function finishArcade() {
-    arcadeActive = false;
-    clearInterval(arcadeTimer);
-    clearInterval(arcadeTargetTimer);
-    clearArcadeTarget();
-    const prevBest = Number(localStorage.getItem("stefaniArcadeBest") || 0);
-    const best = Math.max(prevBest, aScore);
-    localStorage.setItem("stefaniArcadeBest", String(best));
-    arcadeBest.textContent = String(best).padStart(2, "0");
-    arcadeStartBtn.textContent = "INSERT COIN / JUGAR OTRA VEZ";
-
-    if (aScore > prevBest && aScore > 0) {
-      playFanfare();
-      arcadeMsg.textContent = `★ ¡NUEVO RÉCORD: ${aScore} PUNTOS! ★`;
-      showToast(`🏆 ¡Nuevo récord arcade: ${aScore} pts!`);
-    } else {
-      arcadeMsg.textContent = `Partida finalizada: ${aScore} pts`;
-      play8bit(300, "sawtooth", 0.2, 0.1);
-    }
-  }
-
-  function startArcade() {
-    clearInterval(arcadeTimer);
-    clearInterval(arcadeTargetTimer);
-    arcadeActive = true;
-    arcadeSeconds = 15;
-    aScore = 0;
-    aCombo = 0;
-    arcadeScore.textContent = "00";
-    arcadeTime.textContent = "15";
-    arcadeCombo.textContent = "x1";
-    arcadeMsg.textContent = "¡Acierta las estrellas!";
-    arcadeStartBtn.textContent = "PARTIDA EN CURSO...";
-    playChime();
-    moveArcadeTarget();
-
-    arcadeTargetTimer = setInterval(moveArcadeTarget, 740);
-    arcadeTimer = setInterval(() => {
-      arcadeSeconds--;
-      arcadeTime.textContent = String(arcadeSeconds).padStart(2, "0");
-      if (arcadeSeconds <= 0) finishArcade();
-    }, 1000);
-  }
-
-  if (arcadeStartBtn) arcadeStartBtn.addEventListener("click", startArcade);
-
-  arcadeBtns.forEach((btn, idx) => {
-    btn.addEventListener("click", () => {
-      if (!arcadeActive) return;
-      if (idx === aTargetIdx) {
-        aCombo++;
-        aScore += aCombo >= 3 ? 2 : 1;
-        arcadeScore.textContent = String(aScore).padStart(2, "0");
-        arcadeCombo.textContent = `x${aCombo}`;
-        play8bit(440 + aCombo * 50, "square", 0.1, 0.12);
-        moveArcadeTarget();
-      } else {
-        aCombo = 0;
-        arcadeCombo.textContent = "x1";
-        btn.classList.add("is-miss");
-        setTimeout(() => btn.classList.remove("is-miss"), 180);
-        play8bit(160, "sawtooth", 0.15, 0.1);
+        // Damping
+        this.vx *= 0.98;
+        this.vy *= 0.98;
+        // Drift
+        this.x += this.vx;
+        this.y += this.vy;
+        // Wrap edges
+        if (this.x < -10) this.x = W + 10;
+        if (this.x > W + 10) this.x = -10;
+        if (this.y > H + 10) this.reset(false);
       }
-    });
-  });
-  if (arcadeBest) arcadeBest.textContent = String(Number(localStorage.getItem("stefaniArcadeBest") || 0)).padStart(2, "0");
-
-  // ------------------------------------------------------------------------
-  // 6. BUCLE PRINCIPAL DE DIBUJADO Y FÍSICAS (RENDER LOOP)
-  // ------------------------------------------------------------------------
-  function updatePlayer() {
-    let dx = 0;
-    let dy = 0;
-
-    // Entrada de teclado
-    if (keys["w"] || keys["arrowup"]) { dy -= 1; player.direction = "up"; }
-    if (keys["s"] || keys["arrowdown"]) { dy += 1; player.direction = "down"; }
-    if (keys["a"] || keys["arrowleft"]) { dx -= 1; player.direction = "left"; }
-    if (keys["d"] || keys["arrowright"]) { dx += 1; player.direction = "right"; }
-
-    if (dx !== 0 || dy !== 0) {
-      player.targetX = player.x;
-      player.targetY = player.y;
-      const mag = Math.hypot(dx, dy);
-      player.x += (dx / mag) * player.speed;
-      player.y += (dy / mag) * player.speed;
-      player.isMoving = true;
-    } else {
-      // Movimiento hacia clic / toque
-      const toX = player.targetX - player.x;
-      const toY = player.targetY - player.y;
-      const dist = Math.hypot(toX, toY);
-
-      if (dist > 4) {
-        player.x += (toX / dist) * player.speed;
-        player.y += (toY / dist) * player.speed;
-        player.isMoving = true;
-
-        if (Math.abs(toX) > Math.abs(toY)) {
-          player.direction = toX > 0 ? "right" : "left";
-        } else {
-          player.direction = toY > 0 ? "down" : "up";
-        }
-      } else {
-        player.isMoving = false;
-      }
-    }
-
-    // Límites del mapa
-    player.x = Math.max(40, Math.min(WORLD_WIDTH - 40, player.x));
-    player.y = Math.max(60, Math.min(WORLD_HEIGHT - 60, player.y));
-
-    // Animación de pasos
-    if (player.isMoving) {
-      player.animTimer++;
-      if (player.animTimer > 8) {
-        player.animFrame = (player.animFrame + 1) % 4;
-        player.animTimer = 0;
-        if (player.animFrame % 2 === 0 && Math.random() < 0.25) playBlip();
-      }
-    } else {
-      player.animFrame = 0;
-    }
-
-    checkNearbyStations();
-  }
-
-  function drawWorld() {
-    // 1. Fondo oscuro con rejilla cibernética
-    ctx.fillStyle = "#070b13";
-    ctx.fillRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
-
-    // Rejilla retro suave
-    ctx.strokeStyle = "rgba(30, 58, 95, 0.25)";
-    ctx.lineWidth = 1;
-    const gridSize = 40;
-    for (let x = 0; x < WORLD_WIDTH; x += gridSize) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, WORLD_HEIGHT);
-      ctx.stroke();
-    }
-    for (let y = 0; y < WORLD_HEIGHT; y += gridSize) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(WORLD_WIDTH, y);
-      ctx.stroke();
-    }
-
-    // 2. Caminos luminosos entre estaciones
-    ctx.strokeStyle = "rgba(56, 189, 248, 0.2)";
-    ctx.lineWidth = 6;
-    ctx.setLineDash([8, 8]);
-    ctx.beginPath();
-    ctx.moveTo(stations[0].x + 70, stations[0].y + 50);
-    ctx.lineTo(stations[2].x + 80, stations[2].y + 55);
-    ctx.lineTo(stations[1].x + 70, stations[1].y + 50);
-    ctx.lineTo(stations[4].x + 70, stations[4].y + 50);
-    ctx.lineTo(stations[3].x + 70, stations[3].y + 50);
-    ctx.closePath();
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // 3. Partículas flotantes
-    worldParticles.forEach((p) => {
-      p.y += p.speedY;
-      if (p.y < 0) p.y = WORLD_HEIGHT;
-      ctx.fillStyle = `rgba(56, 189, 248, ${p.alpha})`;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      ctx.fill();
-    });
-
-    // 4. Dibujar las 5 Estaciones Temáticas
-    stations.forEach((st) => {
-      const isNear = nearbyStation === st;
-
-      // Resplandor si está cerca
-      if (isNear) {
-        ctx.fillStyle = "rgba(251, 191, 36, 0.15)";
+      draw() {
         ctx.beginPath();
-        ctx.arc(st.x + st.width / 2, st.y + st.height / 2, 85, 0, Math.PI * 2);
+        ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+        ctx.fillStyle = this.color + this.alpha + ")";
         ctx.fill();
       }
+    }
 
-      // Base del edificio / pedestal
-      ctx.fillStyle = "#0c182a";
-      ctx.strokeStyle = isNear ? "#fbbf24" : st.color;
-      ctx.lineWidth = isNear ? 3 : 2;
-      ctx.beginPath();
-      ctx.roundRect(st.x, st.y, st.width, st.height, 10);
-      ctx.fill();
-      ctx.stroke();
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      particles.push(new Particle());
+    }
 
-      // Techo / cabecera
-      ctx.fillStyle = st.accent;
-      ctx.beginPath();
-      ctx.roundRect(st.x, st.y, st.width, 24, [10, 10, 0, 0]);
-      ctx.fill();
-
-      // Icono de la estación
-      ctx.font = "32px 'Segoe UI Emoji', sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText(st.icon, st.x + st.width / 2, st.y + 64);
-
-      // Etiqueta de la estación
-      ctx.font = "bold 10px 'IBM Plex Mono', monospace";
-      ctx.fillStyle = isNear ? "#fbbf24" : "#ffffff";
-      ctx.fillText(st.title.split(":")[0], st.x + st.width / 2, st.y + 90);
-
-      // Icono flotante indicador si está cerca
-      if (isNear) {
-        ctx.font = "bold 14px 'Press Start 2P', monospace";
-        ctx.fillStyle = "#fbbf24";
-        const bob = Math.sin(Date.now() / 150) * 4;
-        ctx.fillText("▼", st.x + st.width / 2, st.y - 10 + bob);
-      }
+    // Track mouse for canvas
+    document.addEventListener("mousemove", (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
     });
 
-    // 5. Dibujar al Personaje (Stefani) en Pixel/Vector Style
-    drawPlayer();
-  }
-
-  function drawPlayer() {
-    ctx.save();
-    ctx.translate(player.x, player.y);
-
-    const bob = player.isMoving ? (player.animFrame % 2 === 0 ? -2 : 2) : 0;
-
-    // Sombra en el suelo
-    ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
-    ctx.beginPath();
-    ctx.ellipse(0, 18, 16, 6, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Piernas animadas
-    ctx.fillStyle = "#1e293b";
-    if (player.isMoving) {
-      const legOffset = player.animFrame === 1 ? -4 : (player.animFrame === 3 ? 4 : 0);
-      ctx.fillRect(-8 + legOffset, 8, 6, 10);
-      ctx.fillRect(2 - legOffset, 8, 6, 10);
-    } else {
-      ctx.fillRect(-7, 8, 5, 10);
-      ctx.fillRect(2, 8, 5, 10);
+    function drawConnections() {
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < CONNECT_DIST) {
+            const opacity = (1 - dist / CONNECT_DIST) * 0.25;
+            ctx.strokeStyle = "rgba(100,255,218," + opacity + ")";
+            ctx.lineWidth = 0.8;
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.stroke();
+          }
+        }
+      }
     }
 
-    // Torso / Chaqueta de desarrolladora
-    ctx.fillStyle = "#f43f5e"; // Chaqueta coral vibrante
-    ctx.fillRect(-10, -6 + bob, 20, 15);
+    function animateCanvas() {
+      ctx.clearRect(0, 0, W, H);
+      drawConnections();
+      particles.forEach((p) => {
+        p.update();
+        p.draw();
+      });
+      requestAnimationFrame(animateCanvas);
+    }
+    animateCanvas();
 
-    // Cuello camisa
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(-3, -6 + bob, 6, 6);
+    window.addEventListener("resize", () => {
+      W = window.innerWidth;
+      H = window.innerHeight;
+      canvas.width = W;
+      canvas.height = H;
+    });
+  }
 
-    // Mochila / Laptop backpack
-    ctx.fillStyle = "#0f172a";
-    ctx.fillRect(-12, -4 + bob, 3, 10);
+  // -------------------------------------------------------------------------
+  // 4. SCROLL PROGRESS BAR
+  // -------------------------------------------------------------------------
+  const scrollBar = document.getElementById("scroll-bar");
+  if (scrollBar) {
+    window.addEventListener("scroll", () => {
+      const docH = document.documentElement.scrollHeight - window.innerHeight;
+      const pct = docH > 0 ? (window.scrollY / docH) * 100 : 0;
+      scrollBar.style.width = pct + "%";
+    }, { passive: true });
+  }
 
-    // Cabeza / Rostro
-    ctx.fillStyle = "#fcd34d"; // Tono piel pixel
-    ctx.fillRect(-8, -20 + bob, 16, 14);
+  // -------------------------------------------------------------------------
+  // 5. NAV SCROLL BEHAVIOR
+  // -------------------------------------------------------------------------
+  const nav = document.querySelector(".nav");
+  if (nav) {
+    window.addEventListener("scroll", () => {
+      nav.classList.toggle("is-scrolled", window.scrollY > 50);
+    }, { passive: true });
+  }
 
-    // Cabello castaño oscuro con coleta
-    ctx.fillStyle = "#3e2723";
-    ctx.fillRect(-9, -24 + bob, 18, 7); // Parte superior
-    ctx.fillRect(-10, -20 + bob, 3, 10); // Lado izquierdo
-    ctx.fillRect(7, -20 + bob, 3, 10); // Lado derecho
-    // Coleta hacia atrás
-    ctx.fillRect(player.direction === "left" ? 6 : -9, -16 + bob, 4, 8);
+  // -------------------------------------------------------------------------
+  // 6. MOBILE MENU
+  // -------------------------------------------------------------------------
+  const menuBtn = document.getElementById("nav-menu-btn");
+  const mobileMenu = document.getElementById("mobile-menu");
 
-    // Ojos según dirección
-    ctx.fillStyle = "#0f172a";
-    if (player.direction === "right") {
-      ctx.fillRect(2, -15 + bob, 2, 3);
-      ctx.fillRect(5, -15 + bob, 2, 3);
-    } else if (player.direction === "left") {
-      ctx.fillRect(-6, -15 + bob, 2, 3);
-      ctx.fillRect(-3, -15 + bob, 2, 3);
-    } else if (player.direction === "up") {
-      // De espaldas (solo pelo)
-      ctx.fillStyle = "#3e2723";
-      ctx.fillRect(-8, -20 + bob, 16, 12);
-    } else {
-      // De frente
-      ctx.fillRect(-4, -15 + bob, 2, 3);
-      ctx.fillRect(2, -15 + bob, 2, 3);
+  if (menuBtn && mobileMenu) {
+    menuBtn.addEventListener("click", () => {
+      const isOpen = mobileMenu.classList.toggle("is-open");
+      menuBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      menuBtn.textContent = isOpen ? "✕" : "☰";
+    });
+
+    // Close on nav link click
+    mobileMenu.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => {
+        mobileMenu.classList.remove("is-open");
+        menuBtn.setAttribute("aria-expanded", "false");
+        menuBtn.textContent = "☰";
+      });
+    });
+
+    // Close on Escape
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && mobileMenu.classList.contains("is-open")) {
+        mobileMenu.classList.remove("is-open");
+        menuBtn.setAttribute("aria-expanded", "false");
+        menuBtn.textContent = "☰";
+      }
+    });
+  }
+
+  // -------------------------------------------------------------------------
+  // 7. SCROLL REVEAL (IntersectionObserver)
+  // -------------------------------------------------------------------------
+  const revealEls = document.querySelectorAll(".reveal-up, .reveal-fade");
+  if (revealEls.length && "IntersectionObserver" in window) {
+    const revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("in-view");
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
+    revealEls.forEach((el) => revealObserver.observe(el));
+  } else {
+    // Fallback: show all
+    revealEls.forEach((el) => el.classList.add("in-view"));
+  }
+
+  // -------------------------------------------------------------------------
+  // 8. ANIMATED STAT COUNTERS
+  // -------------------------------------------------------------------------
+  function startCounters() {
+    const statEls = document.querySelectorAll(".stat-n[data-count]");
+    statEls.forEach((el) => {
+      const target = parseInt(el.dataset.count, 10);
+      const suffix = el.dataset.suffix || "";
+      const duration = 1500;
+      const startTime = performance.now();
+
+      function step(now) {
+        const elapsed = now - startTime;
+        const progress = clamp(elapsed / duration, 0, 1);
+        const val = Math.round(easeOut(progress) * target);
+        el.textContent = val + suffix;
+        if (progress < 1) requestAnimationFrame(step);
+        else el.textContent = target + suffix;
+      }
+      requestAnimationFrame(step);
+    });
+  }
+
+  // -------------------------------------------------------------------------
+  // 9. PROJECT PREVIEW FOLLOWING CURSOR (vanholtz.co style)
+  // -------------------------------------------------------------------------
+  const projectPreview = document.getElementById("project-preview");
+  const previewInner = document.getElementById("preview-inner");
+
+  if (projectPreview && previewInner) {
+    const projectRows = document.querySelectorAll(".project-row");
+    let previewTargetX = 0;
+    let previewTargetY = 0;
+    let previewCurrentX = 0;
+    let previewCurrentY = 0;
+    let previewVisible = false;
+    let previewRAF = null;
+
+    function animatePreview() {
+      previewCurrentX = lerp(previewCurrentX, previewTargetX, 0.1);
+      previewCurrentY = lerp(previewCurrentY, previewTargetY, 0.1);
+      projectPreview.style.left = previewCurrentX + "px";
+      projectPreview.style.top = previewCurrentY + "px";
+      previewRAF = requestAnimationFrame(animatePreview);
+    }
+    animatePreview();
+
+    projectRows.forEach((row) => {
+      const color = row.dataset.previewColor || "#1e1e2e";
+      const label = row.dataset.previewLabel || "";
+
+      row.addEventListener("mouseenter", () => {
+        previewInner.style.background = color;
+        previewInner.textContent = label;
+        projectPreview.classList.add("is-visible");
+        previewVisible = true;
+      });
+
+      row.addEventListener("mousemove", (e) => {
+        previewTargetX = e.clientX + 20;
+        previewTargetY = e.clientY - 60;
+      });
+
+      row.addEventListener("mouseleave", () => {
+        projectPreview.classList.remove("is-visible");
+        previewVisible = false;
+      });
+    });
+  }
+
+  // -------------------------------------------------------------------------
+  // 10. SKILL BARS ANIMATION
+  // -------------------------------------------------------------------------
+  function initSkillBars() {
+    const skillCats = document.querySelectorAll(".skill-category");
+    if (!("IntersectionObserver" in window)) {
+      // Fallback: set all widths immediately
+      document.querySelectorAll(".skill-bar-row").forEach((row) => {
+        const fill = row.querySelector(".sb-fill");
+        if (fill) fill.style.width = (row.dataset.level || 0) + "%";
+      });
+      return;
     }
 
-    // Etiqueta del nombre sobre el personaje
-    ctx.font = "bold 9px 'Press Start 2P', monospace";
-    ctx.fillStyle = "#fbbf24";
-    ctx.textAlign = "center";
-    ctx.fillText("STEFANI", 0, -30 + bob);
+    const skillObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const rows = entry.target.querySelectorAll(".skill-bar-row");
+            rows.forEach((row, i) => {
+              const level = row.dataset.level || 0;
+              const fill = row.querySelector(".sb-fill");
+              if (fill) {
+                setTimeout(() => {
+                  fill.style.width = level + "%";
+                }, i * 120);
+              }
+            });
+            skillObserver.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.3 }
+    );
 
-    ctx.restore();
+    skillCats.forEach((cat) => skillObserver.observe(cat));
   }
 
-  function gameLoop() {
-    updatePlayer();
-    drawWorld();
-    requestAnimationFrame(gameLoop);
+  // -------------------------------------------------------------------------
+  // 11. SCROLL CUE HIDING
+  // -------------------------------------------------------------------------
+  const scrollCue = document.querySelector(".scroll-cue");
+  if (scrollCue) {
+    window.addEventListener("scroll", () => {
+      scrollCue.style.opacity = window.scrollY > 80 ? "0" : "";
+    }, { passive: true });
   }
 
-  requestAnimationFrame(gameLoop);
-});
+  // -------------------------------------------------------------------------
+  // 12. TOAST NOTIFICATION
+  // -------------------------------------------------------------------------
+  const toast = document.getElementById("toast");
+  let toastTimeout = null;
+
+  function showToast(msg, duration = 2800) {
+    if (!toast) return;
+    toast.textContent = msg;
+    toast.classList.add("show");
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => toast.classList.remove("show"), duration);
+  }
+
+  // -------------------------------------------------------------------------
+  // 13. COPY EMAIL BUTTON
+  // -------------------------------------------------------------------------
+  const copyBtn = document.getElementById("copy-btn");
+  const copyLabel = document.getElementById("copy-label");
+
+  if (copyBtn) {
+    copyBtn.addEventListener("click", () => {
+      const email = copyBtn.dataset.email || "steff.18random@gmail.com";
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(email).then(() => {
+          if (copyLabel) {
+            copyLabel.textContent = "¡Copiado!";
+            setTimeout(() => (copyLabel.textContent = "Copiar correo"), 2000);
+          }
+          showToast("✓ Correo copiado: " + email);
+        }).catch(() => {
+          showToast("No se pudo copiar. Escríbeme a: " + email, 3500);
+        });
+      } else {
+        // Fallback
+        const ta = document.createElement("textarea");
+        ta.value = email;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        if (copyLabel) {
+          copyLabel.textContent = "¡Copiado!";
+          setTimeout(() => (copyLabel.textContent = "Copiar correo"), 2000);
+        }
+        showToast("✓ Correo copiado: " + email);
+      }
+    });
+  }
+
+  // -------------------------------------------------------------------------
+  // 14. FOOTER YEAR
+  // -------------------------------------------------------------------------
+  const yearEl = document.getElementById("year");
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+  // -------------------------------------------------------------------------
+  // 15. ARCADE MINI-GAME
+  // -------------------------------------------------------------------------
+  (function initArcade() {
+    const board = document.getElementById("g-board");
+    const startBtn = document.getElementById("g-start");
+    const scoreEl = document.getElementById("g-score");
+    const timeEl = document.getElementById("g-time");
+    const comboEl = document.getElementById("g-combo");
+    const bestEl = document.getElementById("g-best");
+    const barEl = document.getElementById("g-bar");
+    const msgEl = document.getElementById("g-msg");
+
+    if (!board || !startBtn) return;
+
+    const BEST_KEY = "stefaniBestScore2026";
+    const GAME_DURATION = 15; // seconds
+    const CELL_COUNT = 9;
+
+    let score = 0;
+    let combo = 0;
+    let streak = 0;
+    let timeLeft = GAME_DURATION;
+    let gameActive = false;
+    let activeCell = null;
+    let cellTimer = null;
+    let countdownTimer = null;
+    let bestScore = parseInt(localStorage.getItem(BEST_KEY) || "0", 10);
+
+    // Achievements tracking
+    let ach = {
+      first: false,   // 1+ point
+      combo: false,   // 5+ combo
+      pro: false,     // 12+ points
+      record: false,  // new best
+    };
+
+    // Create cells
+    const cells = [];
+    for (let i = 0; i < CELL_COUNT; i++) {
+      const cell = document.createElement("div");
+      cell.className = "ac-cell";
+      cell.textContent = "?";
+      board.appendChild(cell);
+      cells.push(cell);
+    }
+
+    if (bestEl) bestEl.textContent = bestScore;
+
+    // Audio (Web Audio API)
+    let audioCtx = null;
+    function getAudio() {
+      if (!audioCtx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (AC) audioCtx = new AC();
+      }
+      return audioCtx;
+    }
+
+    function playBeep(freq = 880, type = "square", dur = 0.07, vol = 0.06) {
+      try {
+        const ac = getAudio();
+        if (!ac) return;
+        const osc = ac.createOscillator();
+        const gain = ac.createGain();
+        osc.connect(gain);
+        gain.connect(ac.destination);
+        osc.type = type;
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(vol, ac.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + dur);
+        osc.start(ac.currentTime);
+        osc.stop(ac.currentTime + dur);
+      } catch (e) { /* ignore */ }
+    }
+
+    function hitSound() { playBeep(660, "square", 0.08); }
+    function missSound() { playBeep(220, "sawtooth", 0.12, 0.05); }
+    function comboSound() { playBeep(990, "triangle", 0.1); }
+    function gameOverSound() { playBeep(180, "sawtooth", 0.3, 0.07); }
+
+    function getComboMult() {
+      if (streak >= 6) return 4;
+      if (streak >= 4) return 3;
+      if (streak >= 2) return 2;
+      return 1;
+    }
+
+    function updateUI() {
+      if (scoreEl) scoreEl.textContent = score;
+      if (timeEl) timeEl.textContent = timeLeft;
+      const mult = getComboMult();
+      if (comboEl) comboEl.textContent = "x" + mult;
+      if (barEl) barEl.style.width = (timeLeft / GAME_DURATION * 100) + "%";
+    }
+
+    function unlockAch(id) {
+      const el = document.getElementById("ach-" + id);
+      if (el && !el.classList.contains("unlocked")) {
+        el.classList.add("unlocked");
+        const achName = { first: "Primera vez", combo: "Combo ×5", pro: "Pro Gamer", record: "Récord" }[id] || id;
+        showToast("🏆 Logro desbloqueado: " + achName + "!");
+      }
+    }
+
+    function checkAchievements() {
+      if (score >= 1 && !ach.first) { ach.first = true; unlockAch("first"); }
+      if (getComboMult() >= 2 && streak >= 5 && !ach.combo) { ach.combo = true; unlockAch("combo"); }
+      if (score >= 12 && !ach.pro) { ach.pro = true; unlockAch("pro"); }
+    }
+
+    function showCell() {
+      if (!gameActive) return;
+      // Reset previous
+      cells.forEach((c) => c.classList.remove("is-active", "is-miss"));
+
+      // Pick random cell (not same as last)
+      let idx;
+      do { idx = Math.floor(Math.random() * CELL_COUNT); } while (cells[idx] === activeCell);
+      activeCell = cells[idx];
+
+      // Active duration shrinks as time runs out (harder)
+      const activeDur = clamp(600 + (timeLeft / GAME_DURATION) * 400, 400, 1000);
+      activeCell.classList.add("is-active");
+
+      cellTimer = setTimeout(() => {
+        if (activeCell && activeCell.classList.contains("is-active")) {
+          activeCell.classList.remove("is-active");
+          activeCell.classList.add("is-miss");
+          streak = 0;
+          combo = 0;
+          missSound();
+          updateUI();
+          setTimeout(() => { if (activeCell) activeCell.classList.remove("is-miss"); }, 300);
+        }
+        if (gameActive) showCell();
+      }, activeDur);
+    }
+
+    function startGame() {
+      score = 0; combo = 0; streak = 0; timeLeft = GAME_DURATION; gameActive = true;
+      ach = { first: false, combo: false, pro: false, record: false };
+      cells.forEach((c) => c.classList.remove("is-active", "is-miss", "is-hit"));
+      if (startBtn) startBtn.textContent = "Reiniciar";
+      if (msgEl) msgEl.style.display = "none";
+      updateUI();
+      clearInterval(countdownTimer);
+      clearTimeout(cellTimer);
+      showCell();
+
+      countdownTimer = setInterval(() => {
+        timeLeft--;
+        updateUI();
+        if (timeLeft <= 0) endGame();
+      }, 1000);
+    }
+
+    function endGame() {
+      gameActive = false;
+      clearInterval(countdownTimer);
+      clearTimeout(cellTimer);
+      cells.forEach((c) => c.classList.remove("is-active"));
+      activeCell = null;
+      gameOverSound();
+
+      if (score > bestScore) {
+        bestScore = score;
+        localStorage.setItem(BEST_KEY, bestScore);
+        if (bestEl) bestEl.textContent = bestScore;
+        if (!ach.record) { ach.record = true; unlockAch("record"); }
+      }
+
+      if (msgEl) {
+        msgEl.style.display = "block";
+        const msgs = [
+          "¡Juego terminado! Puntuación: " + score,
+          score >= 15 ? "🔥 ¡INCREÍBLE! Eres una crack." : "",
+          score >= 10 && score < 15 ? "🎉 ¡Muy bien! Casi eres una pro." : "",
+          score >= 5 && score < 10 ? "👾 Nada mal, ¡sigue practicando!" : "",
+          score < 5 ? "💪 ¡Vuelve a intentarlo!" : "",
+        ].filter(Boolean);
+        msgEl.textContent = msgs.join(" ");
+      }
+      if (startBtn) startBtn.textContent = "Jugar de nuevo";
+    }
+
+    // Cell click handler
+    cells.forEach((cell) => {
+      cell.addEventListener("click", () => {
+        if (!gameActive) return;
+        if (cell === activeCell && cell.classList.contains("is-active")) {
+          cell.classList.remove("is-active");
+          cell.classList.add("is-hit");
+          clearTimeout(cellTimer);
+
+          streak++;
+          const mult = getComboMult();
+          score += mult;
+          combo = streak;
+
+          hitSound();
+          if (mult >= 2) comboSound();
+          updateUI();
+          checkAchievements();
+
+          setTimeout(() => cell.classList.remove("is-hit"), 200);
+          if (gameActive) showCell();
+        }
+      });
+    });
+
+    if (startBtn) {
+      startBtn.addEventListener("click", startGame);
+    }
+  })();
+
+  // -------------------------------------------------------------------------
+  // 16. PARALLAX TILT ON HERO PHOTO
+  // -------------------------------------------------------------------------
+  const heroPhoto = document.querySelector(".hero-photo-wrap");
+  if (heroPhoto) {
+    document.addEventListener("mousemove", (e) => {
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight / 2;
+      const dx = (e.clientX - cx) / cx;
+      const dy = (e.clientY - cy) / cy;
+      heroPhoto.style.transform = `perspective(800px) rotateY(${dx * 8}deg) rotateX(${-dy * 6}deg)`;
+    });
+  }
+
+  // -------------------------------------------------------------------------
+  // 17. SECTION ACTIVE NAV HIGHLIGHT
+  // -------------------------------------------------------------------------
+  const sections = document.querySelectorAll("section[id]");
+  const navLinks = document.querySelectorAll(".nav-links a, .mobile-menu a");
+
+  if (sections.length && navLinks.length && "IntersectionObserver" in window) {
+    const navObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const id = entry.target.id;
+            navLinks.forEach((link) => {
+              link.classList.toggle("active", link.getAttribute("href") === "#" + id);
+            });
+          }
+        });
+      },
+      { threshold: 0.4 }
+    );
+    sections.forEach((s) => navObserver.observe(s));
+  }
+
+  // -------------------------------------------------------------------------
+  // 18. SMOOTH SCROLL FOR ANCHOR LINKS
+  // -------------------------------------------------------------------------
+  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+    anchor.addEventListener("click", (e) => {
+      const target = document.querySelector(anchor.getAttribute("href"));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // 19. HERO TITLE CHARACTER STAGGER ANIMATION
+  // -------------------------------------------------------------------------
+  const heroTitleLines = document.querySelectorAll(".hero-line-inner");
+  heroTitleLines.forEach((line, i) => {
+    line.style.transitionDelay = (i * 0.15) + "s";
+  });
+
+  // -------------------------------------------------------------------------
+  // 20. MAGNETIC BUTTONS
+  // -------------------------------------------------------------------------
+  const magnetBtns = document.querySelectorAll(".btn-primary, .btn-secondary");
+  magnetBtns.forEach((btn) => {
+    btn.addEventListener("mousemove", (e) => {
+      const rect = btn.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dx = (e.clientX - cx) * 0.3;
+      const dy = (e.clientY - cy) * 0.3;
+      btn.style.transform = `translate(${dx}px, ${dy}px)`;
+    });
+    btn.addEventListener("mouseleave", () => {
+      btn.style.transform = "";
+    });
+  });
+
+})();
