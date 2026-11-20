@@ -114,7 +114,12 @@
   if (themeToggle) {
     themeToggle.addEventListener("click", () => {
       const nextTheme = document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light";
-      applyTheme(nextTheme);
+      if (typeof document.startViewTransition === "function" &&
+          !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        document.startViewTransition(() => applyTheme(nextTheme));
+      } else {
+        applyTheme(nextTheme);
+      }
       try { localStorage.setItem("portfolio-theme", nextTheme); } catch (e) {}
       showToast(nextTheme === "light" ? "Modo claro activado" : "Modo oscuro activado");
     });
@@ -794,8 +799,20 @@
             const missionCount = document.getElementById("mission-count");
             const missionProgress = document.getElementById("mission-progress");
             const missionNumber = id === "about" ? 1 : id === "projects" ? 2 : id === "skills" ? 3 : id === "arcade" ? 4 : 0;
-            if (missionCount && missionNumber) missionCount.textContent = String(missionNumber).padStart(2, "0") + " / 04";
-            if (missionProgress && missionNumber) missionProgress.style.width = (missionNumber * 25) + "%";
+            if (missionNumber) {
+              if (missionCount) missionCount.textContent = String(missionNumber).padStart(2, "0") + " / 04";
+              if (missionProgress) missionProgress.style.width = (missionNumber * 25) + "%";
+              missionLinks.forEach((link) => {
+                const linkNumber = parseInt(link.dataset.mission, 10);
+                const isComplete = linkNumber < missionNumber;
+                link.classList.toggle("is-complete", isComplete);
+                if (link.getAttribute("href") === "#" + id) {
+                  link.setAttribute("aria-current", "step");
+                } else {
+                  link.removeAttribute("aria-current");
+                }
+              });
+            }
           }
         });
       },
