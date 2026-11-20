@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#050810">
-  <meta name="description" content="Stefani Sánchez — Full Stack Developer, EdTech & Gamificación. Node.js, PostgreSQL, TypeScript, Docker.">
-  <title>Stefani Sánchez · Full Stack Developer</title>
+  <meta name="description" content="Stefani Sánchez — Desarrolladora de software, EdTech y gamificación. Node.js, PostgreSQL, TypeScript, Docker.">
+  <title>Stefani Sánchez · Desarrolladora de software</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@300;400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -24,6 +24,9 @@
       </div>
       <span class="loader-label" id="loader-label">Inicializando experiencia...</span>
       <span class="loader-percent" id="loader-percent">0%</span>
+      <button class="loader-enter" id="loader-enter" type="button" aria-label="Entrar al portafolio">
+        <span>ENTRAR AL SISTEMA</span><b>↗</b>
+      </button>
     </div>
   </div>
 
@@ -49,10 +52,39 @@
     <a class="nav-cta" href="https://www.linkedin.com/in/stefani-s%C3%A1nchez-b35b65279" target="_blank" rel="noopener noreferrer">
       Hablemos <span aria-hidden="true">↗</span>
     </a>
+    <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Cambiar a modo claro" title="Cambiar tema">
+      <span class="theme-icon" aria-hidden="true">☀</span>
+      <span class="theme-label" id="theme-label">LIGHT</span>
+    </button>
     <button class="nav-menu-btn" id="nav-menu-btn" type="button" aria-label="Abrir menú">
       <span></span><span></span>
     </button>
   </nav>
+
+  <div class="game-hud" aria-label="Estado del portafolio">
+    <span><i></i> PLAYER 01</span>
+    <b>LV. <strong id="hud-level">01</strong></b>
+  </div>
+
+  <aside class="mission-rail" aria-label="Navegación de misiones">
+    <div class="mission-rail-head">
+      <span>MISSIONS</span>
+      <b id="mission-count">01 / 04</b>
+    </div>
+    <div class="mission-line" aria-hidden="true"><span id="mission-progress"></span></div>
+    <nav class="mission-links">
+      <a href="#about" data-mission="01"><b>01</b><span>Sobre mí</span></a>
+      <a href="#projects" data-mission="02"><b>02</b><span>Proyectos</span></a>
+      <a href="#skills" data-mission="03"><b>03</b><span>Habilidades</span></a>
+      <a href="#arcade" data-mission="04"><b>04</b><span>Arcade</span></a>
+    </nav>
+  </aside>
+
+  <div class="xp-hud" aria-label="Progreso de experiencia">
+    <span>XP</span>
+    <div class="xp-track"><i id="xp-fill"></i></div>
+    <b id="xp-value">0%</b>
+  </div>
 
   <!-- MENÚ MÓVIL -->
   <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
@@ -72,7 +104,7 @@
       <div class="hero-content">
         <p class="hero-eyebrow reveal-fade">
           <span class="eyebrow-bracket">[</span>
-          Full Stack Developer · EdTech · Gamificación
+          Desarrolladora de software · EdTech · Gamificación
           <span class="eyebrow-bracket">]</span>
         </p>
 
@@ -106,7 +138,7 @@
           <div class="orbit-ring o-ring-2"></div>
           <div class="orbit-ring o-ring-3"></div>
           <div class="photo-frame">
-            <img src="./Captura%20de%20pantalla%202026-09-18%20150116.png" alt="Stefani Sánchez, Desarrolladora Full Stack" width="400" height="500">
+            <img src="./Captura%20de%20pantalla%202026-09-18%20150116.png" alt="Stefani Sánchez, desarrolladora de software" width="400" height="500">
             <div class="photo-shine"></div>
           </div>
           <!-- Badges orbitales animados -->
@@ -179,7 +211,7 @@
               Código con<br><span class="text-gradient">propósito.</span>
             </h2>
             <p class="about-body reveal-fade">
-              Soy Stefani — desarrolladora full stack con formación en <strong>Pedagogía y Tecnologías de la Información</strong>. Esta combinación me da una perspectiva única: entiendo tanto la arquitectura técnica como la experiencia del usuario que aprende con ella.
+              Soy Stefani — desarrolladora de software con formación en <strong>Pedagogía y Tecnologías de la Información</strong>. Esta combinación me da una perspectiva única: entiendo tanto la arquitectura técnica como la experiencia del usuario que aprende con ella.
             </p>
             <p class="about-body reveal-fade">
               Especializada en construir APIs robustas, videojuegos web educativos y flujos de desarrollo automatizados. Creo que el mejor software es el que <em>no se siente como software</em>.
@@ -234,9 +266,9 @@
             <div class="pr-left">
               <span class="pr-num">01</span>
               <div class="pr-info">
-                <span class="pr-category">Full Stack · Game Dev</span>
+                <span class="pr-category">Software · Game Dev</span>
                 <h3 class="pr-title">Escape Room Educativo</h3>
-                <p class="pr-desc">Videojuego web interactivo full stack con retos de programación, control de sesiones, roles de administración y base de datos PostgreSQL.</p>
+                <p class="pr-desc">Videojuego web interactivo con retos de programación, control de sesiones, roles de administración y base de datos PostgreSQL.</p>
                 <div class="pr-tags">
                   <span>Node.js</span><span>Express</span><span>PostgreSQL</span><span>Canvas API</span><span>GitHub Actions</span>
                 </div>
@@ -371,7 +403,7 @@
         <span>REST API</span><span>·</span>
         <span>Gamificación</span><span>·</span>
         <span>EdTech</span><span>·</span>
-        <span>Full Stack</span><span>·</span>
+        <span>Desarrollo de software</span><span>·</span>
         <span>Open Source</span><span>·</span>
         <span>Testing</span><span>·</span>
         <span>CI/CD</span><span>·</span>
@@ -379,7 +411,7 @@
         <span>REST API</span><span>·</span>
         <span>Gamificación</span><span>·</span>
         <span>EdTech</span><span>·</span>
-        <span>Full Stack</span><span>·</span>
+        <span>Desarrollo de software</span><span>·</span>
         <span>Open Source</span><span>·</span>
         <span>Testing</span><span>·</span>
         <span>CI/CD</span><span>·</span>
@@ -538,7 +570,7 @@
             ¿Construimos<br><span class="text-gradient">algo increíble?</span>
           </h2>
           <p class="contact-desc reveal-fade">
-            Estoy disponible para sumarme a equipos de desarrollo innovadores, proyectos de EdTech o retos full stack desafiantes. Escríbeme, respondo rápido.
+            Estoy disponible para sumarme a equipos de desarrollo innovadores, proyectos de EdTech o retos de software desafiantes. Escríbeme, respondo rápido.
           </p>
           <div class="contact-links reveal-fade">
             <a class="contact-social" href="https://github.com/steff-360" target="_blank" rel="noopener noreferrer">

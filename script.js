@@ -31,6 +31,8 @@
   const loader = document.getElementById("loader");
   const loaderBar = document.getElementById("loader-bar");
   const loaderLabel = document.getElementById("loader-label");
+  const loaderPercent = document.getElementById("loader-percent");
+  const loaderEnter = document.getElementById("loader-enter");
 
   const loaderLabels = [
     "Compilando assets...",
@@ -51,6 +53,7 @@
       loaderDone = true;
     }
     if (loaderBar) loaderBar.style.width = loaderProgress + "%";
+    if (loaderPercent) loaderPercent.textContent = Math.round(loaderProgress) + "%";
 
     // Cycle label text
     const newIndex = Math.floor((loaderProgress / 100) * (loaderLabels.length - 1));
@@ -61,7 +64,10 @@
 
     if (loaderDone) {
       if (loaderLabel) loaderLabel.textContent = loaderLabels[loaderLabels.length - 1];
-      setTimeout(finishLoader, 500);
+      if (loaderEnter) {
+        loaderEnter.classList.add("is-ready");
+        loaderEnter.focus();
+      }
     } else {
       setTimeout(tickLoader, 50);
     }
@@ -74,6 +80,44 @@
       startCounters();
       initSkillBars();
     }, 600);
+  }
+
+  if (loaderEnter) {
+    loaderEnter.addEventListener("click", finishLoader);
+  }
+
+  // -------------------------------------------------------------------------
+  // THEME SYSTEM
+  // -------------------------------------------------------------------------
+  const themeToggle = document.getElementById("theme-toggle");
+  const themeLabel = document.getElementById("theme-label");
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
+
+  function applyTheme(theme) {
+    const isLight = theme === "light";
+    document.documentElement.setAttribute("data-theme", isLight ? "light" : "dark");
+    if (themeLabel) themeLabel.textContent = isLight ? "DARK" : "LIGHT";
+    if (themeToggle) {
+      const icon = themeToggle.querySelector(".theme-icon");
+      if (icon) icon.textContent = isLight ? "◐" : "☀";
+      themeToggle.setAttribute("aria-label", isLight ? "Cambiar a modo oscuro" : "Cambiar a modo claro");
+    }
+    if (themeMeta) themeMeta.setAttribute("content", isLight ? "#edf4f8" : "#050810");
+  }
+
+  let savedTheme = "dark";
+  try {
+    savedTheme = localStorage.getItem("portfolio-theme") || "dark";
+  } catch (e) {}
+  applyTheme(savedTheme);
+
+  if (themeToggle) {
+    themeToggle.addEventListener("click", () => {
+      const nextTheme = document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light";
+      applyTheme(nextTheme);
+      try { localStorage.setItem("portfolio-theme", nextTheme); } catch (e) {}
+      showToast(nextTheme === "light" ? "Modo claro activado" : "Modo oscuro activado");
+    });
   }
 
   // Start loader on DOMContentLoaded
@@ -252,6 +296,10 @@
       const docH = document.documentElement.scrollHeight - window.innerHeight;
       const pct = docH > 0 ? (window.scrollY / docH) * 100 : 0;
       scrollBar.style.width = pct + "%";
+      const xpFill = document.getElementById("xp-fill");
+      const xpValue = document.getElementById("xp-value");
+      if (xpFill) xpFill.style.width = pct + "%";
+      if (xpValue) xpValue.textContent = Math.round(pct) + "%";
     }, { passive: true });
   }
 
@@ -262,6 +310,11 @@
   if (nav) {
     window.addEventListener("scroll", () => {
       nav.classList.toggle("is-scrolled", window.scrollY > 50);
+      const hudLevel = document.getElementById("hud-level");
+      if (hudLevel) {
+        const zone = Math.min(6, 1 + Math.floor(window.scrollY / Math.max(1, (document.documentElement.scrollHeight - window.innerHeight) / 6)));
+        hudLevel.textContent = String(zone).padStart(2, "0");
+      }
     }, { passive: true });
   }
 
@@ -532,15 +585,8 @@
       record: false,  // new best
     };
 
-    // Create cells
-    const cells = [];
-    for (let i = 0; i < CELL_COUNT; i++) {
-      const cell = document.createElement("div");
-      cell.className = "ac-cell";
-      cell.textContent = "?";
-      board.appendChild(cell);
-      cells.push(cell);
-    }
+    // Use the existing 3×3 HTML board instead of duplicating it.
+    const cells = Array.from(board.querySelectorAll(".ac-cell")).slice(0, CELL_COUNT);
 
     if (bestEl) bestEl.textContent = bestScore;
 
@@ -740,6 +786,16 @@
             navLinks.forEach((link) => {
               link.classList.toggle("active", link.getAttribute("href") === "#" + id);
             });
+            const missionLinks = document.querySelectorAll(".mission-links a");
+            missionLinks.forEach((link) => {
+              const linkTarget = link.getAttribute("href");
+              link.classList.toggle("active", linkTarget === "#" + id);
+            });
+            const missionCount = document.getElementById("mission-count");
+            const missionProgress = document.getElementById("mission-progress");
+            const missionNumber = id === "about" ? 1 : id === "projects" ? 2 : id === "skills" ? 3 : id === "arcade" ? 4 : 0;
+            if (missionCount && missionNumber) missionCount.textContent = String(missionNumber).padStart(2, "0") + " / 04";
+            if (missionProgress && missionNumber) missionProgress.style.width = (missionNumber * 25) + "%";
           }
         });
       },
