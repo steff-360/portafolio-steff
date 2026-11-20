@@ -1,17 +1,15 @@
 // ==========================================================================
-// PORTAFOLIO INMERSIVO - STEFANI SÁNCHEZ
+// STEFANI'S QUEST: THE CODE ADVENTURE (VIDEOJUEGO DE ROL PORTAFOLIO)
+// Desarrollado con HTML5 Canvas y Web Audio API nativo
 // ==========================================================================
 
 document.addEventListener("DOMContentLoaded", () => {
-  // 1. AÑO ACTUAL EN FOOTER
-  const yearEl = document.querySelector("#year");
-  if (yearEl) yearEl.textContent = new Date().getFullYear();
-
   // ------------------------------------------------------------------------
-  // 2. SISTEMA DE AUDIO NATIVO (WEB AUDIO API)
+  // 1. SISTEMA DE AUDIO NATIVO CHIPTUNE & SFX (WEB AUDIO API)
   // ------------------------------------------------------------------------
   let audioCtx = null;
-  let sfxEnabled = localStorage.getItem("stefaniSfx") === "true";
+  let sfxEnabled = localStorage.getItem("stefaniQuestSfx") === "true";
+  let bgmInterval = null;
 
   function initAudio() {
     if (!audioCtx) {
@@ -23,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function playTone(freq, type = "sine", duration = 0.1, gainVal = 0.1) {
+  function play8bit(freq, type = "square", duration = 0.08, vol = 0.08) {
     if (!sfxEnabled) return;
     try {
       initAudio();
@@ -32,743 +30,805 @@ document.addEventListener("DOMContentLoaded", () => {
       const gain = audioCtx.createGain();
       osc.type = type;
       osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-      gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
+      gain.gain.setValueAtTime(vol, audioCtx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
       osc.connect(gain);
       gain.connect(audioCtx.destination);
       osc.start();
       osc.stop(audioCtx.currentTime + duration);
-    } catch (e) {
-      // Audio fallback silencioso
+    } catch (e) {}
+  }
+
+  function playBlip() {
+    play8bit(400 + Math.random() * 120, "triangle", 0.04, 0.04);
+  }
+
+  function playChime() {
+    if (!sfxEnabled) return;
+    [523, 659, 784, 1046].forEach((f, i) => {
+      setTimeout(() => play8bit(f, "sine", 0.12, 0.08), i * 60);
+    });
+  }
+
+  function playFanfare() {
+    if (!sfxEnabled) return;
+    [440, 554, 659, 880, 1108].forEach((f, i) => {
+      setTimeout(() => play8bit(f, "square", 0.2, 0.1), i * 90);
+    });
+  }
+
+  // Música chiptune ambiental procedural suave (8-bit arpeggios)
+  function startBgm() {
+    stopBgm();
+    if (!sfxEnabled) return;
+    initAudio();
+    const notes = [261.63, 329.63, 392.00, 523.25, 440.00, 392.00, 329.63, 293.66];
+    let noteIdx = 0;
+    bgmInterval = setInterval(() => {
+      if (!sfxEnabled) { stopBgm(); return; }
+      play8bit(notes[noteIdx], "triangle", 0.15, 0.025);
+      noteIdx = (noteIdx + 1) % notes.length;
+    }, 280);
+  }
+
+  function stopBgm() {
+    if (bgmInterval) {
+      clearInterval(bgmInterval);
+      bgmInterval = null;
     }
   }
 
-  function playHitSound(combo) {
-    const baseFreq = 440;
-    const freq = baseFreq + Math.min(combo * 40, 500);
-    playTone(freq, "triangle", 0.12, 0.15);
+  const audioBtn = document.querySelector("#audio-toggle-btn");
+  const audioIcon = document.querySelector("#audio-icon");
+
+  function updateAudioUI() {
+    if (audioIcon) audioIcon.textContent = sfxEnabled ? "🔊" : "🔇";
+    localStorage.setItem("stefaniQuestSfx", String(sfxEnabled));
+    if (sfxEnabled) startBgm();
+    else stopBgm();
   }
+  updateAudioUI();
 
-  function playMissSound() {
-    playTone(180, "sawtooth", 0.18, 0.12);
-  }
-
-  function playFanfareSound() {
-    if (!sfxEnabled) return;
-    [523.25, 659.25, 783.99, 1046.5].forEach((freq, idx) => {
-      setTimeout(() => playTone(freq, "sine", 0.25, 0.15), idx * 100);
-    });
-  }
-
-  // Toggle de SFX en el header
-  const soundToggle = document.querySelector("#sound-toggle");
-  const soundIcon = document.querySelector("#sound-icon");
-  const gameSoundHint = document.querySelector("#game-sound-hint");
-
-  function updateSoundUI() {
-    if (soundIcon) soundIcon.textContent = sfxEnabled ? "🔊" : "🔇";
-    if (gameSoundHint) gameSoundHint.textContent = sfxEnabled ? "🔊 Efectos de sonido activados" : "🔇 Sonido silenciado (clic en header para activar)";
-    localStorage.setItem("stefaniSfx", String(sfxEnabled));
-  }
-  updateSoundUI();
-
-  if (soundToggle) {
-    soundToggle.addEventListener("click", () => {
+  if (audioBtn) {
+    audioBtn.addEventListener("click", () => {
       sfxEnabled = !sfxEnabled;
+      updateAudioUI();
       if (sfxEnabled) {
-        initAudio();
-        playTone(600, "sine", 0.1, 0.1);
-        showToast("🔊 Efectos de sonido activados");
+        playChime();
+        showToast("🔊 Audio Chiptune y efectos activados");
       } else {
-        showToast("🔇 Efectos de sonido silenciados");
+        showToast("🔇 Audio silenciado");
       }
-      updateSoundUI();
     });
   }
 
-  // ------------------------------------------------------------------------
-  // 3. CAMBIO DE TEMA (MODO OSCURO INMERSIVO / MODO CLARO)
-  // ------------------------------------------------------------------------
-  const themeToggle = document.querySelector("#theme-toggle");
-  const themeIcon = document.querySelector("#theme-icon");
-  const savedTheme = localStorage.getItem("stefaniTheme") || "dark";
-  document.documentElement.setAttribute("data-theme", savedTheme);
-
-  function updateThemeIcon(theme) {
-    if (themeIcon) themeIcon.textContent = theme === "dark" ? "🌙" : "☀️";
-  }
-  updateThemeIcon(savedTheme);
-
-  if (themeToggle) {
-    themeToggle.addEventListener("click", () => {
-      const current = document.documentElement.getAttribute("data-theme");
-      const next = current === "dark" ? "light" : "dark";
-      document.documentElement.setAttribute("data-theme", next);
-      localStorage.setItem("stefaniTheme", next);
-      updateThemeIcon(next);
-      playTone(500, "sine", 0.08, 0.08);
-      showToast(next === "dark" ? "🌙 Modo Inmersivo Oscuro activado" : "☀️ Modo Claro activado");
-    });
-  }
-
-  // ------------------------------------------------------------------------
-  // 4. TOAST NOTIFICATIONS
-  // ------------------------------------------------------------------------
-  const toast = document.querySelector("#toast-notification");
+  // Toast flotante
+  const toast = document.querySelector("#game-toast");
   let toastTimer = null;
-
-  function showToast(message) {
+  function showToast(msg) {
     if (!toast) return;
-    toast.textContent = message;
+    toast.textContent = msg;
     toast.classList.add("is-visible");
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => {
-      toast.classList.remove("is-visible");
-    }, 2800);
+    toastTimer = setTimeout(() => toast.classList.remove("is-visible"), 2600);
   }
 
   // ------------------------------------------------------------------------
-  // 5. BARRA DE PROGRESO DE LECTURA (SCROLL PROGRESS)
+  // 2. MODAL DE AYUDA Y VISTA RÁPIDA / DIARIO DE MISIONES (CV)
   // ------------------------------------------------------------------------
-  const scrollBar = document.querySelector("#scroll-progress");
-  window.addEventListener("scroll", () => {
-    if (!scrollBar) return;
-    const scrollMax = document.documentElement.scrollHeight - window.innerHeight;
-    const progress = scrollMax > 0 ? (window.scrollY / scrollMax) * 100 : 0;
-    scrollBar.style.width = `${progress}%`;
-  }, { passive: true });
+  const viewToggleBtn = document.querySelector("#view-toggle-btn");
+  const questLogDrawer = document.querySelector("#quest-log");
+  const questCloseBtn = document.querySelector("#quest-close");
+  const btnQuickCv = document.querySelector("#btn-quick-cv");
+  const helpBtn = document.querySelector("#help-btn");
+  const helpModal = document.querySelector("#help-modal");
+  const helpClose = document.querySelector("#help-close");
 
-  // ------------------------------------------------------------------------
-  // 6. CURSOR INTERACTIVO CON HALO DE LUZ
-  // ------------------------------------------------------------------------
-  const cursorGlow = document.querySelector("#cursor-glow");
-  if (cursorGlow && window.matchMedia("(pointer: fine)").matches) {
-    let mouseX = window.innerWidth / 2;
-    let mouseY = window.innerHeight / 2;
-    let currentX = mouseX;
-    let currentY = mouseY;
-
-    window.addEventListener("mousemove", (e) => {
-      mouseX = e.clientX;
-      mouseY = e.clientY;
-    }, { passive: true });
-
-    function animateCursor() {
-      currentX += (mouseX - currentX) * 0.15;
-      currentY += (mouseY - currentY) * 0.15;
-      cursorGlow.style.left = `${currentX}px`;
-      cursorGlow.style.top = `${currentY}px`;
-      requestAnimationFrame(animateCursor);
+  function openQuestLog() {
+    if (questLogDrawer) {
+      questLogDrawer.classList.add("is-open");
+      questLogDrawer.setAttribute("aria-hidden", "false");
+      playChime();
     }
-    requestAnimationFrame(animateCursor);
   }
 
-  // ------------------------------------------------------------------------
-  // 7. CANVAS DE FONDO DE CONSTELACIONES Y PARTÍCULAS
-  // ------------------------------------------------------------------------
-  const canvas = document.querySelector("#ambient-canvas");
-  if (canvas) {
-    const ctx = canvas.getContext("2d");
-    let width = (canvas.width = window.innerWidth);
-    let height = (canvas.height = window.innerHeight);
-    const particles = [];
-    const particleCount = Math.min(Math.floor(width / 24), 60);
+  function closeQuestLog() {
+    if (questLogDrawer) {
+      questLogDrawer.classList.remove("is-open");
+      questLogDrawer.setAttribute("aria-hidden", "true");
+    }
+  }
 
-    for (let i = 0; i < particleCount; i++) {
-      particles.push({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.45,
-        vy: (Math.random() - 0.5) * 0.45,
-        radius: Math.random() * 1.8 + 0.8,
-        color: ["#f43f5e", "#38bdf8", "#fbbf24", "#10b981"][Math.floor(Math.random() * 4)]
+  if (viewToggleBtn) viewToggleBtn.addEventListener("click", openQuestLog);
+  if (btnQuickCv) btnQuickCv.addEventListener("click", openQuestLog);
+  if (questCloseBtn) questCloseBtn.addEventListener("click", closeQuestLog);
+
+  if (helpBtn) helpBtn.addEventListener("click", () => {
+    if (helpModal) {
+      helpModal.classList.add("is-open");
+      helpModal.setAttribute("aria-hidden", "false");
+      playChime();
+    }
+  });
+
+  if (helpClose) helpClose.addEventListener("click", () => {
+    if (helpModal) {
+      helpModal.classList.remove("is-open");
+      helpModal.setAttribute("aria-hidden", "true");
+    }
+  });
+
+  // Copiar correo en el diario de misiones
+  const btnCopyEmailCv = document.querySelector("#btn-copy-email-cv");
+  if (btnCopyEmailCv) {
+    btnCopyEmailCv.addEventListener("click", () => {
+      navigator.clipboard.writeText("steff.18random@gmail.com").then(() => {
+        playChime();
+        showToast("✓ Correo copiado: steff.18random@gmail.com");
       });
-    }
-
-    window.addEventListener("resize", () => {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-    }, { passive: true });
-
-    function renderParticles() {
-      ctx.clearRect(0, 0, width, height);
-
-      // Dibujar enlaces
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const dist = Math.hypot(dx, dy);
-          if (dist < 120) {
-            ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `rgba(56, 189, 248, ${0.12 * (1 - dist / 120)})`;
-            ctx.lineWidth = 0.6;
-            ctx.stroke();
-          }
-        }
-      }
-
-      // Dibujar partículas
-      particles.forEach((p) => {
-        p.x += p.vx;
-        p.y += p.vy;
-
-        if (p.x < 0) p.x = width;
-        if (p.x > width) p.x = 0;
-        if (p.y < 0) p.y = height;
-        if (p.y > height) p.y = 0;
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = p.color;
-        ctx.fill();
-      });
-
-      requestAnimationFrame(renderParticles);
-    }
-    renderParticles();
-  }
-
-  // ------------------------------------------------------------------------
-  // 8. EFECTO TYPEWRITER EN EL HERO
-  // ------------------------------------------------------------------------
-  const typewriterEl = document.querySelector("#typewriter-text");
-  if (typewriterEl) {
-    const phrases = [
-      "Desarrollo arquitecturas web interactivas y escalables.",
-      "Especializada en Node.js, Express y PostgreSQL.",
-      "Creo videojuegos web educativos con gamificación real.",
-      "Automatizo con Docker Compose y GitHub Actions."
-    ];
-    let phraseIndex = 0;
-    let charIndex = 0;
-    let isDeleting = false;
-    let typeSpeed = 50;
-
-    function typeLoop() {
-      const currentPhrase = phrases[phraseIndex];
-
-      if (isDeleting) {
-        charIndex--;
-        typewriterEl.textContent = currentPhrase.substring(0, charIndex);
-        typeSpeed = 25;
-      } else {
-        charIndex++;
-        typewriterEl.textContent = currentPhrase.substring(0, charIndex);
-        typeSpeed = 55;
-      }
-
-      if (!isDeleting && charIndex === currentPhrase.length) {
-        isDeleting = true;
-        typeSpeed = 2200; // Pausa al completar la frase
-      } else if (isDeleting && charIndex === 0) {
-        isDeleting = false;
-        phraseIndex = (phraseIndex + 1) % phrases.length;
-        typeSpeed = 400; // Pausa antes de la siguiente
-      }
-
-      setTimeout(typeLoop, typeSpeed);
-    }
-    typeLoop();
-  }
-
-  // ------------------------------------------------------------------------
-  // 9. TARJETA 3D PARALLAX TILT EN FOTO
-  // ------------------------------------------------------------------------
-  const photoContainer = document.querySelector("#photo-container");
-  const photoFrame = document.querySelector("#photo-frame");
-  if (photoContainer && photoFrame) {
-    photoContainer.addEventListener("mousemove", (e) => {
-      const rect = photoContainer.getBoundingClientRect();
-      const x = e.clientX - rect.left - rect.width / 2;
-      const y = e.clientY - rect.top - rect.height / 2;
-      const rotateX = (y / (rect.height / 2)) * -14;
-      const rotateY = (x / (rect.width / 2)) * 14;
-      photoFrame.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
-    });
-
-    photoContainer.addEventListener("mouseleave", () => {
-      photoFrame.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)";
     });
   }
 
   // ------------------------------------------------------------------------
-  // 10. LISTADO Y FILTRO INTERACTIVO DE PROYECTOS
+  // 3. START GAME & PANTALLA DE TÍTULO
   // ------------------------------------------------------------------------
-  const featuredProjects = [
+  const titleScreen = document.querySelector("#title-screen");
+  const btnStartGame = document.querySelector("#btn-start-game");
+  let gameStarted = false;
+
+  function startGame() {
+    gameStarted = true;
+    if (titleScreen) titleScreen.classList.add("is-hidden");
+    initAudio();
+    if (sfxEnabled) startBgm();
+    playFanfare();
+    showToast("⚔️ ¡Aventura iniciada! Explora las 5 zonas");
+  }
+
+  if (btnStartGame) btnStartGame.addEventListener("click", startGame);
+
+  // ------------------------------------------------------------------------
+  // 4. MOTOR DE JUEGO 2D (CANVAS RPG)
+  // ------------------------------------------------------------------------
+  const canvas = document.querySelector("#rpg-canvas");
+  const ctx = canvas.getContext("2d");
+
+  const WORLD_WIDTH = 1280;
+  const WORLD_HEIGHT = 720;
+  canvas.width = WORLD_WIDTH;
+  canvas.height = WORLD_HEIGHT;
+
+  // Estado del jugador (Stefani)
+  const player = {
+    x: 640,
+    y: 420,
+    targetX: 640,
+    targetY: 420,
+    size: 40,
+    speed: 4.8,
+    direction: "down", // 'down', 'up', 'left', 'right'
+    isMoving: false,
+    animFrame: 0,
+    animTimer: 0
+  };
+
+  // 5 Estaciones Interactivas del Mundo
+  const stations = [
     {
-      id: "escape-room",
-      title: "Escape Room Educativo",
-      category: "games",
-      isFeatured: true,
-      accent: "#f43f5e",
-      technologies: ["Node.js", "Express", "PostgreSQL", "Canvas API", "HTML", "CSS"],
-      description: "Videojuego web interactivo de resolución de retos en programación con control de sesiones, roles administrativos y persistencia en base de datos.",
-      githubUrl: "https://github.com/steff-360/escape-room-programacion",
-      liveUrl: "https://steff-360.github.io/escape-room-programacion/",
-      fullDetails: `
-        <h3>Escape Room Educativo: Gamificación en Vivo</h3>
-        <p>Una experiencia web completa diseñada para enseñar lógica de programación mediante desafíos de código en tiempo real.</p>
-        <h4>Arquitectura & Retos Técnicos:</h4>
-        <ul>
-          <li><strong>Backend robusto:</strong> API REST en Node.js y Express con autenticación segura y persistencia de estados de misión.</li>
-          <li><strong>Base de datos relacional:</strong> PostgreSQL con modelado para participantes, equipos, registros de intentos y tiempos récord.</li>
-          <li><strong>Interacción en frontend:</strong> Canvas API y manipulación dinámica del DOM para mecánicas de rompecabezas interactivos.</li>
-        </ul>
-      `
+      id: "academia",
+      title: "ORIGEN: LA ACADEMIA PEDAGÓGICA",
+      subtitle: "Pedagogía + Programación",
+      icon: "🏛️",
+      x: 280,
+      y: 220,
+      width: 140,
+      height: 100,
+      color: "#38bdf8",
+      accent: "#0284c7",
+      dialogue: `
+        <h4>🏛️ Misión 1: El Origen Pedagógico</h4>
+        <p>¡Bienvenida viajera! Mi camino inició en la <strong>Pedagogía</strong>, donde descubrí que enseñar y programar comparten la misma esencia: <em>descomponer problemas complejos en pasos claros y significativos</em>.</p>
+        <p>Hoy aplico esa empatía didáctica para crear interfaces intuitivas, código limpio y experiencias interactivas que realmente conectan con los usuarios.</p>
+      `,
+      actions: [
+        { label: "📜 Ver Historia en Diario", type: "cv" },
+        { label: "Continuar Explorando ↗", type: "close" }
+      ]
     },
     {
-      id: "job-applications",
-      title: "API de gestión de postulaciones",
-      category: "fullstack",
-      isFeatured: true,
-      accent: "#38bdf8",
-      technologies: ["Node.js", "Express", "PostgreSQL", "Jest"],
-      description: "API REST para candidatos, vacantes y postulaciones; calcula puntuación y prioridad e incluye pruebas automatizadas con Jest.",
-      githubUrl: "https://github.com/steff-360/Prueba-diagnostica-/tree/main/job-applications-api",
-      liveUrl: null,
-      fullDetails: `
-        <h3>API REST de Reclutamiento & Gestión de Candidatos</h3>
-        <p>Arquitectura empresarial modular para optimizar procesos de selección mediante algoritmos de priorización ponderada.</p>
-        <h4>Aspectos Clave:</h4>
-        <ul>
-          <li><strong>Pruebas unitarias & integración:</strong> Cobertura exhaustiva con suite automatizada Jest.</li>
-          <li><strong>Control de errores:</strong> Middlewares centralizados y validación estricta de payloads entrantes.</li>
-          <li><strong>Persistencia:</strong> Consultas optimizadas en PostgreSQL con integridad referencial.</li>
-        </ul>
-      `
+      id: "forja",
+      title: "LA FORJA DE CÓDIGO (INVENTARIO)",
+      subtitle: "Arsenal Tecnológico & Stats",
+      icon: "⚡",
+      x: 1000,
+      y: 220,
+      width: 140,
+      height: 100,
+      color: "#fbbf24",
+      accent: "#d97706",
+      dialogue: `
+        <h4>⚡ Arsenal de Habilidades & Equipamiento</h4>
+        <p>Aquí forjo arquitecturas con tecnologías de alto rendimiento:</p>
+        <p>
+          ⚔️ <strong>Node.js & Express:</strong> +95 Backend Power<br>
+          🛡️ <strong>PostgreSQL & SQL:</strong> +90 Persistencia Relacional<br>
+          📜 <strong>JavaScript & TypeScript:</strong> +92 Lógica & Tipado<br>
+          🐳 <strong>Docker & Compose:</strong> +85 Aprovisionamiento Seguro<br>
+          🎯 <strong>Jest:</strong> +88 Pruebas Automatizadas
+        </p>
+      `,
+      actions: [
+        { label: "📜 Abrir Inventario Completo", type: "cv" },
+        { label: "Cerrar Forja", type: "close" }
+      ]
     },
     {
-      id: "techzone",
-      title: "TechZone · Inventario con PostgreSQL",
-      category: "databases",
-      isFeatured: false,
-      accent: "#10b981",
-      technologies: ["PostgreSQL", "SQL", "Docker"],
-      description: "Base de datos relacional para inventario y ventas, con modelo entidad-relación, normalización avanzada, scripts SQL y consultas analíticas.",
-      githubUrl: "https://github.com/steff-360/Examen-postgres",
-      liveUrl: null,
-      fullDetails: `
-        <h3>TechZone: Modelado y Optimización Relacional</h3>
-        <p>Diseño completo de arquitectura relacional para comercio y control de stock tecnológico.</p>
-        <ul>
-          <li>Esquema normalizado hasta Tercera Forma Normal (3FN).</li>
-          <li>Triggers, funciones almacenadas y vistas complejas para reportes de rotación de inventario.</li>
-        </ul>
-      `
+      id: "misiones",
+      title: "SALÓN DE MISIONES (PROYECTOS)",
+      subtitle: "Proyectos Destacados & Dungeons",
+      icon: "🏰",
+      x: 640,
+      y: 160,
+      width: 160,
+      height: 110,
+      color: "#f43f5e",
+      accent: "#e11d48",
+      dialogue: `
+        <h4>🏰 Misión Principal: Escape Room Educativo</h4>
+        <p>Videojuego web interactivo full stack con retos de programación en tiempo real, roles administrativos y base de datos PostgreSQL.</p>
+        <p>Otros proyectos en la bitácora: <em>API de Gestión de Postulaciones (Jest)</em>, <em>TechZone SQL</em>, <em>Algodones Maravilla</em> y <em>CampusLands CLI</em>.</p>
+      `,
+      actions: [
+        { label: "🎮 JUGAR ESCAPE ROOM EN VIVO ↗", type: "link", url: "https://steff-360.github.io/escape-room-programacion/" },
+        { label: "💻 Ver Código en GitHub ↗", type: "link", url: "https://github.com/steff-360/escape-room-programacion" },
+        { label: "📜 Ver Todos los Proyectos", type: "cv" }
+      ]
     },
     {
-      id: "algodones",
-      title: "Algodones Maravilla · La Fábrica",
-      category: "games",
-      isFeatured: false,
-      accent: "#fbbf24",
-      technologies: ["JavaScript", "HTML", "CSS"],
-      description: "Juego arcade interactivo para navegador con niveles dinámicos, sistema de vidas, puntuación progresiva y modo runner adicional.",
-      githubUrl: "https://github.com/steff-360/primera-versi-n",
-      liveUrl: null,
-      fullDetails: `
-        <h3>Algodones Maravilla: Desarrollo de Videojuegos Web</h3>
-        <p>Experiencia arcade responsiva construida con Vanilla JavaScript nativo y renderizado por cuadros por segundo (requestAnimationFrame).</p>
-      `
+      id: "arcade",
+      title: "SALA ARCADE (RETO DE REFLEJOS)",
+      subtitle: "Pausa Creativa de 15 Segundos",
+      icon: "🕹️",
+      x: 280,
+      y: 540,
+      width: 140,
+      height: 100,
+      color: "#a855f7",
+      accent: "#9333ea",
+      dialogue: `
+        <h4>🕹️ Máquina Arcade: Reto de 15 Segundos</h4>
+        <p>¿Tienes reflejos rápidos de programador? Presiona el botón para entrar a la cabina arcade y superar tu récord personal.</p>
+      `,
+      actions: [
+        { label: "🕹️ INSERT COIN / ABRIR ARCADE", type: "arcade" },
+        { label: "Más tarde", type: "close" }
+      ]
     },
     {
-      id: "campuslands-cli",
-      title: "CampusLands CLI ESM",
-      category: "fullstack",
-      isFeatured: false,
-      accent: "#a855f7",
-      technologies: ["JavaScript", "Node.js", "ESM"],
-      description: "Aplicación de consola interactiva para agregar, listar, buscar y gestionar entidades académicas, con persistencia en JSON.",
-      githubUrl: "https://github.com/steff-360/new",
-      liveUrl: null,
-      fullDetails: `
-        <h3>CLI Empresarial en Node.js ESM</h3>
-        <p>Herramienta por línea de comandos interactiva construida bajo el estándar ECMAScript Modules (ESM) para gestión de registros y validaciones.</p>
-      `
-    },
-    {
-      id: "flowers",
-      title: "Animación Web de Flores",
-      category: "games",
-      isFeatured: false,
-      accent: "#f43f5e",
-      technologies: ["HTML", "CSS", "Sass"],
-      description: "Práctica responsive de animación matemática y visual con HTML y CSS/Sass con sincronización de fotogramas clave.",
-      githubUrl: "https://github.com/steff-360/flowers",
-      liveUrl: null,
-      fullDetails: `
-        <h3>Animación Matemática & CSS Keyframes</h3>
-        <p>Exploración de transformaciones 2D y keyframes complejos para renderizado de componentes estéticos de alto rendimiento.</p>
-      `
+      id: "enlace",
+      title: "TORRE DE ENLACE (CONTACTO)",
+      subtitle: "Alianzas & Contratación",
+      icon: "📡",
+      x: 1000,
+      y: 540,
+      width: 140,
+      height: 100,
+      color: "#34d399",
+      accent: "#059669",
+      dialogue: `
+        <h4>📡 Torre de Comunicación Interplanetaria</h4>
+        <p>¡Has llegado al punto de enlace! Estoy lista para unirme a equipos que valoren la innovación, los productos educativos y la arquitectura sólida.</p>
+        <p>📧 <strong>steff.18random@gmail.com</strong></p>
+      `,
+      actions: [
+        { label: "📋 Copiar Correo", type: "copy-email" },
+        { label: "🔗 Abrir LinkedIn ↗", type: "link", url: "https://www.linkedin.com/in/stefani-s%C3%A1nchez-b35b65279" },
+        { label: "💻 Ver GitHub ↗", type: "link", url: "https://github.com/steff-360" }
+      ]
     }
   ];
 
-  const projectGrid = document.querySelector("#project-grid");
-  const filterTabs = document.querySelectorAll(".filter-tab");
-  let activeFilter = "all";
-
-  // Modal elements
-  const modalBackdrop = document.querySelector("#project-modal");
-  const modalBody = document.querySelector("#modal-body");
-  const modalClose = document.querySelector("#modal-close");
-
-  function openProjectModal(project) {
-    if (!modalBackdrop || !modalBody) return;
-    modalBody.innerHTML = `
-      ${project.fullDetails}
-      <div style="margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
-        ${project.liveUrl ? `<a class="project-btn-play" href="${project.liveUrl}" target="_blank" rel="noopener noreferrer">🎮 Probar Demo en Vivo ↗</a>` : ""}
-        <a class="project-link-gh" href="${project.githubUrl}" target="_blank" rel="noopener noreferrer">💻 Ver Código en GitHub ↗</a>
-      </div>
-    `;
-    modalBackdrop.classList.add("is-open");
-    modalBackdrop.setAttribute("aria-hidden", "false");
-    document.body.style.overflow = "hidden";
-  }
-
-  function closeProjectModal() {
-    if (!modalBackdrop) return;
-    modalBackdrop.classList.remove("is-open");
-    modalBackdrop.setAttribute("aria-hidden", "true");
-    document.body.style.overflow = "";
-  }
-
-  if (modalClose) modalClose.addEventListener("click", closeProjectModal);
-  if (modalBackdrop) {
-    modalBackdrop.addEventListener("click", (e) => {
-      if (e.target === modalBackdrop) closeProjectModal();
+  // Partículas mágicas flotantes en el mapa
+  const worldParticles = [];
+  for (let i = 0; i < 40; i++) {
+    worldParticles.push({
+      x: Math.random() * WORLD_WIDTH,
+      y: Math.random() * WORLD_HEIGHT,
+      size: Math.random() * 2 + 1,
+      speedY: -(Math.random() * 0.4 + 0.2),
+      alpha: Math.random() * 0.6 + 0.2
     });
   }
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeProjectModal();
+
+  // Teclado
+  const keys = {};
+  window.addEventListener("keydown", (e) => {
+    keys[e.key.toLowerCase()] = true;
+    if (e.key === " " || e.key === "Enter") {
+      checkInteraction();
+    }
+    if (e.key === "Escape") {
+      closeDialogue();
+      closeArcadeModal();
+      closeQuestLog();
+    }
+  });
+  window.addEventListener("keyup", (e) => {
+    keys[e.key.toLowerCase()] = false;
   });
 
-  function renderProjects() {
-    if (!projectGrid) return;
-    projectGrid.innerHTML = "";
+  // Movimiento por clic o toque en el canvas
+  canvas.addEventListener("pointerdown", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = WORLD_WIDTH / rect.width;
+    const scaleY = WORLD_HEIGHT / rect.height;
+    player.targetX = (e.clientX - rect.left) * scaleX;
+    player.targetY = (e.clientY - rect.top) * scaleY;
+  });
 
-    const filtered = featuredProjects.filter((p) => {
-      if (activeFilter === "all") return true;
-      return p.category === activeFilter;
-    });
+  // Controles D-pad táctiles
+  const btnUp = document.querySelector("#btn-up");
+  const btnDown = document.querySelector("#btn-down");
+  const btnLeft = document.querySelector("#btn-left");
+  const btnRight = document.querySelector("#btn-right");
+  const btnInteract = document.querySelector("#btn-interact");
 
-    filtered.forEach((p, idx) => {
-      const card = document.createElement("article");
-      card.className = "project-card";
-      card.dataset.techs = p.technologies.join(",").toLowerCase();
-      card.style.setProperty("--card-accent", p.accent);
+  function bindTouchBtn(btn, key) {
+    if (!btn) return;
+    btn.addEventListener("pointerdown", (e) => { e.preventDefault(); keys[key] = true; });
+    btn.addEventListener("pointerup", (e) => { e.preventDefault(); keys[key] = false; });
+    btn.addEventListener("pointerleave", (e) => { e.preventDefault(); keys[key] = false; });
+  }
+  bindTouchBtn(btnUp, "arrowup");
+  bindTouchBtn(btnDown, "arrowdown");
+  bindTouchBtn(btnLeft, "arrowleft");
+  bindTouchBtn(btnRight, "arrowright");
+  if (btnInteract) btnInteract.addEventListener("click", checkInteraction);
 
-      card.innerHTML = `
-        <div class="project-card-spotlight"></div>
-        <div class="project-meta">
-          <span class="project-rank">PROYECTO 0${idx + 1}</span>
-          ${p.isFeatured ? '<span class="project-badge-featured">⭐ DESTACADO</span>' : ""}
-        </div>
-        <h3>${p.title}</h3>
-        <p>${p.description}</p>
-        <div class="project-tags">
-          ${p.technologies.map(t => `<span class="project-tag">${t}</span>`).join("")}
-        </div>
-        <div class="project-bottom">
-          <button class="project-link-gh btn-open-modal" type="button" aria-label="Ver detalles de ${p.title}">
-            <span>Detalles</span> <span>🔍</span>
-          </button>
-          <div style="display: flex; gap: 8px;">
-            ${p.liveUrl ? `<a class="project-btn-play" href="${p.liveUrl}" target="_blank" rel="noopener noreferrer">Jugar 🎮</a>` : ""}
-            <a class="project-link-gh" href="${p.githubUrl}" target="_blank" rel="noopener noreferrer" title="Ver repositorio en GitHub">Código ↗</a>
-          </div>
-        </div>
-      `;
+  // Sistema de interacción y diálogo
+  let nearbyStation = null;
+  const zoneBanner = document.querySelector("#zone-banner");
+  const zoneIcon = document.querySelector("#zone-icon");
+  const zoneTitle = document.querySelector("#zone-title");
+  const zoneDesc = document.querySelector("#zone-desc");
+  const interactPrompt = document.querySelector("#interact-prompt");
+  const dialogueBox = document.querySelector("#rpg-dialogue");
+  const dialogueBody = document.querySelector("#dialogue-body");
+  const dialogueActions = document.querySelector("#dialogue-actions");
+  const dialogueClose = document.querySelector("#dialogue-close");
 
-      // Efecto Spotlight 3D en la tarjeta
-      card.addEventListener("mousemove", (e) => {
-        const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        card.style.setProperty("--mouse-x", `${x}px`);
-        card.style.setProperty("--mouse-y", `${y}px`);
-      });
-
-      // Abrir modal con botón de detalles
-      const detailBtn = card.querySelector(".btn-open-modal");
-      if (detailBtn) {
-        detailBtn.addEventListener("click", () => {
-          playTone(620, "sine", 0.08, 0.1);
-          openProjectModal(p);
-        });
+  function checkNearbyStations() {
+    let currentNear = null;
+    stations.forEach((st) => {
+      const centerX = st.x + st.width / 2;
+      const centerY = st.y + st.height / 2;
+      const dist = Math.hypot(player.x - centerX, player.y - centerY);
+      if (dist < 110) {
+        currentNear = st;
       }
-
-      projectGrid.appendChild(card);
     });
+
+    if (currentNear !== nearbyStation) {
+      nearbyStation = currentNear;
+      if (nearbyStation) {
+        zoneIcon.textContent = nearbyStation.icon;
+        zoneTitle.textContent = nearbyStation.title;
+        zoneDesc.textContent = nearbyStation.subtitle;
+        zoneBanner.classList.add("is-visible");
+        interactPrompt.classList.add("is-visible");
+        playBlip();
+      } else {
+        zoneBanner.classList.remove("is-visible");
+        interactPrompt.classList.remove("is-visible");
+      }
+    }
   }
 
-  // Filtrado al hacer clic en pestañas
-  filterTabs.forEach((tab) => {
-    tab.addEventListener("click", () => {
-      filterTabs.forEach(t => {
-        t.classList.remove("is-active");
-        t.setAttribute("aria-selected", "false");
-      });
-      tab.classList.add("is-active");
-      tab.setAttribute("aria-selected", "true");
-      activeFilter = tab.dataset.filter || "all";
-      playTone(450, "sine", 0.08, 0.08);
-      renderProjects();
-    });
-  });
+  function checkInteraction() {
+    if (nearbyStation) {
+      openDialogue(nearbyStation);
+    }
+  }
 
-  renderProjects();
+  function openDialogue(station) {
+    if (!dialogueBox) return;
+    playChime();
+    dialogueBox.classList.add("is-open");
+    dialogueBox.setAttribute("aria-hidden", "false");
 
-  // ------------------------------------------------------------------------
-  // 11. TECH-CONNECT (INTERACCIÓN CON HERRAMIENTAS Y LENGUAJES)
-  // ------------------------------------------------------------------------
-  const techChips = document.querySelectorAll(".tech-chip");
-  const techHintText = document.querySelector("#tech-hint-text");
+    // Escribir texto con efecto typewriter suave
+    dialogueBody.innerHTML = station.dialogue;
 
-  techChips.forEach((chip) => {
-    const techName = chip.dataset.tech.toLowerCase();
+    // Renderizar botones de acción
+    dialogueActions.innerHTML = "";
+    station.actions.forEach((act) => {
+      const btn = document.createElement("button");
+      btn.className = `dialogue-btn ${act.type === "link" || act.type === "arcade" ? "btn-primary-action" : "btn-secondary-action"}`;
+      btn.textContent = act.label;
 
-    chip.addEventListener("mouseenter", () => {
-      chip.classList.add("is-active");
-      playTone(700, "sine", 0.04, 0.03);
-
-      const cards = document.querySelectorAll(".project-card");
-      let matches = 0;
-
-      cards.forEach((card) => {
-        const cardTechs = card.dataset.techs || "";
-        if (cardTechs.includes(techName)) {
-          card.classList.add("is-highlighted");
-          card.classList.remove("is-dimmed");
-          matches++;
-        } else {
-          card.classList.add("is-dimmed");
-          card.classList.remove("is-highlighted");
+      btn.addEventListener("click", () => {
+        if (act.type === "link" && act.url) {
+          window.open(act.url, "_blank");
+        } else if (act.type === "cv") {
+          closeDialogue();
+          openQuestLog();
+        } else if (act.type === "arcade") {
+          closeDialogue();
+          openArcadeModal();
+        } else if (act.type === "copy-email") {
+          navigator.clipboard.writeText("steff.18random@gmail.com").then(() => {
+            playFanfare();
+            showToast("✓ Correo copiado: steff.18random@gmail.com");
+          });
+        } else if (act.type === "close") {
+          closeDialogue();
         }
       });
-
-      if (techHintText) {
-        techHintText.textContent = `⚡ ${matches} proyecto(s) utilizan ${chip.textContent.trim()}.`;
-      }
+      dialogueActions.appendChild(btn);
     });
+  }
 
-    chip.addEventListener("mouseleave", () => {
-      chip.classList.remove("is-active");
-      const cards = document.querySelectorAll(".project-card");
-      cards.forEach((card) => {
-        card.classList.remove("is-highlighted", "is-dimmed");
-      });
-      if (techHintText) {
-        techHintText.textContent = "Pasa el cursor por una tecnología para iluminar proyectos asociados.";
-      }
-    });
-
-    chip.addEventListener("click", () => {
-      // Scroll suave a proyectos
-      const projSec = document.querySelector("#proyectos");
-      if (projSec) projSec.scrollIntoView({ behavior: "smooth" });
-    });
-  });
+  function closeDialogue() {
+    if (dialogueBox) {
+      dialogueBox.classList.remove("is-open");
+      dialogueBox.setAttribute("aria-hidden", "true");
+    }
+  }
+  if (dialogueClose) dialogueClose.addEventListener("click", closeDialogue);
 
   // ------------------------------------------------------------------------
-  // 12. MINIJUEGO DE REFLEJOS POTENCIADO (PAUSA INTERACTIVA)
+  // 5. MINIJUEGO ARCADE INCORPORADO EN LA SALA ARCADE
   // ------------------------------------------------------------------------
-  const gameStartButton = document.querySelector("#game-start");
-  const gameCells = [...document.querySelectorAll(".game-cell")];
-  const gameScore = document.querySelector("#game-score");
-  const gameTime = document.querySelector("#game-time");
-  const gameBest = document.querySelector("#game-best");
-  const gameCombo = document.querySelector("#game-combo");
-  const gameProgress = document.querySelector("#game-progress");
-  const gameMessage = document.querySelector("#game-message");
-  const comboFeedback = document.querySelector("#combo-feedback");
+  const arcadeModal = document.querySelector("#arcade-modal");
+  const arcadeClose = document.querySelector("#arcade-close");
+  const arcadeStartBtn = document.querySelector("#arcade-start-btn");
+  const arcadeBtns = document.querySelectorAll(".arcade-btn");
+  const arcadeScore = document.querySelector("#arcade-score");
+  const arcadeTime = document.querySelector("#arcade-time");
+  const arcadeBest = document.querySelector("#arcade-best");
+  const arcadeCombo = document.querySelector("#arcade-combo");
+  const arcadeMsg = document.querySelector("#arcade-msg");
 
-  // Badges de logros
-  const badgeFirst = document.querySelector("#achieve-first");
-  const badgeCombo = document.querySelector("#achieve-combo");
-  const badgeSpeed = document.querySelector("#achieve-speed");
+  let arcadeTimer = null;
+  let arcadeTargetTimer = null;
+  let arcadeSeconds = 15;
+  let aScore = 0;
+  let aCombo = 0;
+  let aTargetIdx = -1;
+  let arcadeActive = false;
 
-  let gameTimer = null;
-  let targetTimer = null;
-  let gameSeconds = 15;
-  let score = 0;
-  let combo = 0;
-  let maxCombo = 0;
-  let targetIndex = -1;
-  let gameIsActive = false;
-
-  function readBestScore() {
-    try {
-      return Number(localStorage.getItem("stefaniPortfolioBest") || 0);
-    } catch {
-      return 0;
+  function openArcadeModal() {
+    if (arcadeModal) {
+      arcadeModal.classList.add("is-open");
+      arcadeModal.setAttribute("aria-hidden", "false");
+      playChime();
     }
   }
 
-  function clearGameTarget() {
-    gameCells.forEach((cell, index) => {
-      cell.classList.remove("is-target", "is-miss");
-      cell.setAttribute("aria-label", `Casilla ${index + 1}`);
-    });
+  function closeArcadeModal() {
+    if (arcadeModal) {
+      arcadeModal.classList.remove("is-open");
+      arcadeModal.setAttribute("aria-hidden", "true");
+      clearInterval(arcadeTimer);
+      clearInterval(arcadeTargetTimer);
+      arcadeActive = false;
+    }
+  }
+  if (arcadeClose) arcadeClose.addEventListener("click", closeArcadeModal);
+
+  function clearArcadeTarget() {
+    arcadeBtns.forEach(b => b.classList.remove("is-target", "is-miss"));
   }
 
-  function moveGameTarget() {
-    clearGameTarget();
-    const nextIndex = Math.floor(Math.random() * gameCells.length);
-    targetIndex = nextIndex === targetIndex ? (nextIndex + 1) % gameCells.length : nextIndex;
-    gameCells[targetIndex].classList.add("is-target");
-    gameCells[targetIndex].setAttribute("aria-label", `Objetivo, casilla ${targetIndex + 1}`);
+  function moveArcadeTarget() {
+    clearArcadeTarget();
+    const next = Math.floor(Math.random() * arcadeBtns.length);
+    aTargetIdx = next === aTargetIdx ? (next + 1) % arcadeBtns.length : next;
+    arcadeBtns[aTargetIdx].classList.add("is-target");
   }
 
-  function finishMiniGame() {
-    gameIsActive = false;
-    clearInterval(gameTimer);
-    clearInterval(targetTimer);
-    clearGameTarget();
-    targetIndex = -1;
+  function finishArcade() {
+    arcadeActive = false;
+    clearInterval(arcadeTimer);
+    clearInterval(arcadeTargetTimer);
+    clearArcadeTarget();
+    const prevBest = Number(localStorage.getItem("stefaniArcadeBest") || 0);
+    const best = Math.max(prevBest, aScore);
+    localStorage.setItem("stefaniArcadeBest", String(best));
+    arcadeBest.textContent = String(best).padStart(2, "0");
+    arcadeStartBtn.textContent = "INSERT COIN / JUGAR OTRA VEZ";
 
-    const previousBest = readBestScore();
-    const isNewRecord = score > previousBest;
-    const bestScore = Math.max(previousBest, score);
-
-    try {
-      localStorage.setItem("stefaniPortfolioBest", String(bestScore));
-    } catch {}
-
-    gameBest.textContent = String(bestScore).padStart(2, "0");
-    gameStartButton.textContent = "Jugar otra vez";
-
-    if (isNewRecord && score > 0) {
-      gameMessage.textContent = `🎉 ¡NUEVO RÉCORD! Puntuación final: ${score} pts (Max combo x${maxCombo}).`;
-      playFanfareSound();
-      showToast(`🏆 ¡Nuevo récord personal: ${score} puntos!`);
+    if (aScore > prevBest && aScore > 0) {
+      playFanfare();
+      arcadeMsg.textContent = `★ ¡NUEVO RÉCORD: ${aScore} PUNTOS! ★`;
+      showToast(`🏆 ¡Nuevo récord arcade: ${aScore} pts!`);
     } else {
-      gameMessage.textContent = `Partida finalizada. Puntuación: ${score} pts.`;
-      playTone(400, "sine", 0.3, 0.1);
+      arcadeMsg.textContent = `Partida finalizada: ${aScore} pts`;
+      play8bit(300, "sawtooth", 0.2, 0.1);
     }
-
-    if (comboFeedback) comboFeedback.textContent = "Haz clic en empezar para superar tu récord.";
   }
 
-  function startMiniGame() {
-    clearInterval(gameTimer);
-    clearInterval(targetTimer);
-    gameIsActive = true;
-    gameSeconds = 15;
-    score = 0;
-    combo = 0;
-    maxCombo = 0;
-    targetIndex = -1;
+  function startArcade() {
+    clearInterval(arcadeTimer);
+    clearInterval(arcadeTargetTimer);
+    arcadeActive = true;
+    arcadeSeconds = 15;
+    aScore = 0;
+    aCombo = 0;
+    arcadeScore.textContent = "00";
+    arcadeTime.textContent = "15";
+    arcadeCombo.textContent = "x1";
+    arcadeMsg.textContent = "¡Acierta las estrellas!";
+    arcadeStartBtn.textContent = "PARTIDA EN CURSO...";
+    playChime();
+    moveArcadeTarget();
 
-    gameScore.textContent = "00";
-    gameTime.textContent = "15";
-    gameCombo.textContent = "x1";
-    gameProgress.style.width = "100%";
-    gameStartButton.textContent = "Reiniciar partida";
-    gameMessage.textContent = "¡Partida en curso! Concentración total...";
-    if (comboFeedback) comboFeedback.textContent = "¡Acierta casillas seguidas para activar combo!";
-
-    playTone(550, "sine", 0.1, 0.1);
-    moveGameTarget();
-
-    targetTimer = setInterval(moveGameTarget, 720);
-    gameTimer = setInterval(() => {
-      gameSeconds -= 1;
-      gameTime.textContent = String(gameSeconds).padStart(2, "0");
-      gameProgress.style.width = `${(gameSeconds / 15) * 100}%`;
-      if (gameSeconds <= 0) finishMiniGame();
+    arcadeTargetTimer = setInterval(moveArcadeTarget, 740);
+    arcadeTimer = setInterval(() => {
+      arcadeSeconds--;
+      arcadeTime.textContent = String(arcadeSeconds).padStart(2, "0");
+      if (arcadeSeconds <= 0) finishArcade();
     }, 1000);
   }
 
-  if (gameStartButton) gameStartButton.addEventListener("click", startMiniGame);
+  if (arcadeStartBtn) arcadeStartBtn.addEventListener("click", startArcade);
 
-  gameCells.forEach((cell, index) => {
-    cell.addEventListener("click", () => {
-      if (!gameIsActive) return;
-
-      if (index === targetIndex) {
-        combo += 1;
-        if (combo > maxCombo) maxCombo = combo;
-        score += combo >= 3 ? 2 : 1;
-
-        gameScore.textContent = String(score).padStart(2, "0");
-        gameCombo.textContent = `x${combo}`;
-        playHitSound(combo);
-
-        // Feedback de racha
-        if (comboFeedback) {
-          if (combo >= 5) comboFeedback.textContent = `🔥 ¡EN RACHA! Combo x${combo} (+2 pts)`;
-          else if (combo >= 3) comboFeedback.textContent = `⚡ ¡Combo x${combo}! Sigue así`;
-          else comboFeedback.textContent = "✦ ¡Acierto perfecto!";
-        }
-
-        // Desbloquear medallas
-        if (score >= 1 && badgeFirst) badgeFirst.classList.add("is-unlocked");
-        if (combo >= 5 && badgeCombo) badgeCombo.classList.add("is-unlocked");
-        if (score >= 12 && badgeSpeed) badgeSpeed.classList.add("is-unlocked");
-
-        moveGameTarget();
+  arcadeBtns.forEach((btn, idx) => {
+    btn.addEventListener("click", () => {
+      if (!arcadeActive) return;
+      if (idx === aTargetIdx) {
+        aCombo++;
+        aScore += aCombo >= 3 ? 2 : 1;
+        arcadeScore.textContent = String(aScore).padStart(2, "0");
+        arcadeCombo.textContent = `x${aCombo}`;
+        play8bit(440 + aCombo * 50, "square", 0.1, 0.12);
+        moveArcadeTarget();
       } else {
-        combo = 0;
-        gameCombo.textContent = "x1";
-        playMissSound();
-        cell.classList.add("is-miss");
-        setTimeout(() => cell.classList.remove("is-miss"), 200);
-        if (comboFeedback) comboFeedback.textContent = "❌ ¡Fallo! Combo reiniciado";
+        aCombo = 0;
+        arcadeCombo.textContent = "x1";
+        btn.classList.add("is-miss");
+        setTimeout(() => btn.classList.remove("is-miss"), 180);
+        play8bit(160, "sawtooth", 0.15, 0.1);
       }
     });
   });
-
-  if (gameBest) gameBest.textContent = String(readBestScore()).padStart(2, "0");
+  if (arcadeBest) arcadeBest.textContent = String(Number(localStorage.getItem("stefaniArcadeBest") || 0)).padStart(2, "0");
 
   // ------------------------------------------------------------------------
-  // 13. BOTÓN COPIAR CORREO (CONTACTO)
+  // 6. BUCLE PRINCIPAL DE DIBUJADO Y FÍSICAS (RENDER LOOP)
   // ------------------------------------------------------------------------
-  const copyBtn = document.querySelector("#copy-email-btn");
-  if (copyBtn) {
-    copyBtn.addEventListener("click", () => {
-      const email = copyBtn.dataset.email || "steff.18random@gmail.com";
-      navigator.clipboard.writeText(email).then(() => {
-        playTone(750, "triangle", 0.12, 0.1);
-        showToast("✓ Correo copiado al portapapeles: steff.18random@gmail.com");
-        const copyText = document.querySelector("#copy-text");
-        if (copyText) {
-          const original = copyText.textContent;
-          copyText.textContent = "¡Copiado!";
-          setTimeout(() => (copyText.textContent = original), 2000);
+  function updatePlayer() {
+    let dx = 0;
+    let dy = 0;
+
+    // Entrada de teclado
+    if (keys["w"] || keys["arrowup"]) { dy -= 1; player.direction = "up"; }
+    if (keys["s"] || keys["arrowdown"]) { dy += 1; player.direction = "down"; }
+    if (keys["a"] || keys["arrowleft"]) { dx -= 1; player.direction = "left"; }
+    if (keys["d"] || keys["arrowright"]) { dx += 1; player.direction = "right"; }
+
+    if (dx !== 0 || dy !== 0) {
+      player.targetX = player.x;
+      player.targetY = player.y;
+      const mag = Math.hypot(dx, dy);
+      player.x += (dx / mag) * player.speed;
+      player.y += (dy / mag) * player.speed;
+      player.isMoving = true;
+    } else {
+      // Movimiento hacia clic / toque
+      const toX = player.targetX - player.x;
+      const toY = player.targetY - player.y;
+      const dist = Math.hypot(toX, toY);
+
+      if (dist > 4) {
+        player.x += (toX / dist) * player.speed;
+        player.y += (toY / dist) * player.speed;
+        player.isMoving = true;
+
+        if (Math.abs(toX) > Math.abs(toY)) {
+          player.direction = toX > 0 ? "right" : "left";
+        } else {
+          player.direction = toY > 0 ? "down" : "up";
         }
-      }).catch(() => {
-        showToast("steff.18random@gmail.com");
-      });
+      } else {
+        player.isMoving = false;
+      }
+    }
+
+    // Límites del mapa
+    player.x = Math.max(40, Math.min(WORLD_WIDTH - 40, player.x));
+    player.y = Math.max(60, Math.min(WORLD_HEIGHT - 60, player.y));
+
+    // Animación de pasos
+    if (player.isMoving) {
+      player.animTimer++;
+      if (player.animTimer > 8) {
+        player.animFrame = (player.animFrame + 1) % 4;
+        player.animTimer = 0;
+        if (player.animFrame % 2 === 0 && Math.random() < 0.25) playBlip();
+      }
+    } else {
+      player.animFrame = 0;
+    }
+
+    checkNearbyStations();
+  }
+
+  function drawWorld() {
+    // 1. Fondo oscuro con rejilla cibernética
+    ctx.fillStyle = "#070b13";
+    ctx.fillRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+
+    // Rejilla retro suave
+    ctx.strokeStyle = "rgba(30, 58, 95, 0.25)";
+    ctx.lineWidth = 1;
+    const gridSize = 40;
+    for (let x = 0; x < WORLD_WIDTH; x += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, WORLD_HEIGHT);
+      ctx.stroke();
+    }
+    for (let y = 0; y < WORLD_HEIGHT; y += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(WORLD_WIDTH, y);
+      ctx.stroke();
+    }
+
+    // 2. Caminos luminosos entre estaciones
+    ctx.strokeStyle = "rgba(56, 189, 248, 0.2)";
+    ctx.lineWidth = 6;
+    ctx.setLineDash([8, 8]);
+    ctx.beginPath();
+    ctx.moveTo(stations[0].x + 70, stations[0].y + 50);
+    ctx.lineTo(stations[2].x + 80, stations[2].y + 55);
+    ctx.lineTo(stations[1].x + 70, stations[1].y + 50);
+    ctx.lineTo(stations[4].x + 70, stations[4].y + 50);
+    ctx.lineTo(stations[3].x + 70, stations[3].y + 50);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 3. Partículas flotantes
+    worldParticles.forEach((p) => {
+      p.y += p.speedY;
+      if (p.y < 0) p.y = WORLD_HEIGHT;
+      ctx.fillStyle = `rgba(56, 189, 248, ${p.alpha})`;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
     });
-  }
 
-  // ------------------------------------------------------------------------
-  // 14. MENÚ MÓVIL RESPONSIVE
-  // ------------------------------------------------------------------------
-  const menuToggle = document.querySelector(".menu-toggle");
-  const mainMenu = document.querySelector("#main-menu");
+    // 4. Dibujar las 5 Estaciones Temáticas
+    stations.forEach((st) => {
+      const isNear = nearbyStation === st;
 
-  function setMenuOpen(isOpen) {
-    if (!menuToggle || !mainMenu) return;
-    menuToggle.setAttribute("aria-expanded", String(isOpen));
-    menuToggle.setAttribute("aria-label", isOpen ? "Cerrar menú" : "Abrir menú");
-    mainMenu.classList.toggle("is-open", isOpen);
-  }
+      // Resplandor si está cerca
+      if (isNear) {
+        ctx.fillStyle = "rgba(251, 191, 36, 0.15)";
+        ctx.beginPath();
+        ctx.arc(st.x + st.width / 2, st.y + st.height / 2, 85, 0, Math.PI * 2);
+        ctx.fill();
+      }
 
-  if (menuToggle) {
-    menuToggle.addEventListener("click", () => {
-      const isExpanded = menuToggle.getAttribute("aria-expanded") === "true";
-      setMenuOpen(!isExpanded);
+      // Base del edificio / pedestal
+      ctx.fillStyle = "#0c182a";
+      ctx.strokeStyle = isNear ? "#fbbf24" : st.color;
+      ctx.lineWidth = isNear ? 3 : 2;
+      ctx.beginPath();
+      ctx.roundRect(st.x, st.y, st.width, st.height, 10);
+      ctx.fill();
+      ctx.stroke();
+
+      // Techo / cabecera
+      ctx.fillStyle = st.accent;
+      ctx.beginPath();
+      ctx.roundRect(st.x, st.y, st.width, 24, [10, 10, 0, 0]);
+      ctx.fill();
+
+      // Icono de la estación
+      ctx.font = "32px 'Segoe UI Emoji', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(st.icon, st.x + st.width / 2, st.y + 64);
+
+      // Etiqueta de la estación
+      ctx.font = "bold 10px 'IBM Plex Mono', monospace";
+      ctx.fillStyle = isNear ? "#fbbf24" : "#ffffff";
+      ctx.fillText(st.title.split(":")[0], st.x + st.width / 2, st.y + 90);
+
+      // Icono flotante indicador si está cerca
+      if (isNear) {
+        ctx.font = "bold 14px 'Press Start 2P', monospace";
+        ctx.fillStyle = "#fbbf24";
+        const bob = Math.sin(Date.now() / 150) * 4;
+        ctx.fillText("▼", st.x + st.width / 2, st.y - 10 + bob);
+      }
     });
+
+    // 5. Dibujar al Personaje (Stefani) en Pixel/Vector Style
+    drawPlayer();
   }
 
-  if (mainMenu) {
-    mainMenu.addEventListener("click", (e) => {
-      if (e.target.closest("a")) setMenuOpen(false);
-    });
+  function drawPlayer() {
+    ctx.save();
+    ctx.translate(player.x, player.y);
+
+    const bob = player.isMoving ? (player.animFrame % 2 === 0 ? -2 : 2) : 0;
+
+    // Sombra en el suelo
+    ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
+    ctx.beginPath();
+    ctx.ellipse(0, 18, 16, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Piernas animadas
+    ctx.fillStyle = "#1e293b";
+    if (player.isMoving) {
+      const legOffset = player.animFrame === 1 ? -4 : (player.animFrame === 3 ? 4 : 0);
+      ctx.fillRect(-8 + legOffset, 8, 6, 10);
+      ctx.fillRect(2 - legOffset, 8, 6, 10);
+    } else {
+      ctx.fillRect(-7, 8, 5, 10);
+      ctx.fillRect(2, 8, 5, 10);
+    }
+
+    // Torso / Chaqueta de desarrolladora
+    ctx.fillStyle = "#f43f5e"; // Chaqueta coral vibrante
+    ctx.fillRect(-10, -6 + bob, 20, 15);
+
+    // Cuello camisa
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(-3, -6 + bob, 6, 6);
+
+    // Mochila / Laptop backpack
+    ctx.fillStyle = "#0f172a";
+    ctx.fillRect(-12, -4 + bob, 3, 10);
+
+    // Cabeza / Rostro
+    ctx.fillStyle = "#fcd34d"; // Tono piel pixel
+    ctx.fillRect(-8, -20 + bob, 16, 14);
+
+    // Cabello castaño oscuro con coleta
+    ctx.fillStyle = "#3e2723";
+    ctx.fillRect(-9, -24 + bob, 18, 7); // Parte superior
+    ctx.fillRect(-10, -20 + bob, 3, 10); // Lado izquierdo
+    ctx.fillRect(7, -20 + bob, 3, 10); // Lado derecho
+    // Coleta hacia atrás
+    ctx.fillRect(player.direction === "left" ? 6 : -9, -16 + bob, 4, 8);
+
+    // Ojos según dirección
+    ctx.fillStyle = "#0f172a";
+    if (player.direction === "right") {
+      ctx.fillRect(2, -15 + bob, 2, 3);
+      ctx.fillRect(5, -15 + bob, 2, 3);
+    } else if (player.direction === "left") {
+      ctx.fillRect(-6, -15 + bob, 2, 3);
+      ctx.fillRect(-3, -15 + bob, 2, 3);
+    } else if (player.direction === "up") {
+      // De espaldas (solo pelo)
+      ctx.fillStyle = "#3e2723";
+      ctx.fillRect(-8, -20 + bob, 16, 12);
+    } else {
+      // De frente
+      ctx.fillRect(-4, -15 + bob, 2, 3);
+      ctx.fillRect(2, -15 + bob, 2, 3);
+    }
+
+    // Etiqueta del nombre sobre el personaje
+    ctx.font = "bold 9px 'Press Start 2P', monospace";
+    ctx.fillStyle = "#fbbf24";
+    ctx.textAlign = "center";
+    ctx.fillText("STEFANI", 0, -30 + bob);
+
+    ctx.restore();
   }
+
+  function gameLoop() {
+    updatePlayer();
+    drawWorld();
+    requestAnimationFrame(gameLoop);
+  }
+
+  requestAnimationFrame(gameLoop);
 });
