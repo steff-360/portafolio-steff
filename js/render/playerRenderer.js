@@ -307,24 +307,70 @@ function drawPlayer() {
     ctx.fillRect(0.2 * S, -1.02 * S, 0.04 * S, 0.07 * S);
   }
 
-  // 11. GORRA HACIA ATRÁS 3D (Signature Backwards Cap)
-  ctx.fillStyle = sk.h || '#facc15';
-  rr(-0.22 * S, -1.18 * S, 0.44 * S, 0.2 * S, 0.09 * S);
-  ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.lineWidth = Math.max(1, 0.015 * S);
-  ctx.beginPath();
-  ctx.moveTo(0, -1.18 * S); ctx.lineTo(0, -0.99 * S);
-  ctx.moveTo(-0.13 * S, -1.17 * S); ctx.lineTo(-0.09 * S, -1.0 * S);
-  ctx.moveTo(0.13 * S, -1.17 * S); ctx.lineTo(0.09 * S, -1.0 * S);
-  ctx.stroke();
+  // 11. GORRA / PEINADO CARACTERÍSTICO SEGÚN EL PERSONAJE SELECCIONADO
+  if (activeCharId === 'yutani') {
+    // Capucha alienígena verde con antena y ojos marcianos
+    ctx.fillStyle = '#22c55e';
+    rr(-0.24 * S, -1.22 * S, 0.48 * S, 0.26 * S, 0.12 * S);
+    ctx.strokeStyle = '#15803d'; ctx.lineWidth = Math.max(2, 0.03 * S);
+    ctx.beginPath(); ctx.moveTo(0, -1.22 * S); ctx.lineTo(0, -1.34 * S); ctx.stroke();
+    ctx.fillStyle = '#facc15'; ctx.beginPath(); ctx.arc(0, -1.36 * S, 0.045 * S, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(-0.11 * S, -1.24 * S, 0.045 * S, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(0.11 * S, -1.24 * S, 0.045 * S, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#0f172a';
+    ctx.beginPath(); ctx.arc(-0.11 * S, -1.24 * S, 0.025 * S, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(0.11 * S, -1.24 * S, 0.025 * S, 0, Math.PI * 2); ctx.fill();
+  } else if (activeCharId === 'fresh') {
+    // Peinado alto retro afro flat-top y gafas de pasta cuadradas
+    ctx.fillStyle = '#090d16';
+    rr(-0.2 * S, -1.36 * S, 0.4 * S, 0.36 * S, 0.06 * S);
+    ctx.strokeStyle = '#0f172a'; ctx.lineWidth = Math.max(2, 0.032 * S);
+    ctx.strokeRect(-0.16 * S, -1.07 * S, 0.13 * S, 0.09 * S);
+    ctx.strokeRect(0.03 * S, -1.07 * S, 0.13 * S, 0.09 * S);
+    ctx.beginPath(); ctx.moveTo(-0.03 * S, -1.03 * S); ctx.lineTo(0.03 * S, -1.03 * S); ctx.stroke();
+  } else if (activeCharId === 'tricky') {
+    // Gorro beanie rosa fucsia y coletas rubias doradas
+    ctx.fillStyle = '#ec4899';
+    rr(-0.23 * S, -1.22 * S, 0.46 * S, 0.22 * S, 0.09 * S);
+    ctx.fillStyle = '#db2777';
+    rr(-0.25 * S, -1.08 * S, 0.5 * S, 0.07 * S, 0.03 * S);
+    var pSway = Math.sin(tRun * 1.5) * 0.03 * S;
+    ctx.fillStyle = '#facc15';
+    ctx.beginPath(); ctx.ellipse(-0.25 * S, -0.92 * S + pSway, 0.06 * S, 0.14 * S, -0.3, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(0.25 * S, -0.92 * S - pSway, 0.06 * S, 0.14 * S, 0.3, 0, Math.PI * 2); ctx.fill();
+  } else {
+    // Gorra hacia atrás clásica (Stefani / Jake)
+    ctx.fillStyle = sk.h || '#facc15';
+    rr(-0.22 * S, -1.18 * S, 0.44 * S, 0.2 * S, 0.09 * S);
+    ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.lineWidth = Math.max(1, 0.015 * S);
+    ctx.beginPath();
+    ctx.moveTo(0, -1.18 * S); ctx.lineTo(0, -0.99 * S);
+    ctx.moveTo(-0.13 * S, -1.17 * S); ctx.lineTo(-0.09 * S, -1.0 * S);
+    ctx.moveTo(0.13 * S, -1.17 * S); ctx.lineTo(0.09 * S, -1.0 * S);
+    ctx.stroke();
 
-  ctx.fillStyle = sk.star ? '#16a34a' : '#ffd23f';
-  ctx.beginPath(); ctx.arc(0, -1.19 * S, 0.032 * S, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = sk.star ? '#16a34a' : '#ffd23f';
+    ctx.beginPath(); ctx.arc(0, -1.19 * S, 0.032 * S, 0, Math.PI * 2); ctx.fill();
 
-  // Visera trasera plana (verde en Star Outfit)
-  ctx.fillStyle = 'rgba(0,0,0,.3)';
-  ctx.fillRect(-0.29 * S, -1.07 * S, 0.17 * S, 0.06 * S);
-  ctx.fillStyle = sk.star ? '#16a34a' : (sk.h || '#00d2b4');
-  rr(-0.31 * S, -1.1 * S, 0.17 * S, 0.05 * S, 0.02 * S);
+    // Visera trasera plana (verde en Star Outfit)
+    ctx.fillStyle = 'rgba(0,0,0,.3)';
+    ctx.fillRect(-0.29 * S, -1.07 * S, 0.17 * S, 0.06 * S);
+    ctx.fillStyle = sk.star ? '#16a34a' : (sk.h || '#00d2b4');
+    rr(-0.31 * S, -1.1 * S, 0.17 * S, 0.05 * S, 0.02 * S);
+
+    // Coleta castaña de Stefani
+    if (activeCharId === 'stefani') {
+      var ponySway = Math.sin(tRun * 1.6) * 0.04 * S;
+      ctx.fillStyle = sk.hair || '#2c1810';
+      ctx.beginPath();
+      ctx.moveTo(-0.04 * S, -0.98 * S);
+      ctx.quadraticCurveTo(-0.25 * S + ponySway, -0.92 * S, -0.22 * S + ponySway, -0.78 * S);
+      ctx.quadraticCurveTo(-0.14 * S + ponySway, -0.86 * S, -0.04 * S, -0.94 * S);
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
 
   // 12. OJOS Y ROSTRO
   if (sk.visor) {
