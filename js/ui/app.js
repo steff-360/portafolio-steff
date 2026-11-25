@@ -273,21 +273,14 @@ function draw() {
   drawBG();
   drawTrack();
 
-  // Ordenar entidades por Z (profundidad)
-  ents.sort(function (a, b) { return b.z - a.z; });
+  // Ordenar entidades por profundidad (delante del runner y detrás)
+  var far = ents.filter(function (e) { return e.z >= 0; }).sort(function (a, b) { return b.z - a.z; });
+  var near = ents.filter(function (e) { return e.z < 0; }).sort(function (a, b) { return b.z - a.z; });
 
-  var playerDrawn = false;
-  for (var i = 0; i < ents.length; i++) {
-    var e = ents[i];
-    if (!playerDrawn && e.z < 0.2) {
-      drawPlayer();
-      playerDrawn = true;
-    }
-    drawEnt(e);
-  }
-  if (!playerDrawn) drawPlayer();
-
+  far.forEach(drawEnt);
+  drawPlayer();
   drawInspector();
+  near.forEach(drawEnt);
   drawSpeedLines();
   drawFx();
 
