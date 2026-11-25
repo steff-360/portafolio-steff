@@ -638,6 +638,10 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
   function resumeGame() { if (state !== 'pause') return; state = 'play'; showFor('play'); musicStart(); blurAll(); }
   function gameOver() {
     state = 'over'; musicStop(); sfx('whistle');
+    inspector.active = true;
+    inspector.dist = 0.22;
+    inspector.lane = P.lane + 0.35;
+    inspector.timer = 20;
     var sc = score(), isBest = sc > best;
     if (isBest) { best = sc; try { localStorage.setItem('subwaydev-best', String(best)); } catch (e) {} }
     var n = found.filter(Boolean).length;
@@ -1090,6 +1094,17 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
       poly([[sn, y1 - 0.95 * unit * p1], [sf, y2 - 0.95 * unit * p2], [sf, y2 - 1.5 * unit * p2], [sn, y1 - 1.5 * unit * p1]], 'rgba(12,20,26,.85)');
       poly([[sn, y1 - 1.0 * unit * p1], [sf, y2 - 1.0 * unit * p2], [sf, y2 - 1.45 * unit * p2], [sn, y1 - 1.45 * unit * p1]], 'rgba(255,205,115,' + (0.1 + pal.lamp * 0.28) + ')');
       poly([[sn, y1 - 0.35 * unit * p1], [sf, y2 - 0.35 * unit * p2], [sf, y2 - 0.45 * unit * p2], [sn, y1 - 0.45 * unit * p1]], 'rgba(244,239,230,.5)');
+      if (e.z > -1 && e.z < 20) {
+        var pMid = (p1 + p2) / 2;
+        var tagMidX = (sn + sf) / 2, tagMidY = (y1 + y2) / 2 - 0.72 * unit * pMid;
+        ctx.save();
+        ctx.fillStyle = '#ffd23f';
+        ctx.font = '800 ' + Math.max(8, 0.3 * unit * pMid) + 'px Bungee, Impact, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('SUBWAY DEV', tagMidX, tagMidY);
+        ctx.restore();
+      }
     }
     poly([[x1l, y1t], [x1r, y1t], [x2r, y2t], [x2l, y2t]], c.t);
     poly([[sx(e.lane - 0.12, p1), y1t], [sx(e.lane + 0.12, p1), y1t], [sx(e.lane + 0.12, p2), y2t], [sx(e.lane - 0.12, p2), y2t]], 'rgba(0,0,0,.18)');
@@ -1310,11 +1325,13 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
     }
   }
   function drawInspector() {
-    if (!inspector.active || inspector.dist > 5.0) return;
+    if (!inspector.active) return;
+    if (state !== 'over' && inspector.dist > 3.6) return;
     var z = -inspector.dist;
     var p = F / (F + z);
     var ix = sx(inspector.lane, p), iy = sy(p);
     var S = unit * p;
+    if (state !== 'over' && (iy - 1.4 * S) > H) return;
     var runTime = time * 15;
     var legSw = Math.sin(runTime);
 
