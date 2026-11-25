@@ -1,583 +1,270 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#050810">
-  <meta name="description" content="Stefani Sánchez — Full Stack Developer, EdTech & Gamificación. Node.js, PostgreSQL, TypeScript, Docker.">
-  <title>Stefani Sánchez · Full Stack Developer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#070b14">
+  <meta name="description" content="Stefani Sánchez — Portafolio Interactivo estilo Subway Surfers. Full Stack Developer, EdTech & Gamificación.">
+  <title>Stefani Sánchez · Subway Code Runner</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@300;400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
 
-  <!-- PANTALLA DE CARGA CINEMATOGRÁFICA -->
-  <div class="loader" id="loader">
-    <div class="loader-inner">
-      <div class="loader-logo-wrap">
-        <span class="loader-logo">SS<span class="loader-dot">.</span></span>
+  <!-- CANVAS PRINCIPAL DEL JUEGO (SUBWAY RUNNER 3D PERSPECTIVA) -->
+  <canvas id="game-canvas"></canvas>
+
+  <!-- HUD SUPERIOR SIEMPRE VISIBLE -->
+  <header class="hud-top">
+    <div class="hud-brand">
+      <img src="./Captura%20de%20pantalla%202026-09-18%20150116.png" alt="Stefani Sánchez" class="hud-avatar">
+      <div class="hud-brand-text">
+        <span class="hud-name">STEFANI SÁNCHEZ</span>
+        <span class="hud-role">Full Stack · EdTech</span>
       </div>
-      <div class="loader-bar-wrap">
-        <div class="loader-bar" id="loader-bar"></div>
+    </div>
+
+    <div class="hud-stats" id="hud-stats">
+      <div class="hud-pill">
+        <span class="pill-lbl">DIST</span>
+        <strong id="hud-dist">0m</strong>
       </div>
-      <span class="loader-label" id="loader-label">Inicializando experiencia...</span>
-      <span class="loader-percent" id="loader-percent">0%</span>
+      <div class="hud-pill">
+        <span class="pill-lbl">COINS</span>
+        <strong id="hud-coins">0</strong>
+      </div>
+      <div class="hud-pill hud-pill-mult">
+        <span class="pill-lbl">MULT</span>
+        <strong id="hud-mult">x1</strong>
+      </div>
+      <div class="hud-pill hud-pill-best">
+        <span class="pill-lbl">RÉCORD</span>
+        <strong id="hud-best">0</strong>
+      </div>
+    </div>
+
+    <div class="hud-actions">
+      <button class="hud-btn" id="theme-toggle" type="button" title="Cambiar modo Claro / Oscuro" aria-label="Cambiar modo Claro / Oscuro">
+        <span class="icon-dark">🌙</span>
+        <span class="icon-light">☀️</span>
+      </button>
+      <button class="hud-btn" id="sound-toggle" type="button" title="Sonido" aria-label="Activar o silenciar sonido">
+        <span id="sound-icon">🔊</span>
+      </button>
+      <button class="hud-btn hud-btn-pause" id="pause-btn" type="button" title="Pausar" aria-label="Pausar juego">
+        ⏸
+      </button>
+      <button class="hud-btn hud-btn-portfolio" id="open-portfolio-btn" type="button">
+        📂 Portafolio <span class="unlock-badge" id="unlock-count">0/6</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- BARRA DE PROGRESO DE ESTACIÓN / SIGUIENTE PROYECTO -->
+  <div class="station-progress" id="station-progress">
+    <div class="sp-info">
+      <span class="sp-label" id="sp-label">🚇 Próxima estación: Escape Room Programación</span>
+      <span class="sp-meters" id="sp-meters">100m</span>
+    </div>
+    <div class="sp-track">
+      <div class="sp-fill" id="sp-fill"></div>
     </div>
   </div>
 
-  <!-- CURSOR PERSONALIZADO -->
-  <div class="cursor-dot" id="cursor-dot"></div>
-  <div class="cursor-ring" id="cursor-ring"></div>
+  <!-- POWER-UP ACTIVO HUD -->
+  <div class="powerup-hud" id="powerup-hud" aria-live="polite"></div>
 
-  <!-- CANVAS DE FONDO INTERACTIVO (p5aholic style) -->
-  <canvas id="bg-canvas" aria-hidden="true"></canvas>
-
-  <!-- BARRA DE PROGRESO DE SCROLL -->
-  <div class="scroll-progress-bar" id="scroll-bar"></div>
-
-  <!-- NAVEGACIÓN -->
-  <nav class="nav" id="nav">
-    <a class="nav-logo" href="#hero">SS<span>.</span></a>
-    <ul class="nav-links">
-      <li><a href="#about"><span>01.</span>Sobre mí</a></li>
-      <li><a href="#projects"><span>02.</span>Proyectos</a></li>
-      <li><a href="#skills"><span>03.</span>Habilidades</a></li>
-      <li><a href="#contact"><span>04.</span>Contacto</a></li>
-    </ul>
-    <a class="nav-cta" href="https://www.linkedin.com/in/stefani-s%C3%A1nchez-b35b65279" target="_blank" rel="noopener noreferrer">
-      Hablemos <span aria-hidden="true">↗</span>
-    </a>
-    <button class="nav-menu-btn" id="nav-menu-btn" type="button" aria-label="Abrir menú">
-      <span></span><span></span>
-    </button>
-  </nav>
-
-  <!-- MENÚ MÓVIL -->
-  <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
-    <ul>
-      <li><a href="#about">01. Sobre mí</a></li>
-      <li><a href="#projects">02. Proyectos</a></li>
-      <li><a href="#skills">03. Habilidades</a></li>
-      <li><a href="#contact">04. Contacto</a></li>
-      <li><a href="https://www.linkedin.com/in/stefani-s%C3%A1nchez-b35b65279" target="_blank">LinkedIn ↗</a></li>
-    </ul>
+  <!-- NOTIFICACIÓN FLOTANTE DE DESBLOQUEO -->
+  <div class="unlock-toast" id="unlock-toast" role="status" aria-live="polite">
+    <div class="ut-icon" id="ut-icon">🚀</div>
+    <div class="ut-body">
+      <span class="ut-tag" id="ut-tag">PROYECTO DESBLOQUEADO</span>
+      <strong class="ut-title" id="ut-title">Escape Room Programación</strong>
+      <p class="ut-sub" id="ut-sub">Presiona 📂 Portafolio para verlo en detalle</p>
+    </div>
   </div>
 
-  <main>
+  <!-- CONTROLES TÁCTILES EN MÓVIL / OPCIONAL -->
+  <div class="touch-controls" id="touch-controls">
+    <button class="tc-btn" id="tc-left" type="button" aria-label="Izquierda">◀</button>
+    <div class="tc-mid">
+      <button class="tc-btn" id="tc-up" type="button" aria-label="Saltar">▲</button>
+      <button class="tc-btn" id="tc-down" type="button" aria-label="Deslizarse">▼</button>
+    </div>
+    <button class="tc-btn" id="tc-right" type="button" aria-label="Derecha">▶</button>
+  </div>
 
-    <!-- ==================== HERO ==================== -->
-    <section class="hero" id="hero">
-      <div class="hero-content">
-        <p class="hero-eyebrow reveal-fade">
-          <span class="eyebrow-bracket">[</span>
-          Full Stack Developer · EdTech · Gamificación
-          <span class="eyebrow-bracket">]</span>
-        </p>
-
-        <h1 class="hero-title">
-          <span class="title-line"><span class="line-inner reveal-up">STEFANI</span></span>
-          <span class="title-line"><span class="line-inner reveal-up" style="animation-delay:.12s">SÁNCHEZ<span class="title-dot">.</span></span></span>
-        </h1>
-
-        <p class="hero-desc reveal-fade" style="animation-delay:.35s">
-          Construyo software donde la <strong>arquitectura robusta</strong> y la <strong>gamificación educativa</strong> se fusionan en experiencias que conectan con las personas y resuelven problemas reales.
-        </p>
-
-        <div class="hero-actions reveal-fade" style="animation-delay:.5s">
-          <a class="btn-primary" href="#projects">Explorar proyectos <span>→</span></a>
-          <a class="btn-secondary" href="#contact">Contáctame</a>
+  <!-- PANTALLA DE INICIO (OVERLAY) -->
+  <div class="overlay is-active" id="start-overlay">
+    <div class="overlay-card start-card">
+      <div class="hero-badge">🎮 PORTAFOLIO INTERACTIVO · SUBWAY EDITION</div>
+      <div class="start-profile">
+        <div class="avatar-ring">
+          <img src="./Captura%20de%20pantalla%202026-09-18%20150116.png" alt="Stefani Sánchez">
         </div>
-
-        <div class="hero-tags reveal-fade" style="animation-delay:.65s" aria-label="Stack principal">
-          <span class="htag">Node.js</span>
-          <span class="htag">PostgreSQL</span>
-          <span class="htag">TypeScript</span>
-          <span class="htag">Docker</span>
-          <span class="htag">Jest</span>
-          <span class="htag">Express</span>
+        <div>
+          <h1 class="start-title">STEFANI <span>SÁNCHEZ</span></h1>
+          <p class="start-subtitle">Full Stack Developer · EdTech & Gamificación</p>
         </div>
       </div>
 
-      <div class="hero-visual reveal-fade" style="animation-delay:.2s">
-        <div class="photo-orbit">
-          <div class="orbit-ring o-ring-1"></div>
-          <div class="orbit-ring o-ring-2"></div>
-          <div class="orbit-ring o-ring-3"></div>
-          <div class="photo-frame">
-            <img src="./Captura%20de%20pantalla%202026-09-18%20150116.png" alt="Stefani Sánchez, Desarrolladora Full Stack" width="400" height="500">
-            <div class="photo-shine"></div>
-          </div>
-          <!-- Badges orbitales animados -->
-          <div class="orbit-badge ob-1"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nodejs/nodejs-original.svg" alt="Node.js" width="20"><span>Node.js</span></div>
-          <div class="orbit-badge ob-2"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/postgresql/postgresql-original.svg" alt="PostgreSQL" width="20"><span>PostgreSQL</span></div>
-          <div class="orbit-badge ob-3">🎮<span>Gamificación</span></div>
-          <div class="orbit-badge ob-4"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/docker/docker-original.svg" alt="Docker" width="20"><span>Docker</span></div>
-        </div>
+      <p class="start-desc">
+        ¡Corre por las vías del código! Esquiva trenes y barreras, recolecta habilidades (<span class="hl-cyan">Node.js</span>, <span class="hl-gold">PostgreSQL</span>, <span class="hl-coral">Docker</span>) y desbloquea mis <strong>6 proyectos reales</strong> en cada estación.
+      </p>
 
-        <div class="hero-stats">
-          <div class="stat-pill">
-            <span class="stat-n" data-count="6">0</span>
-            <span class="stat-l">Proyectos</span>
-          </div>
-          <div class="stat-pill">
-            <span class="stat-n" data-count="12">0</span>
-            <span class="stat-l">Tecnologías</span>
-          </div>
-          <div class="stat-pill">
-            <span class="stat-n" data-count="100">0</span>
-            <span class="stat-l">% Dedicación</span>
-          </div>
-        </div>
+      <div class="controls-guide">
+        <div class="cg-item"><kbd>←</kbd><kbd>→</kbd> <span>Carril</span></div>
+        <div class="cg-item"><kbd>↑</kbd> / <kbd>Espacio</kbd> <span>Saltar</span></div>
+        <div class="cg-item"><kbd>↓</kbd> <span>Deslizar</span></div>
+        <div class="cg-item"><kbd>Swipe</kbd> <span>En móvil</span></div>
       </div>
 
-      <!-- Scroll indicator -->
-      <div class="scroll-cue" aria-hidden="true">
-        <div class="scroll-cue-line"></div>
-        <span>scroll</span>
-      </div>
-    </section>
-
-    <!-- MARQUEE DE TECNOLOGÍAS (Separador entre secciones) -->
-    <div class="tech-marquee" aria-hidden="true">
-      <div class="marquee-track">
-        <span>Node.js</span><span>·</span>
-        <span>PostgreSQL</span><span>·</span>
-        <span>TypeScript</span><span>·</span>
-        <span>Express</span><span>·</span>
-        <span>Docker</span><span>·</span>
-        <span>Jest</span><span>·</span>
-        <span>Python</span><span>·</span>
-        <span>SQL</span><span>·</span>
-        <span>GitHub Actions</span><span>·</span>
-        <span>Canvas API</span><span>·</span>
-        <span>REST APIs</span><span>·</span>
-        <span>MongoDB</span><span>·</span>
-        <span>Node.js</span><span>·</span>
-        <span>PostgreSQL</span><span>·</span>
-        <span>TypeScript</span><span>·</span>
-        <span>Express</span><span>·</span>
-        <span>Docker</span><span>·</span>
-        <span>Jest</span><span>·</span>
-        <span>Python</span><span>·</span>
-        <span>SQL</span><span>·</span>
-        <span>GitHub Actions</span><span>·</span>
-        <span>Canvas API</span><span>·</span>
-        <span>REST APIs</span><span>·</span>
-        <span>MongoDB</span><span>·</span>
+      <div class="start-buttons">
+        <button class="btn-play" id="start-btn" type="button">
+          ▶ ¡CORRER AHORA!
+        </button>
+        <button class="btn-secondary" id="start-portfolio-btn" type="button">
+          📂 Ver Portafolio Directo
+        </button>
       </div>
     </div>
+  </div>
 
-    <!-- ==================== SOBRE MÍ ==================== -->
-    <section class="section about-section" id="about">
-      <div class="section-wrap">
-        <div class="section-label reveal-fade">01. SOBRE MÍ</div>
-        <div class="about-grid">
-          <div class="about-left">
-            <h2 class="section-title reveal-up">
-              Código con<br><span class="text-gradient">propósito.</span>
-            </h2>
-            <p class="about-body reveal-fade">
-              Soy Stefani — desarrolladora full stack con formación en <strong>Pedagogía y Tecnologías de la Información</strong>. Esta combinación me da una perspectiva única: entiendo tanto la arquitectura técnica como la experiencia del usuario que aprende con ella.
+  <!-- PANTALLA DE PAUSA -->
+  <div class="overlay" id="pause-overlay">
+    <div class="overlay-card small-card">
+      <h2>⏸ JUEGO EN PAUSA</h2>
+      <p>Tómate un respiro o revisa los proyectos que ya desbloqueaste.</p>
+      <div class="start-buttons">
+        <button class="btn-play" id="resume-btn" type="button">▶ Continuar</button>
+        <button class="btn-secondary" id="pause-portfolio-btn" type="button">📂 Abrir Portafolio</button>
+        <button class="btn-ghost" id="restart-from-pause-btn" type="button">↻ Reiniciar carrera</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANTALLA GAME OVER -->
+  <div class="overlay" id="gameover-overlay">
+    <div class="overlay-card gameover-card">
+      <div class="go-badge" id="go-badge">💥 ¡FIN DE LA CARRERA!</div>
+      <h2 class="go-title" id="go-title">¡Buen recorrido!</h2>
+
+      <div class="go-stats">
+        <div class="go-stat">
+          <span>PUNTUACIÓN</span>
+          <strong id="go-score">0</strong>
+        </div>
+        <div class="go-stat">
+          <span>DISTANCIA</span>
+          <strong id="go-dist">0m</strong>
+        </div>
+        <div class="go-stat">
+          <span>MONEDAS</span>
+          <strong id="go-coins">0</strong>
+        </div>
+        <div class="go-stat">
+          <span>PROYECTOS</span>
+          <strong id="go-projects">0/6</strong>
+        </div>
+      </div>
+
+      <div class="start-buttons">
+        <button class="btn-play" id="retry-btn" type="button">↻ VOLVER A CORRER</button>
+        <button class="btn-secondary" id="go-portfolio-btn" type="button">📂 Ver Portafolio Completo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL INTERACTIVO DEL PORTAFOLIO (DRAWER / MODAL) -->
+  <aside class="portfolio-modal" id="portfolio-modal" aria-hidden="true">
+    <div class="pm-backdrop" id="pm-backdrop"></div>
+    <div class="pm-sheet">
+      <div class="pm-header">
+        <div class="pm-title-wrap">
+          <img src="./Captura%20de%20pantalla%202026-09-18%20150116.png" alt="Stefani Sánchez" class="pm-avatar">
+          <div>
+            <h2>Stefani Sánchez</h2>
+            <p>Full Stack Developer · EdTech & Gamificación</p>
+          </div>
+        </div>
+        <div class="pm-header-actions">
+          <button class="hud-btn" id="pm-theme-toggle" type="button" title="Cambiar tema">
+            <span class="icon-dark">🌙</span>
+            <span class="icon-light">☀️</span>
+          </button>
+          <button class="pm-close" id="pm-close" type="button" aria-label="Cerrar portafolio">✕</button>
+        </div>
+      </div>
+
+      <!-- TABS DEL PORTAFOLIO -->
+      <div class="pm-tabs" role="tablist">
+        <button class="pm-tab is-active" data-tab="projects" type="button">🚀 Proyectos</button>
+        <button class="pm-tab" data-tab="skills" type="button">⚡ Habilidades</button>
+        <button class="pm-tab" data-tab="about" type="button">👩‍💻 Sobre mí</button>
+        <button class="pm-tab" data-tab="contact" type="button">📬 Contacto</button>
+      </div>
+
+      <div class="pm-content">
+        <!-- TAB PROYECTOS -->
+        <section class="pm-pane is-active" id="tab-projects">
+          <div class="pm-pane-head">
+            <p>Desbloquea proyectos corriendo en las vías o explóralos todos aquí directamente.</p>
+            <button class="btn-unlock-all" id="unlock-all-btn" type="button">🔓 Desbloquear todos</button>
+          </div>
+          <div class="pm-projects-grid" id="pm-projects-grid"></div>
+        </section>
+
+        <!-- TAB HABILIDADES -->
+        <section class="pm-pane" id="tab-skills">
+          <p class="pm-intro">Stack técnico recolectado en las vías del desarrollo Full Stack:</p>
+          <div class="pm-skills-grid" id="pm-skills-grid"></div>
+        </section>
+
+        <!-- TAB SOBRE MÍ -->
+        <section class="pm-pane" id="tab-about">
+          <div class="pm-about-card">
+            <h3>Construyendo software con propósito y juego</h3>
+            <p>
+              Soy <strong>Stefani Sánchez</strong>, desarrolladora Full Stack apasionada por crear experiencias digitales que combinan <strong>arquitectura sólida</strong> con <strong>diseño interactivo</strong>.
             </p>
-            <p class="about-body reveal-fade">
-              Especializada en construir APIs robustas, videojuegos web educativos y flujos de desarrollo automatizados. Creo que el mejor software es el que <em>no se siente como software</em>.
+            <p>
+              Me especializo en backend con <strong>Node.js, PostgreSQL y TypeScript</strong>, APIs REST, testing con Jest y contenedores Docker. Además, diseño experiencias de <strong>gamificación educativa</strong> porque creo firmemente que aprender puede sentirse como un videojuego.
             </p>
-            <div class="about-links reveal-fade">
-              <a href="https://github.com/steff-360" target="_blank" rel="noopener noreferrer" class="about-link">GitHub ↗</a>
-              <a href="https://www.linkedin.com/in/stefani-s%C3%A1nchez-b35b65279" target="_blank" rel="noopener noreferrer" class="about-link">LinkedIn ↗</a>
+            <div class="pm-values">
+              <div class="pm-val"><span>⚡</span><strong>Performance</strong><small>APIs rápidas y código limpio</small></div>
+              <div class="pm-val"><span>🎮</span><strong>Gamificación</strong><small>EdTech memorable</small></div>
+              <div class="pm-val"><span>🐳</span><strong>DevOps</strong><small>Docker y entornos reproducibles</small></div>
+              <div class="pm-val"><span>🧠</span><strong>Arquitectura</strong><small>Sistemas escalables</small></div>
             </div>
           </div>
-          <div class="about-right">
-            <div class="value-cards">
-              <div class="value-card reveal-up" style="--delay:.1s">
-                <div class="vc-icon">🧠</div>
-                <h3>Pedagogía + Código</h3>
-                <p>Diseño interfaces intuitivas y código limpio aplicando empatía didáctica que transforma lo técnico en comprensible.</p>
-              </div>
-              <div class="value-card reveal-up" style="--delay:.2s">
-                <div class="vc-icon">⚡</div>
-                <h3>Backend & APIs</h3>
-                <p>Arquitecturas REST modulares con Node.js, Express, autenticación segura y persistencia relacional en PostgreSQL.</p>
-              </div>
-              <div class="value-card reveal-up" style="--delay:.3s">
-                <div class="vc-icon">🎮</div>
-                <h3>Gamificación</h3>
-                <p>Mecánicas de juego integradas en entornos educativos: retos, niveles, puntuación y feedback inmediato que engancha.</p>
-              </div>
+        </section>
+
+        <!-- TAB CONTACTO -->
+        <section class="pm-pane" id="tab-contact">
+          <div class="pm-contact-box">
+            <h3>¿Construimos algo increíble?</h3>
+            <p>Disponible para equipos de desarrollo innovadores, proyectos EdTech o retos Full Stack.</p>
+            <div class="pm-email-row">
+              <span>steff.18random@gmail.com</span>
+              <button class="btn-copy" id="copy-email-btn" type="button">📋 Copiar</button>
+            </div>
+            <div class="pm-social-row">
+              <a href="https://github.com/steff-360" target="_blank" rel="noopener noreferrer" class="pm-social-btn">
+                GitHub ↗
+              </a>
+              <a href="https://www.linkedin.com/in/stefani-s%C3%A1nchez-b35b65279" target="_blank" rel="noopener noreferrer" class="pm-social-btn pm-social-primary">
+                LinkedIn ↗
+              </a>
             </div>
           </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ==================== PROYECTOS (vanholtz style) ==================== -->
-    <section class="section projects-section" id="projects">
-      <div class="section-wrap">
-        <div class="section-label reveal-fade">02. PROYECTOS</div>
-        <h2 class="section-title reveal-up">
-          Trabajo <span class="text-gradient">seleccionado.</span>
-        </h2>
-
-        <!-- Preview flotante que sigue el cursor (vanholtz style) -->
-        <div class="project-preview" id="project-preview" aria-hidden="true">
-          <div class="preview-inner" id="preview-inner"></div>
-        </div>
-
-        <div class="projects-list">
-
-          <article class="project-row reveal-up"
-            data-preview-color="linear-gradient(135deg,#f43f5e22,#f43f5e55)"
-            data-preview-label="🏰 Escape Room"
-            style="--delay:.05s">
-            <div class="pr-left">
-              <span class="pr-num">01</span>
-              <div class="pr-info">
-                <span class="pr-category">Full Stack · Game Dev</span>
-                <h3 class="pr-title">Escape Room Educativo</h3>
-                <p class="pr-desc">Videojuego web interactivo full stack con retos de programación, control de sesiones, roles de administración y base de datos PostgreSQL.</p>
-                <div class="pr-tags">
-                  <span>Node.js</span><span>Express</span><span>PostgreSQL</span><span>Canvas API</span><span>GitHub Actions</span>
-                </div>
-              </div>
-            </div>
-            <div class="pr-right">
-              <div class="pr-links">
-                <a class="pr-link-play" href="https://steff-360.github.io/escape-room-programacion/" target="_blank" rel="noopener noreferrer">🎮 Demo en vivo ↗</a>
-                <a class="pr-link-code" href="https://github.com/steff-360/escape-room-programacion" target="_blank" rel="noopener noreferrer">Código ↗</a>
-              </div>
-            </div>
-          </article>
-
-          <article class="project-row reveal-up"
-            data-preview-color="linear-gradient(135deg,#06b6d422,#06b6d455)"
-            data-preview-label="⚡ API REST"
-            style="--delay:.1s">
-            <div class="pr-left">
-              <span class="pr-num">02</span>
-              <div class="pr-info">
-                <span class="pr-category">Backend · Testing</span>
-                <h3 class="pr-title">API de Gestión de Postulaciones</h3>
-                <p class="pr-desc">API REST con algoritmos de puntuación ponderada, cobertura con Jest e integración continua. Arquitectura modular y validación estricta.</p>
-                <div class="pr-tags">
-                  <span>Node.js</span><span>Express</span><span>PostgreSQL</span><span>Jest</span>
-                </div>
-              </div>
-            </div>
-            <div class="pr-right">
-              <div class="pr-links">
-                <a class="pr-link-code" href="https://github.com/steff-360/Prueba-diagnostica-/tree/main/job-applications-api" target="_blank" rel="noopener noreferrer">Código ↗</a>
-              </div>
-            </div>
-          </article>
-
-          <article class="project-row reveal-up"
-            data-preview-color="linear-gradient(135deg,#10b98122,#10b98155)"
-            data-preview-label="🗄️ SQL & DB"
-            style="--delay:.15s">
-            <div class="pr-left">
-              <span class="pr-num">03</span>
-              <div class="pr-info">
-                <span class="pr-category">Bases de Datos · SQL</span>
-                <h3 class="pr-title">TechZone · Inventario PostgreSQL</h3>
-                <p class="pr-desc">Base de datos relacional normalizada hasta 3FN para comercio y almacén. Triggers, funciones almacenadas y consultas analíticas avanzadas.</p>
-                <div class="pr-tags">
-                  <span>PostgreSQL</span><span>SQL</span><span>Docker</span>
-                </div>
-              </div>
-            </div>
-            <div class="pr-right">
-              <div class="pr-links">
-                <a class="pr-link-code" href="https://github.com/steff-360/Examen-postgres" target="_blank" rel="noopener noreferrer">Código ↗</a>
-              </div>
-            </div>
-          </article>
-
-          <article class="project-row reveal-up"
-            data-preview-color="linear-gradient(135deg,#f59e0b22,#f59e0b55)"
-            data-preview-label="🕹️ Arcade Game"
-            style="--delay:.2s">
-            <div class="pr-left">
-              <span class="pr-num">04</span>
-              <div class="pr-info">
-                <span class="pr-category">Game Dev · Frontend</span>
-                <h3 class="pr-title">Algodones Maravilla · La Fábrica</h3>
-                <p class="pr-desc">Juego arcade responsivo para navegador con niveles progresivos, sistema de vidas, partículas animadas y modo runner alternativo.</p>
-                <div class="pr-tags">
-                  <span>JavaScript</span><span>HTML5</span><span>CSS3</span>
-                </div>
-              </div>
-            </div>
-            <div class="pr-right">
-              <div class="pr-links">
-                <a class="pr-link-code" href="https://github.com/steff-360/primera-versi-n" target="_blank" rel="noopener noreferrer">Código ↗</a>
-              </div>
-            </div>
-          </article>
-
-          <article class="project-row reveal-up"
-            data-preview-color="linear-gradient(135deg,#c084fc22,#c084fc55)"
-            data-preview-label="📟 CLI Tool"
-            style="--delay:.25s">
-            <div class="pr-left">
-              <span class="pr-num">05</span>
-              <div class="pr-info">
-                <span class="pr-category">CLI · Herramienta</span>
-                <h3 class="pr-title">CampusLands CLI ESM</h3>
-                <p class="pr-desc">Aplicación de consola interactiva bajo ECMAScript Modules para gestión y catalogación académica con persistencia en JSON.</p>
-                <div class="pr-tags">
-                  <span>JavaScript</span><span>Node.js</span><span>ESM</span>
-                </div>
-              </div>
-            </div>
-            <div class="pr-right">
-              <div class="pr-links">
-                <a class="pr-link-code" href="https://github.com/steff-360/new" target="_blank" rel="noopener noreferrer">Código ↗</a>
-              </div>
-            </div>
-          </article>
-
-          <article class="project-row reveal-up"
-            data-preview-color="linear-gradient(135deg,#f43f5e22,#c084fc44)"
-            data-preview-label="🐳 DevOps"
-            style="--delay:.3s">
-            <div class="pr-left">
-              <span class="pr-num">06</span>
-              <div class="pr-info">
-                <span class="pr-category">DevOps · Infraestructura</span>
-                <h3 class="pr-title">Infraestructura Docker & Supabase</h3>
-                <p class="pr-desc">Aprovisionamiento de backend local con Docker Compose, orquestación de bases de datos y configuración de Supabase para entornos de desarrollo.</p>
-                <div class="pr-tags">
-                  <span>Docker</span><span>Docker Compose</span><span>Supabase</span><span>PostgreSQL</span>
-                </div>
-              </div>
-            </div>
-            <div class="pr-right">
-              <div class="pr-links">
-                <a class="pr-link-code" href="https://github.com/steff-360/stefani-supabase-local-alcore-config" target="_blank" rel="noopener noreferrer">Código ↗</a>
-              </div>
-            </div>
-          </article>
-
-        </div>
-      </div>
-    </section>
-
-    <!-- MARQUEE SEPARADOR #2 -->
-    <div class="tech-marquee marquee-reverse" aria-hidden="true">
-      <div class="marquee-track">
-        <span>Escape Room</span><span>·</span>
-        <span>REST API</span><span>·</span>
-        <span>Gamificación</span><span>·</span>
-        <span>EdTech</span><span>·</span>
-        <span>Full Stack</span><span>·</span>
-        <span>Open Source</span><span>·</span>
-        <span>Testing</span><span>·</span>
-        <span>CI/CD</span><span>·</span>
-        <span>Escape Room</span><span>·</span>
-        <span>REST API</span><span>·</span>
-        <span>Gamificación</span><span>·</span>
-        <span>EdTech</span><span>·</span>
-        <span>Full Stack</span><span>·</span>
-        <span>Open Source</span><span>·</span>
-        <span>Testing</span><span>·</span>
-        <span>CI/CD</span><span>·</span>
+        </section>
       </div>
     </div>
+  </aside>
 
-    <!-- ==================== HABILIDADES ==================== -->
-    <section class="section skills-section" id="skills">
-      <div class="section-wrap">
-        <div class="section-label reveal-fade">03. HABILIDADES</div>
-        <h2 class="section-title reveal-up">
-          Arsenal <span class="text-gradient">tecnológico.</span>
-        </h2>
-        <div class="skills-grid">
-          <div class="skill-category reveal-up" style="--delay:.05s">
-            <h3 class="skill-cat-title">Backend & APIs</h3>
-            <div class="skill-bars">
-              <div class="skill-bar-row" data-level="94">
-                <div class="sb-info"><span>Node.js / Express</span><span class="sb-pct">94%</span></div>
-                <div class="sb-track"><div class="sb-fill" style="--accent:#f43f5e"></div></div>
-              </div>
-              <div class="skill-bar-row" data-level="90">
-                <div class="sb-info"><span>REST APIs</span><span class="sb-pct">90%</span></div>
-                <div class="sb-track"><div class="sb-fill" style="--accent:#f43f5e"></div></div>
-              </div>
-              <div class="skill-bar-row" data-level="85">
-                <div class="sb-info"><span>TypeScript</span><span class="sb-pct">85%</span></div>
-                <div class="sb-track"><div class="sb-fill" style="--accent:#f43f5e"></div></div>
-              </div>
-              <div class="skill-bar-row" data-level="88">
-                <div class="sb-info"><span>Jest / Testing</span><span class="sb-pct">88%</span></div>
-                <div class="sb-track"><div class="sb-fill" style="--accent:#f43f5e"></div></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="skill-category reveal-up" style="--delay:.15s">
-            <h3 class="skill-cat-title">Bases de Datos</h3>
-            <div class="skill-bars">
-              <div class="skill-bar-row" data-level="92">
-                <div class="sb-info"><span>PostgreSQL</span><span class="sb-pct">92%</span></div>
-                <div class="sb-track"><div class="sb-fill" style="--accent:#06b6d4"></div></div>
-              </div>
-              <div class="skill-bar-row" data-level="88">
-                <div class="sb-info"><span>MySQL / SQL</span><span class="sb-pct">88%</span></div>
-                <div class="sb-track"><div class="sb-fill" style="--accent:#06b6d4"></div></div>
-              </div>
-              <div class="skill-bar-row" data-level="78">
-                <div class="sb-info"><span>MongoDB / NoSQL</span><span class="sb-pct">78%</span></div>
-                <div class="sb-track"><div class="sb-fill" style="--accent:#06b6d4"></div></div>
-              </div>
-              <div class="skill-bar-row" data-level="82">
-                <div class="sb-info"><span>Supabase</span><span class="sb-pct">82%</span></div>
-                <div class="sb-track"><div class="sb-fill" style="--accent:#06b6d4"></div></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="skill-category reveal-up" style="--delay:.25s">
-            <h3 class="skill-cat-title">DevOps & Herramientas</h3>
-            <div class="skill-bars">
-              <div class="skill-bar-row" data-level="85">
-                <div class="sb-info"><span>Docker / Compose</span><span class="sb-pct">85%</span></div>
-                <div class="sb-track"><div class="sb-fill" style="--accent:#10b981"></div></div>
-              </div>
-              <div class="skill-bar-row" data-level="90">
-                <div class="sb-info"><span>Git / GitHub</span><span class="sb-pct">90%</span></div>
-                <div class="sb-track"><div class="sb-fill" style="--accent:#10b981"></div></div>
-              </div>
-              <div class="skill-bar-row" data-level="80">
-                <div class="sb-info"><span>GitHub Actions</span><span class="sb-pct">80%</span></div>
-                <div class="sb-track"><div class="sb-fill" style="--accent:#10b981"></div></div>
-              </div>
-              <div class="skill-bar-row" data-level="75">
-                <div class="sb-info"><span>Python</span><span class="sb-pct">75%</span></div>
-                <div class="sb-track"><div class="sb-fill" style="--accent:#10b981"></div></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="skill-category reveal-up" style="--delay:.35s">
-            <h3 class="skill-cat-title">Frontend & Game Dev</h3>
-            <div class="skill-bars">
-              <div class="skill-bar-row" data-level="92">
-                <div class="sb-info"><span>JavaScript (ES6+)</span><span class="sb-pct">92%</span></div>
-                <div class="sb-track"><div class="sb-fill" style="--accent:#f59e0b"></div></div>
-              </div>
-              <div class="skill-bar-row" data-level="88">
-                <div class="sb-info"><span>HTML5 / CSS3 / Sass</span><span class="sb-pct">88%</span></div>
-                <div class="sb-track"><div class="sb-fill" style="--accent:#f59e0b"></div></div>
-              </div>
-              <div class="skill-bar-row" data-level="82">
-                <div class="sb-info"><span>Canvas API / GameDev</span><span class="sb-pct">82%</span></div>
-                <div class="sb-track"><div class="sb-fill" style="--accent:#f59e0b"></div></div>
-              </div>
-              <div class="skill-bar-row" data-level="70">
-                <div class="sb-info"><span>Flutter</span><span class="sb-pct">70%</span></div>
-                <div class="sb-track"><div class="sb-fill" style="--accent:#f59e0b"></div></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ==================== PAUSA ARCADE ==================== -->
-    <section class="arcade-section" id="arcade">
-      <div class="arcade-top">
-        <div class="arcade-label">PAUSA INTERACTIVA</div>
-        <h2 class="arcade-title">Pon a prueba<br><span>tus reflejos.</span></h2>
-        <p class="arcade-desc">15 segundos. Combo multiplicador. ¿Puedes superar la marca?</p>
-      </div>
-
-      <div class="arcade-wrap">
-        <div class="arcade-controls">
-          <div class="ac-stat"><span>PUNTOS</span><strong id="g-score">00</strong></div>
-          <div class="ac-stat"><span>TIEMPO</span><strong><span id="g-time">15</span>s</strong></div>
-          <div class="ac-stat"><span>RÉCORD</span><strong id="g-best">00</strong></div>
-          <div class="ac-stat"><span>COMBO</span><strong id="g-combo" class="combo-active">x1</strong></div>
-        </div>
-
-        <div class="arcade-progress-bar" aria-hidden="true"><span id="g-bar"></span></div>
-
-        <div class="arcade-board" id="g-board" role="group" aria-label="Tablero de reflejos">
-          <button class="ac-cell" type="button" aria-label="Casilla 1"></button>
-          <button class="ac-cell" type="button" aria-label="Casilla 2"></button>
-          <button class="ac-cell" type="button" aria-label="Casilla 3"></button>
-          <button class="ac-cell" type="button" aria-label="Casilla 4"></button>
-          <button class="ac-cell" type="button" aria-label="Casilla 5"></button>
-          <button class="ac-cell" type="button" aria-label="Casilla 6"></button>
-          <button class="ac-cell" type="button" aria-label="Casilla 7"></button>
-          <button class="ac-cell" type="button" aria-label="Casilla 8"></button>
-          <button class="ac-cell" type="button" aria-label="Casilla 9"></button>
-        </div>
-
-        <div class="arcade-footer">
-          <button class="arcade-start-btn" id="g-start" type="button">▶ INICIAR PARTIDA</button>
-          <p class="arcade-msg" id="g-msg" aria-live="polite">Haz clic para comenzar el reto</p>
-        </div>
-
-        <div class="achievements">
-          <span class="ach" id="ach-first" title="Primer acierto">🎯</span>
-          <span class="ach" id="ach-combo" title="Combo ×5">🔥</span>
-          <span class="ach" id="ach-pro" title="Más de 12 puntos">⚡</span>
-          <span class="ach" id="ach-record" title="Nuevo récord">🏆</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- ==================== CONTACTO ==================== -->
-    <section class="contact-section" id="contact">
-      <div class="section-wrap contact-wrap">
-        <div class="contact-left">
-          <div class="section-label reveal-fade">04. CONTACTO</div>
-          <h2 class="contact-title reveal-up">
-            ¿Construimos<br><span class="text-gradient">algo increíble?</span>
-          </h2>
-          <p class="contact-desc reveal-fade">
-            Estoy disponible para sumarme a equipos de desarrollo innovadores, proyectos de EdTech o retos full stack desafiantes. Escríbeme, respondo rápido.
-          </p>
-          <div class="contact-links reveal-fade">
-            <a class="contact-social" href="https://github.com/steff-360" target="_blank" rel="noopener noreferrer">
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/github/github-original.svg" alt="" width="20"> GitHub ↗
-            </a>
-            <a class="contact-social" href="https://www.linkedin.com/in/stefani-s%C3%A1nchez-b35b65279" target="_blank" rel="noopener noreferrer">
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/linkedin/linkedin-original.svg" alt="" width="20"> LinkedIn ↗
-            </a>
-          </div>
-        </div>
-
-        <div class="contact-right reveal-fade">
-          <div class="email-card">
-            <span class="email-label">Correo electrónico</span>
-            <span class="email-address" id="email-display">steff.18random@gmail.com</span>
-            <button class="copy-btn" id="copy-btn" type="button" data-email="steff.18random@gmail.com">
-              <span id="copy-icon">📋</span>
-              <span id="copy-label">Copiar</span>
-            </button>
-          </div>
-          <a class="contact-cta-btn" href="https://www.linkedin.com/in/stefani-s%C3%A1nchez-b35b65279" target="_blank" rel="noopener noreferrer">
-            Enviar mensaje en LinkedIn ↗
-          </a>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- FOOTER -->
-  <footer class="footer">
-    <div class="footer-inner">
-      <span class="footer-logo">SS<span>.</span></span>
-      <span class="footer-copy">© <span id="year"></span> Stefani Sánchez · Diseñado y construido con intención.</span>
-      <a class="footer-top" href="#hero" aria-label="Volver al inicio">↑</a>
-    </div>
-  </footer>
-
-  <!-- TOAST -->
+  <!-- TOAST GENERAL -->
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="./script.js" defer></script>
