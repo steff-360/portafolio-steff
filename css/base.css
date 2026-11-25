@@ -1,0 +1,26 @@
+/* Estética inspirada fielmente en Subway Surfers: trenes escalables, power-ups, misiones de letras, hoverboards por doble tap */
+:root {
+  --ink: #0b1319;
+  --ink-2: #14232d;
+  --lamp: #ffd23f;
+  --signal: #ff3b30;
+  --teal: #00d2b4;
+  --paper: #f7f4ec;
+  --mute: #8fa5b4;
+  --subway-blue: #0077cc;
+  --jetpack-purple: #9d4edd;
+  --shoes-orange: #ff9100;
+  --display: 'Bungee', 'Impact', sans-serif;
+  --body: 'Barlow', system-ui, sans-serif;
+  --cond: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  position: relative; margin: 0; background: var(--ink); color: var(--paper);
+  font-family: var(--body); overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none;
+}
+#game { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.vig { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 48%, transparent 52%, rgba(5, 10, 14, .65)); }
