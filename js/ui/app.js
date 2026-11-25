@@ -211,11 +211,17 @@ function initInputListeners() {
   cv.addEventListener('pointermove', function (e) {
     if (!swiping || state !== 'play') return;
     var dx = e.clientX - x0, dy = e.clientY - y0;
-    if (Math.max(Math.abs(dx), Math.abs(dy)) < 26) return;
-    if (Math.abs(dx) > Math.abs(dy)) moveLane(dx > 0 ? 1 : -1);
-    else if (dy < 0) jump();
-    else slide();
-    swiping = false;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < 24) return;
+    if (Math.abs(dx) > Math.abs(dy)) {
+      moveLane(dx > 0 ? 1 : -1);
+    } else if (dy < 0) {
+      jump();
+    } else {
+      slide();
+    }
+    // Reanclar coordenadas para permitir encadenar swipes seguidos con fluidez
+    x0 = e.clientX;
+    y0 = e.clientY;
   });
 
   cv.addEventListener('pointerup', function () { swiping = false; });
