@@ -7,7 +7,7 @@ var W = 0, H = 0, cx = 0, horizon = 0, groundY = 0, unit = 0;
 var F = 19.2, ZFAR = 44, PN = 1.25;
 
 function sx(x, p) { return cx + (x - camX) * unit * p; }
-function sy(p) { return horizon + (groundY - horizon) * p; }
+function sy(p) { return horizon + (groundY - horizon) * p + camY * unit * p; }
 
 function poly(pts, fill) {
   if (pts.length < 3) return;
@@ -82,12 +82,12 @@ function jump() {
   if (state !== 'play') return;
   var onSurface = (P.y <= 0.08) || (P.onTrain && P.y <= 1.98);
   if (onSurface || P.jumpBuf > 0) {
-    var jumpPower = pw.sneakers > 0 ? 20.5 : 15.5;
+    var jumpPower = pw.sneakers > 0 ? 17.5 : 13.5;
     P.vy = jumpPower;
     P.jumpBuf = 0;
     P.slide = 0;
     sfx('jump');
-    emit(sx(P.x, 1), groundY - P.y * unit, 6, { s: 80, up: 40, g: 200, l: 0.3, r: 2.5, c: '#ffd23f' });
+    emit(sx(P.x, 1), sy(1) - P.y * unit, 6, { s: 80, up: 40, g: 200, l: 0.3, r: 2.5, c: '#ffd23f' });
   } else {
     P.jumpBuf = 0.2;
   }
@@ -167,8 +167,9 @@ function spawnRow(z, safe) {
   } else if (rowType === 'coins') {
     var cLane = Math.floor(Math.random() * 3) - 1;
     var count = 4 + Math.floor(Math.random() * 4);
+    var coinY = pw.jetpack > 0 ? 2.2 : 0.2;
     for (var ci = 0; ci < count; ci++) {
-      ents.push({ t: 'coin', lane: cLane, z: z + ci * 1.5, y: 0.2 });
+      ents.push({ t: 'coin', lane: cLane, z: z + ci * 1.5, y: coinY });
     }
     return count * 1.5 + 4;
   } else {
@@ -201,7 +202,7 @@ function spawnRow(z, safe) {
 
 function crash(e) {
   e.ghost = true;
-  var px = sx(P.x, 1), py = groundY - (P.y + 0.5) * unit;
+  var px = sx(P.x, 1), py = sy(1) - (P.y + 0.5) * unit;
   if (pw.shield > 0) {
     pw.shield = 0;
     P.inv = 1.3;
@@ -296,13 +297,22 @@ function update(dt) {
   // Movimiento lateral fluido y reactivo de runner 3D
   P.x += (P.lane - P.x) * Math.min(1, dt * 20);
 
+  // Cámara aérea dinámica: eleva suavemente el encuadre al volar o saltar para nunca perder al personaje de vista
+  var targetCamY = 0;
+  if (pw.jetpack > 0) {
+    targetCamY = 1.35;
+  } else if (P.y > 0.35) {
+    targetCamY = (P.y - 0.35) * 0.72;
+  }
+  camY += (targetCamY - camY) * Math.min(1, dt * 10);
+
   // Física vertical (Jetpack vs gravedad)
   if (pw.jetpack > 0) {
-    P.y += (3.2 - P.y) * Math.min(1, dt * 6);
+    P.y += (2.2 - P.y) * Math.min(1, dt * 6);
     P.vy = 0;
     P.onTrain = false;
   } else {
-    P.vy -= 42 * dt; // Gravedad
+    P.vy -= 38 * dt; // Gravedad
     P.y += P.vy * dt;
 
     var floorY = P.onTrain ? 1.9 : 0;
@@ -430,7 +440,7 @@ function update(dt) {
 }
 
 function reset() {
-  P.lane = 0; P.x = 0; P.y = 0; P.vy = 0; P.slide = 0; P.inv = 0; P.jumpBuf = 0; P.onTrain = false; P.run = 0;
+  P.lane = 0; P.x = 0; P.y = 0; P.vy = 0; P.slide = 0; P.inv = 0; P.jumpBuf = 0; P.onTrain = false; P.run = 0; camY = 0;
   dist = 0; speed = 14; coins = 0; mult = 1; streak = 0; lives = 1;
   pw.magnet = 0; pw.x2 = 0; pw.shield = 0; pw.jetpack = 0; pw.sneakers = 0;
   inspector.active = true; inspector.dist = 0.9; inspector.lane = 0; inspector.timer = 5.0;

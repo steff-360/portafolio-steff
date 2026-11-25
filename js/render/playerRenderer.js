@@ -7,11 +7,11 @@
 function drawPlayer() {
   var S = unit;
   var px = sx(P.x, 1);
-  var py = groundY - P.y * S;
+  var py = sy(1) - P.y * S;
   var sk = getActiveOutfit();
 
   // 1. SOMBRA 3D EN EL PISO O TECHO DEL TREN
-  var shadowFloor = groundY - (P.onTrain ? 1.9 * S : 0);
+  var shadowFloor = sy(1) - (P.onTrain ? 1.9 * S : 0);
   var heightAboveFloor = Math.max(0, P.y - (P.onTrain ? 1.9 : 0));
   var shadowScale = Math.max(0.3, 1.0 - heightAboveFloor * 0.35);
   ctx.fillStyle = 'rgba(10, 16, 22, 0.42)';
@@ -78,7 +78,7 @@ function drawPlayer() {
     ctx.translate(0, 0.22 * S);
     ctx.scale(1.08, 0.62);
     if (state === 'play') {
-      emit(px + (Math.random() - 0.5) * 20, groundY - (P.onTrain ? 1.9 : 0) * S, 1, { s: 60, up: 15, g: 140, l: 0.25, r: 2.2, c: '#ffd23f' });
+      emit(px + (Math.random() - 0.5) * 20, shadowFloor, 1, { s: 60, up: 15, g: 140, l: 0.25, r: 2.2, c: '#ffd23f' });
     }
   }
 
@@ -419,7 +419,7 @@ function drawPlayer() {
 
   // Auras activas de power-ups
   if (pw.shield > 0) {
-    var cyy = groundY - (P.y + 0.55) * S;
+    var cyy = sy(1) - (P.y + 0.55) * S;
     ctx.strokeStyle = 'rgba(0,210,180,' + (0.55 + 0.25 * Math.sin(time * 8)) + ')';
     ctx.lineWidth = Math.max(2, S * 0.04);
     ctx.fillStyle = 'rgba(0,210,180,.12)';
@@ -428,6 +428,6 @@ function drawPlayer() {
   if (pw.magnet > 0) {
     ctx.strokeStyle = 'rgba(255,107,74,' + (0.35 + 0.35 * Math.sin(time * 10)) + ')';
     ctx.lineWidth = 2.5;
-    ctx.beginPath(); ctx.arc(px, groundY - (P.y + 0.55) * S, S * (0.8 + 0.18 * ((time * 2) % 1)), 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(px, sy(1) - (P.y + 0.55) * S, S * (0.8 + 0.18 * ((time * 2) % 1)), 0, Math.PI * 2); ctx.stroke();
   }
 }

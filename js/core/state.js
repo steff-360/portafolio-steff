@@ -178,7 +178,7 @@ var WORD = ['S', 'T', 'E', 'F', 'F'];
 var collectedLetters = [false, false, false, false, false];
 
 // Efectos de cámara y pantalla
-var flash = 0, shake = 0, freeze = 0, scroll = 0, time = 0, camX = 0;
+var flash = 0, shake = 0, freeze = 0, scroll = 0, time = 0, camX = 0, camY = 0;
 var reduce = false;
 try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
 
