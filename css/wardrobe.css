@@ -531,3 +531,12 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
   .pip .full { display: none; } .pip .n { display: inline; }
   .pip, .sbtn { font-size: 13px; padding: 5px 9px; }
 }
+@media (max-width: 420px) {
+  .ss-screen { width: 100vw; max-width: 100vw; height: 100dvh; max-height: 100dvh; border-radius: 0; }
+  .ss-top-bar { padding: 6px 8px; gap: 4px; }
+  .ss-pill { padding: 2px 5px; font-size: 11px; }
+  .ss-pill-add { width: 16px; height: 16px; font-size: 10px; }
+  .ss-top-right { gap: 4px; }
+  .ss-bottom-nav { padding-bottom: max(12px, env(safe-area-inset-bottom, 0px)); }
+  .ss-nav-btn { font-size: 10px; padding: 6px 4px; }
+}
