@@ -128,7 +128,7 @@ function drawOver(e) {
 }
 
 // -------------------------------------------------------------
-// MONEDAS 3D CON ESTRELLA DORADA (SUBWAY SURFERS REAL COIN - IMAGE 2)
+// MONEDAS 3D CON ESTRELLA DORADA (METRO DEV COIN 3D)
 // -------------------------------------------------------------
 function drawCoin(e) {
   var z = Math.max(e.z, -0.3), p = F / (F + z), x = sx(e.lane, p), y = sy(p) - e.y * unit * p, r = 0.19 * unit * p;
@@ -173,7 +173,7 @@ function drawCoin(e) {
   ctx.ellipse(x, y, w * 0.82, r * 0.82, 0, 0, 6.283);
   ctx.stroke();
 
-  // Estrella de 5 puntas de Subway Surfers en el centro
+  // Estrella de 5 puntas grabada en el centro
   if (w > r * 0.25) {
     ctx.save();
     ctx.translate(x, y);
@@ -296,7 +296,7 @@ function drawInspector() {
   ctx.ellipse(dogX, dogY, 0.24 * S, 0.08 * S, 0, 0, 6.283);
   ctx.fill();
 
-  // === PERRO PITBULL / BULLDOG DEL INSPECTOR (Auténtico Subway Surfers) ===
+  // === PERRO PITBULL / BULLDOG DEL INSPECTOR (Auténtico persecutor) ===
   ctx.save();
   ctx.translate(dogX, dogY);
   var dLeg = Math.sin(runTime * 1.3) * 0.09 * S;
@@ -349,7 +349,7 @@ function drawInspector() {
   ctx.stroke();
   ctx.restore();
 
-  // === INSPECTOR GRUÑÓN DEL METRO (Auténtico Subway Surfers) ===
+  // === INSPECTOR GRUÑÓN DEL METRO (Auténtico persecutor) ===
   ctx.save();
   ctx.translate(ix, iy);
   var il1 = Math.max(0, legSw) * 0.2 * S, il2 = Math.max(0, -legSw) * 0.2 * S;

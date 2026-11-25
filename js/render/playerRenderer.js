@@ -1,5 +1,5 @@
 /* ============================================================
-   CAPA DE RENDERIZADO: PLAYER RENDERER (SUBWAY SURFERS 3D ENGINE)
+   CAPA DE RENDERIZADO: PLAYER RENDERER (METRO DEV 3D ENGINE)
    Animación realista de carrera, postura de surf en hoverboard,
    rotación en centro de masa, zapatillas chunky y Star Outfit
    ============================================================ */

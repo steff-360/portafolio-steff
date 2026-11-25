@@ -62,7 +62,7 @@ function drawBG() {
     ctx.globalAlpha = 1;
   }
 
-  // Skyline urbano estilo Subway Surfers
+  // Skyline urbano dinámico
   drawSkyline([18, 32, 24, 45, 28, 52, 22, 38, 48, 20, 36, 42, 30], pal.sun > 0.4 ? '#60a5fa' : '#1e1b4b', 0.15, false);
   drawSkyline([28, 48, 36, 62, 42, 70, 34, 55, 68, 30, 52, 60, 44], pal.sun > 0.4 ? '#3b82f6' : '#0f172a', 0.35, true);
 }
@@ -185,7 +185,7 @@ function drawTrack() {
     }
   }
 
-  // Catenarias aéreas de alta tensión sobre cada carril (estilo Subway Surfers)
+  // Catenarias aéreas de alta tensión sobre cada carril (estilo ferroviario)
   for (var gc = -1; gc <= 1; gc++) {
     var wireNearX = sx(gc, PN), wireNearY = sy(PN) - 3.2 * unit * PN;
     var wireFarY = horizon + 8;
@@ -205,7 +205,7 @@ function drawTrack() {
     ctx.stroke();
   }
 
-  // Semáforos ferroviarios con LEDs verde y rojo a los lados de la vía (como en Subway Surfers)
+  // Semáforos ferroviarios con LEDs verde y rojo a los lados de la vía
   var sigOff = scroll % 28;
   for (var sz = -sigOff; sz < ZFAR; sz += 28) {
     if (sz < 1.0) continue;

@@ -1,5 +1,5 @@
 /* ============================================================
-   SUBWAY SURFERS REAL CHARACTER WARDROBE & SHOP MODAL
+   SUBWAY DEV REAL CHARACTER WARDROBE & SHOP MODAL
    ============================================================ */
 .ss-modal-overlay {
   background: rgba(10, 18, 30, .85);
@@ -112,7 +112,7 @@
 }
 .ss-tab-page[hidden] { display: none !important; }
 
-/* 3. SHOWCASE STAGE (Subway Surfers brick backdrop) */
+/* 3. SHOWCASE STAGE (Metro brick backdrop) */
 .ss-stage {
   position: relative;
   flex: 1;

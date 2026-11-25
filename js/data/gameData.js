@@ -1,5 +1,5 @@
 /* ============================================================
-   CAPA DE DATOS: SUBWAY SURFERS GAME DATA
+   CAPA DE DATOS: SUBWAY DEV GAME DATA
    Personajes, Outfits, Patinetas, Mejoras, Colecciones y Paletas
    ============================================================ */
 
@@ -22,7 +22,7 @@ var CHARACTERS = [
         h: '#facc15',      // Gorra con visera verde y corona amarilla
         s: '#dc2626',      // Zapatillas rojas con ribetes dorados
         hair: '#2c1810',
-        pants: '#854d0e',  // Pantalones marrones estilo Subway Surfers
+        pants: '#854d0e',  // Pantalones marrones clásicos de corredor
         star: true,
         headphones: true,
         coinsNeed: 0,
@@ -84,7 +84,7 @@ var CHARACTERS = [
   {
     id: 'jake',
     name: 'Jake',
-    sub: 'Subway Surfer Original',
+    sub: 'Corredor Urbano Original',
     badge: 'LEGEND',
     icon: '🧢',
     fav: false,

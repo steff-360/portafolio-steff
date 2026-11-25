@@ -96,7 +96,7 @@ function jump() {
 function slide() {
   if (state !== 'play') return;
   if (P.y > (P.onTrain ? 1.95 : 0.05)) {
-    P.vy = -34; // Inmersión rápida (fast-fall dive) en el aire como en Subway Surfers
+    P.vy = -34; // Inmersión rápida (fast-fall dive) en el aire
   }
   P.slide = 0.75;
   sfx('slide');
@@ -293,7 +293,7 @@ function update(dt) {
     if (inspector.dist > 5.5) inspector.active = false;
   }
 
-  // Movimiento lateral fluido y reactivo estilo Subway Surfers
+  // Movimiento lateral fluido y reactivo de runner 3D
   P.x += (P.lane - P.x) * Math.min(1, dt * 20);
 
   // Física vertical (Jetpack vs gravedad)

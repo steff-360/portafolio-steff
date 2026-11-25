@@ -29,7 +29,7 @@ function drawShowcaseChar(sctx, cObj, oObj, t) {
   var weightShift = Math.sin(t * 1.5) * 0.02;
   sctx.rotate(weightShift);
 
-  // 2. PIERNAS Y PANTALONES (Jeans marrones estilo Subway Surfers)
+  // 2. PIERNAS Y PANTALONES (Jeans marrones clásicos)
   var pantsCol = oObj.pants || (oObj.star ? '#854d0e' : '#1e293b');
   sctx.fillStyle = pantsCol;
   // Pierna izquierda
@@ -181,7 +181,7 @@ function drawShowcaseChar(sctx, cObj, oObj, t) {
     sctx.fillRect(0.25 * S, -1.18 * S, 0.04 * S, 0.07 * S);
   }
 
-  // GORRA HACIA ATRÁS 3D (Subway Surfers signature backwards cap)
+  // GORRA HACIA ATRÁS 3D (Signature backwards cap)
   sctx.fillStyle = oObj.h || '#facc15';
   sctx.beginPath();
   sctx.roundRect(-0.26 * S, -1.42 * S, 0.52 * S, 0.25 * S, 12);

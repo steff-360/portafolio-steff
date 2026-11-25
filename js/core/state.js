@@ -27,7 +27,7 @@ try {
   totalBoards = parseInt(localStorage.getItem('subwaydev-totalboards') || '5', 10);
 } catch (e) {}
 
-// Desbloqueos de la tienda (Personajes de Subway Surfers)
+// Desbloqueos de la tienda (Personajes de Metro Dev)
 var unlockedChars = ['stefani', 'jake', 'tricky', 'fresh', 'yutani'];
 var unlockedOutfits = ['star', 'classic', 'cyber', 'terminal', 'jake-star', 'jake-classic', 'tricky-cam', 'fresh-funk', 'yutani-alien'];
 var unlockedBoards = ['freestyler'];
