@@ -278,8 +278,8 @@ function draw() {
   var near = ents.filter(function (e) { return e.z < 0; }).sort(function (a, b) { return b.z - a.z; });
 
   far.forEach(drawEnt);
-  drawPlayer();
   drawInspector();
+  drawPlayer();
   near.forEach(drawEnt);
   drawSpeedLines();
   drawFx();

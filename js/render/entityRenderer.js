@@ -283,7 +283,8 @@ function drawInspector() {
   if (state !== 'over' && inspector.dist > 3.6) return;
   var z = -inspector.dist;
   var p = F / (F + z);
-  var ix = sx(inspector.lane, p), iy = sy(p);
+  var flankX = (state === 'over') ? 0.32 : 0.48;
+  var ix = sx(inspector.lane + flankX, p), iy = sy(p);
   var S = unit * p;
   if (state !== 'over' && (iy - 1.4 * S) > H) return;
   var runTime = time * 15;
@@ -295,7 +296,7 @@ function drawInspector() {
   ctx.ellipse(ix, iy, 0.38 * S, 0.11 * S, 0, 0, 6.283);
   ctx.fill();
 
-  var dogX = sx(inspector.lane - 0.44, p), dogY = iy;
+  var dogX = sx(inspector.lane - 0.45, p), dogY = iy;
   ctx.beginPath();
   ctx.ellipse(dogX, dogY, 0.24 * S, 0.08 * S, 0, 0, 6.283);
   ctx.fill();
