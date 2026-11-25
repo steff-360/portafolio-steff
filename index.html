@@ -121,28 +121,503 @@ body {
 .skin[disabled] { opacity: .5; cursor: default; }
 .sw { width: 14px; height: 14px; border-radius: 50%; }
 
-/* Grid de Vestidor de Personajes estilo Subway Surfers */
-.skins-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; width: 100%; max-width: 680px; text-align: left; }
-.skin-card {
-  position: relative; background: rgba(15,26,34,.88); border: 2px solid rgba(244,239,230,.2);
-  border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;
-  box-shadow: 0 8px 24px rgba(0,0,0,.4); transition: transform .15s, border-color .15s, box-shadow .15s;
+/* ============================================================
+   SUBWAY SURFERS REAL CHARACTER WARDROBE & SHOP MODAL
+   ============================================================ */
+.ss-modal-overlay {
+  background: rgba(10, 18, 30, .85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.skin-card.active { border-color: var(--lamp); background: rgba(255,210,63,.12); box-shadow: 0 0 16px rgba(255,210,63,.3); }
-.skin-card.locked { opacity: .72; }
-.skin-top { display: flex; align-items: center; gap: 10px; }
-.skin-avatar {
-  width: 44px; height: 44px; border-radius: 50%; border: 2px solid #fff;
-  display: grid; place-items: center; font-size: 22px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,.3);
+.ss-screen {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  height: 100dvh;
+  max-height: 98dvh;
+  background: #f1f5f9;
+  color: #1e293b;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 25px 70px rgba(0,0,0,.65);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  border-radius: 12px;
 }
-.skin-info { display: flex; flex-direction: column; gap: 2px; }
-.skin-name { font-family: var(--display); font-size: 17px; margin: 0; color: #fff; }
-.skin-sub { font-family: var(--cond); font-size: 13px; font-weight: 700; color: var(--lamp); text-transform: uppercase; letter-spacing: .08em; }
-.skin-desc { font-size: 13.5px; line-height: 1.35; color: var(--mute); margin: 0; flex: 1; }
-.skin-act { margin-top: 6px; padding: 8px 12px; font-family: var(--display); font-size: 14px; border-radius: 4px; cursor: pointer; border: 1px solid var(--paper); background: transparent; color: var(--paper); }
-.skin-act.sel { background: var(--lamp); border-color: var(--lamp); color: var(--ink); font-weight: 700; cursor: default; }
-.skin-act.buy { background: var(--teal); border-color: var(--teal); color: var(--ink); font-weight: 700; }
-.skin-act:disabled { opacity: .45; cursor: default; }
+@media (max-width: 480px) {
+  .ss-screen { max-height: 100dvh; border-radius: 0; }
+}
+
+/* 1. TOP BAR */
+.ss-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 10px 12px;
+  background: #2b3a67;
+  color: #fff;
+  border-bottom: 2px solid #1a2544;
+  flex-shrink: 0;
+  z-index: 10;
+}
+.ss-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: rgba(15, 23, 42, .6);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 999px;
+  font-family: var(--cond);
+  font-weight: 700;
+  font-size: 13.5px;
+  letter-spacing: .02em;
+}
+.ss-pill-icon { font-size: 14px; }
+.ss-pill-val { min-width: 18px; text-align: center; }
+.ss-plus {
+  background: #22c55e;
+  border: none;
+  color: #fff;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 800;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  margin-left: 2px;
+  transition: transform .1s;
+}
+.ss-plus:active { transform: scale(.9); }
+.ss-pill-mult { background: rgba(234, 179, 8, .25); border-color: #ffd23f; color: #ffd23f; }
+.ss-top-right { display: flex; align-items: center; gap: 6px; }
+.ss-icon-btn {
+  background: rgba(15, 23, 42, .55);
+  border: 1px solid rgba(255,255,255,.25);
+  color: #fff;
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  font-size: 16px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background .15s;
+}
+.ss-icon-btn:hover { background: rgba(255,255,255,.2); }
+.ss-close { background: #ef4444; border-color: #dc2626; font-weight: 800; font-size: 17px; }
+
+/* 2. MAIN BODY & TABS */
+.ss-main-body {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #f8fafc;
+}
+.ss-tab-page {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+.ss-tab-page[hidden] { display: none !important; }
+
+/* 3. SHOWCASE STAGE (Subway Surfers brick backdrop) */
+.ss-stage {
+  position: relative;
+  flex: 1;
+  min-height: 290px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px 14px;
+  background:
+    radial-gradient(circle at 50% 30%, rgba(255,255,255,.9), rgba(226,232,240,.75)),
+    repeating-linear-gradient(0deg, transparent 0 24px, rgba(148,163,184,.14) 24px 25px),
+    repeating-linear-gradient(90deg, transparent 0 54px, rgba(148,163,184,.14) 54px 55px);
+  background-color: #f1f5f9;
+  border-bottom: 2px solid #cbd5e1;
+  overflow: hidden;
+}
+
+/* Stickers decorativos */
+.ss-stickers {
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 5;
+}
+.ss-badge-sticker {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 2px solid #cbd5e1;
+  box-shadow: 0 6px 14px rgba(0,0,0,.08);
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  cursor: pointer;
+  transition: transform .2s cubic-bezier(.34,1.56,.64,1);
+}
+.ss-badge-sticker:hover { transform: scale(1.12) rotate(-5deg); }
+
+/* Encabezado del personaje */
+.ss-char-info { text-align: center; z-index: 5; }
+.ss-char-title { display: inline-flex; align-items: center; gap: 8px; }
+.ss-char-title .ss-name {
+  font-family: var(--display);
+  font-size: 32px;
+  color: #1e3a8a;
+  letter-spacing: .5px;
+  line-height: 1;
+}
+.ss-heart {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  transition: transform .15s;
+  padding: 0;
+}
+.ss-heart:active { transform: scale(1.3); }
+.ss-outfit-title {
+  font-family: var(--cond);
+  font-weight: 700;
+  font-size: 15px;
+  color: #3b82f6;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-top: 3px;
+}
+
+/* Vista previa del personaje en el escenario */
+.ss-preview-stage {
+  position: relative;
+  width: 260px;
+  height: 220px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 2;
+  margin-top: -6px;
+}
+#ssCharCanvas {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+}
+.ss-shadow-podium {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 140px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(15,23,42,.35) 0%, rgba(15,23,42,0) 70%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Columna lateral derecha de Outfits */
+.ss-outfits-sidebar {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 5;
+}
+.ss-outfit-thumb {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 3px solid #cbd5e1;
+  box-shadow: 0 4px 10px rgba(0,0,0,.08);
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  cursor: pointer;
+  position: relative;
+  transition: border-color .15s, transform .15s, box-shadow .15s;
+}
+.ss-outfit-thumb:hover { transform: scale(1.08); }
+.ss-outfit-thumb.active {
+  border-color: #22c55e;
+  box-shadow: 0 0 14px rgba(34, 197, 94, .45);
+}
+.ss-outfit-thumb.active::after {
+  content: '✓';
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #22c55e;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  display: grid;
+  place-items: center;
+}
+
+/* Botón de acción grande */
+.ss-action-container { width: 100%; display: flex; justify-content: center; z-index: 5; }
+.ss-big-btn {
+  font-family: var(--display);
+  font-size: 20px;
+  padding: 10px 48px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  transition: transform .12s, box-shadow .12s;
+}
+.ss-big-btn.selected {
+  background: #2b3a67;
+  color: #ffffff;
+  box-shadow: 0 5px 0 #182343;
+  cursor: default;
+}
+.ss-big-btn.select {
+  background: #22c55e;
+  color: #ffffff;
+  box-shadow: 0 5px 0 #15803d;
+}
+.ss-big-btn.select:active { transform: translateY(3px); box-shadow: 0 2px 0 #15803d; }
+.ss-big-btn.buy {
+  background: #3b82f6;
+  color: #ffffff;
+  box-shadow: 0 5px 0 #1d4ed8;
+}
+.ss-big-btn.buy:active { transform: translateY(3px); box-shadow: 0 2px 0 #1d4ed8; }
+
+/* 4. PANEL INFERIOR: DRAWER DE PERSONAJES */
+.ss-bottom-drawer {
+  flex-shrink: 0;
+  height: 175px;
+  background: #e2e8f0;
+  border-top: 1px solid #cbd5e1;
+  display: flex;
+  flex-direction: column;
+}
+.ss-drawer-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  background: #cbd5e1;
+}
+.ss-filter-tab {
+  background: #2b3a67;
+  border: none;
+  color: #fff;
+  font-family: var(--cond);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.ss-search-box {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #fff;
+  border-radius: 999px;
+  padding: 2px 10px;
+  border: 1px solid #94a3b8;
+}
+.ss-search-box input {
+  border: none;
+  outline: none;
+  font-size: 13px;
+  width: 90px;
+  background: transparent;
+  color: #1e293b;
+}
+
+/* Grid horizontal deslizable de personajes */
+.ss-char-grid {
+  flex: 1;
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
+}
+.ss-char-card {
+  flex: 0 0 94px;
+  height: 110px;
+  background: #ffffff;
+  border: 2px solid #cbd5e1;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 4px 5px;
+  cursor: pointer;
+  position: relative;
+  transition: border-color .15s, transform .15s;
+}
+.ss-char-card:hover { transform: translateY(-2px); }
+.ss-char-card.active {
+  border-color: #22c55e;
+  box-shadow: 0 4px 14px rgba(34,197,94,.35);
+}
+.ss-char-card-badge {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  font-size: 9px;
+  font-family: var(--cond);
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: #f59e0b;
+  color: #fff;
+}
+.ss-char-card-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+  margin-top: 10px;
+  box-shadow: 0 3px 8px rgba(0,0,0,.15);
+}
+.ss-char-card-name {
+  font-family: var(--cond);
+  font-weight: 700;
+  font-size: 13px;
+  color: #1e293b;
+  margin: 0;
+  text-align: center;
+  line-height: 1.1;
+}
+.ss-char-card-check {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #22c55e;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  display: grid;
+  place-items: center;
+}
+.ss-char-card.locked .ss-char-card-check {
+  background: #94a3b8;
+}
+
+/* 5. BOARDS, UPGRADES & COLLECTIONS */
+.ss-boards-container, .ss-upgrades-container, .ss-collections-container {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ss-item-row {
+  background: #ffffff;
+  border: 2px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.04);
+}
+.ss-item-row.active {
+  border-color: #22c55e;
+  background: #f0fdf4;
+}
+.ss-item-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  font-size: 26px;
+  flex-shrink: 0;
+}
+.ss-item-info { flex: 1; }
+.ss-item-info h4 { margin: 0 0 2px; font-family: var(--display); font-size: 16px; color: #1e293b; }
+.ss-item-info p { margin: 0; font-size: 12.5px; color: #64748b; line-height: 1.3; }
+.ss-level-bar {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+}
+.ss-level-dot {
+  width: 14px;
+  height: 8px;
+  border-radius: 2px;
+  background: #cbd5e1;
+}
+.ss-level-dot.on { background: #22c55e; }
+
+/* 6. BOTTOM NAVIGATION BAR */
+.ss-bottom-nav {
+  height: 56px;
+  background: #1b283d;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  border-top: 2px solid #0f172a;
+  flex-shrink: 0;
+  z-index: 10;
+}
+.ss-nav-btn {
+  flex: 1;
+  height: 100%;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  cursor: pointer;
+  transition: color .15s;
+}
+.ss-nav-btn:hover { color: #f8fafc; }
+.ss-nav-btn.active {
+  color: #ffd23f;
+  border-bottom: 3px solid #ffd23f;
+}
+.ss-nb-icon { font-size: 19px; line-height: 1; }
+.ss-nb-label { font-family: var(--cond); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
 .best { margin: 0; font-family: var(--cond); font-weight: 700; font-size: 16px; letter-spacing: .12em; text-transform: uppercase; color: var(--mute); }
 .keys { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 6px 14px; width: 100%; font-family: var(--cond); font-weight: 600; font-size: 15px; letter-spacing: .04em; color: var(--mute); }
 .keys b { color: var(--paper); font-weight: 700; }
@@ -267,16 +742,119 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
   </div>
 </section>
 
-<section class="overlay" id="skinsModal" hidden>
-  <div class="hero" style="max-width:740px">
-    <div class="subway-sign">Metro Dev · Vestidor de Personajes</div>
-    <h1 style="font-size:clamp(32px,8vw,56px);margin-bottom:4px">PERSONAJES</h1>
-    <p class="sub" style="margin-bottom:4px">Elige el outfit de Stefani para correr por las vías</p>
-    <p class="lead" id="skinsCoinStatus" style="font-size:15px;color:var(--lamp);margin-bottom:14px"></p>
-    <div class="skins-grid" id="skinsGrid"></div>
-    <div class="row" style="margin-top:16px">
-      <button class="btn primary" id="closeSkinsModal" type="button">Listo para correr</button>
+<section class="overlay ss-modal-overlay" id="skinsModal" hidden>
+  <div class="ss-screen">
+    <!-- BARRA SUPERIOR SUBWAY SURFERS (Llaves, Monedas, Patinetas, Multiplicador, Ajustes, Cerrar) -->
+    <header class="ss-top-bar">
+      <div class="ss-pill ss-pill-keys">
+        <span class="ss-pill-icon">🔑</span>
+        <span class="ss-pill-val" id="ssKeysVal">15</span>
+        <button class="ss-plus" id="ssAddKeysBtn" type="button" title="Conseguir Llaves">+</button>
+      </div>
+      <div class="ss-pill ss-pill-coins">
+        <span class="ss-pill-icon">🪙</span>
+        <span class="ss-pill-val" id="ssCoinsVal">0</span>
+        <button class="ss-plus" id="ssAddCoinsBtn" type="button" title="Conseguir Monedas">+</button>
+      </div>
+      <div class="ss-pill ss-pill-boards">
+        <span class="ss-pill-icon">🛹</span>
+        <span class="ss-pill-val" id="ssBoardsVal">10</span>
+        <button class="ss-plus" id="ssAddBoardsBtn" type="button" title="Patinetas">+</button>
+      </div>
+      <div class="ss-pill ss-pill-mult">
+        <span class="ss-pill-icon">⭐</span>
+        <span class="ss-pill-val" id="ssMultVal">x1</span>
+      </div>
+      <div class="ss-top-right">
+        <button class="ss-icon-btn" id="ssSoundToggle" type="button" title="Ajustes de Sonido">⚙️</button>
+        <button class="ss-icon-btn ss-close" id="closeSkinsModal" type="button" title="Volver a la carrera">✕</button>
+      </div>
+    </header>
+
+    <!-- CONTENEDOR DE PESTAÑAS -->
+    <div class="ss-main-body">
+      <!-- 1. PESTAÑA PERSONAJES (CHARACTERS) -->
+      <div class="ss-tab-page active" id="tab-characters">
+        <!-- ESCENARIO CENTRAL DE PRESENTACIÓN -->
+        <div class="ss-stage">
+          <!-- Stickers laterales -->
+          <div class="ss-stickers">
+            <span class="ss-badge-sticker ss-st-radio" title="Subway Beats">📻</span>
+            <span class="ss-badge-sticker ss-st-cam" title="Snapshot">📷</span>
+          </div>
+
+          <!-- Título y Favorito del Personaje -->
+          <div class="ss-char-info">
+            <div class="ss-char-title">
+              <span class="ss-name" id="ssCharName">Stefani</span>
+              <button class="ss-heart" id="ssCharHeart" type="button" title="Favorito">❤️</button>
+            </div>
+            <div class="ss-outfit-title" id="ssOutfitName">Star Outfit</div>
+          </div>
+
+          <!-- Vista previa 3D del personaje en vivo -->
+          <div class="ss-preview-stage">
+            <canvas id="ssCharCanvas" width="280" height="320"></canvas>
+            <div class="ss-shadow-podium"></div>
+          </div>
+
+          <!-- Columna lateral vertical de Outfits (como en la foto de Jake) -->
+          <div class="ss-outfits-sidebar" id="ssOutfitSidebar"></div>
+
+          <!-- Botón de acción grande (Selected / Select / Desbloquear) -->
+          <div class="ss-action-container">
+            <button class="ss-big-btn selected" id="ssActionBtn" type="button">Selected</button>
+          </div>
+        </div>
+
+        <!-- PANEL INFERIOR: BÚSQUEDA Y GRID DE PERSONAJES -->
+        <div class="ss-bottom-drawer">
+          <div class="ss-drawer-bar">
+            <button class="ss-filter-tab active" id="ssFilterAll" type="button">≡ Owned</button>
+            <div class="ss-search-box">
+              <span>🔍</span>
+              <input type="text" id="ssCharSearch" placeholder="Search..." autocomplete="off">
+            </div>
+          </div>
+          <div class="ss-char-grid" id="ssCharGrid"></div>
+        </div>
+      </div>
+
+      <!-- 2. PESTAÑA PATINETAS (BOARDS) -->
+      <div class="ss-tab-page" id="tab-boards" hidden>
+        <div class="ss-boards-container" id="ssBoardsContainer"></div>
+      </div>
+
+      <!-- 3. PESTAÑA MEJORAS (UPGRADES) -->
+      <div class="ss-tab-page" id="tab-upgrades" hidden>
+        <div class="ss-upgrades-container" id="ssUpgradesContainer"></div>
+      </div>
+
+      <!-- 4. PESTAÑA COLECCIONES (COLLECTIONS) -->
+      <div class="ss-tab-page" id="tab-collections" hidden>
+        <div class="ss-collections-container" id="ssCollectionsContainer"></div>
+      </div>
     </div>
+
+    <!-- BARRA INFERIOR DE NAVEGACIÓN (Characters, Boards, Upgrades, Collections) -->
+    <nav class="ss-bottom-nav">
+      <button class="ss-nav-btn active" data-tab="characters" type="button">
+        <span class="ss-nb-icon">👤</span>
+        <span class="ss-nb-label">Characters</span>
+      </button>
+      <button class="ss-nav-btn" data-tab="boards" type="button">
+        <span class="ss-nb-icon">🛹</span>
+        <span class="ss-nb-label">Boards</span>
+      </button>
+      <button class="ss-nav-btn" data-tab="upgrades" type="button">
+        <span class="ss-nb-icon">⚡</span>
+        <span class="ss-nb-label">Upgrades</span>
+      </button>
+      <button class="ss-nav-btn" data-tab="collections" type="button">
+        <span class="ss-nb-icon">🏆</span>
+        <span class="ss-nb-label">Collections</span>
+      </button>
+    </nav>
   </div>
 </section>
 
@@ -325,80 +903,256 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
   ];
   var found = [false, false, false, false];
 
-  var SKINS = [
+  /* ============================================================
+     SISTEMA COMPLETO SUBWAY SURFERS: CHARACTERS, BOARDS, UPGRADES, COLLECTIONS
+     ============================================================ */
+  var CHARACTERS = [
     {
-      id: 'classic',
-      n: 'Steff Clásica',
+      id: 'stefani',
+      name: 'Stefani',
       sub: 'Técnica en Software',
-      desc: 'El outfit clásico de metro: gorra hacia atrás azul, sudadera teal y mochila con </> para desplegar código veloz.',
+      bio: 'Runner técnica y arquitecta de software. Especialista en backend, bases de datos y EdTech interactivo.',
       icon: '🛹',
-      h: '#0077cc',
-      b: '#00d2b4',
-      s: '#ff3b30',
-      pants: '#2c3e50',
-      backpackText: '</>',
-      hair: '#3a2312',
-      visor: null,
-      coinsNeed: 0,
-      stopsNeed: 0
+      badge: 'PRO',
+      fav: true,
+      outfits: [
+        {
+          id: 'star',
+          name: 'Star Outfit',
+          desc: 'Outfit estelar Subway Surfers: chaqueta roja, chaleco vaquero azul con estrella dorada, auriculares grandes y zapatillas doradas/rojas.',
+          h: '#ffd23f',
+          b: '#dc2626',
+          vest: '#3b82f6',
+          s: '#ffd23f',
+          pants: '#78350f',
+          hair: '#3a2312',
+          headphones: true,
+          star: true,
+          coinsNeed: 0,
+          keysNeed: 0
+        },
+        {
+          id: 'classic',
+          name: 'Classic Outfit',
+          desc: 'Gorra azul hacia atrás, sudadera teal con capucha, mochila técnica con </> y zapatillas de skate.',
+          h: '#0077cc',
+          b: '#00d2b4',
+          vest: null,
+          s: '#ff3b30',
+          pants: '#2c3e50',
+          hair: '#3a2312',
+          backpackText: '</>',
+          headphones: false,
+          star: false,
+          coinsNeed: 0,
+          keysNeed: 0
+        },
+        {
+          id: 'cyber',
+          name: 'Cyber Hacker',
+          desc: 'Jacket neón con visor cian de realidad aumentada, optimizada para microservicios y PostgreSQL.',
+          h: '#7a43ff',
+          b: '#1b1435',
+          vest: null,
+          s: '#00f0d0',
+          pants: '#181028',
+          hair: '#00f0d0',
+          visor: '#00f0d0',
+          backpackText: 'SQL',
+          headphones: false,
+          star: false,
+          coinsNeed: 150,
+          keysNeed: 3
+        },
+        {
+          id: 'terminal',
+          name: 'Terminal Ninja',
+          desc: 'Outfit sigiloso en modo oscuro con franjas verde matrix y pruebas automatizadas en Jest.',
+          h: '#111827',
+          b: '#0b0f19',
+          vest: null,
+          s: '#10b981',
+          pants: '#090d14',
+          hair: '#111827',
+          visor: '#10b981',
+          backpackText: 'NODE',
+          headphones: false,
+          star: false,
+          coinsNeed: 300,
+          keysNeed: 5
+        }
+      ]
     },
     {
-      id: 'cyber',
-      n: 'Steff Cyber Hacker',
-      sub: 'PostgreSQL & Docker Pro',
-      desc: 'Jacket neón con visor cian de realidad aumentada, optimizada para arquitectura de datos y microservicios.',
-      icon: '⚡',
-      h: '#7a43ff',
-      b: '#1b1435',
-      s: '#00f0d0',
-      pants: '#181028',
-      backpackText: 'SQL',
-      hair: '#00f0d0',
-      visor: '#00f0d0',
-      coinsNeed: 100,
-      stopsNeed: 1
+      id: 'tricky',
+      name: 'Tricky Dev',
+      sub: 'Frontend & UI Craft',
+      bio: 'Experta en CSS, animaciones fluidas y accesibilidad web.',
+      icon: '🎀',
+      badge: 'EVENT',
+      fav: false,
+      outfits: [
+        {
+          id: 'tricky_classic',
+          name: 'Tricky Classic',
+          desc: 'Gorro beanie rosa, gafas grandes y estilo urbano ligero.',
+          h: '#f43f5e',
+          b: '#ffffff',
+          vest: null,
+          s: '#f43f5e',
+          pants: '#0284c7',
+          hair: '#f59e0b',
+          glasses: true,
+          headphones: false,
+          star: false,
+          coinsNeed: 120,
+          keysNeed: 2
+        }
+      ]
     },
     {
-      id: 'terminal',
-      n: 'Steff Terminal Ninja',
-      sub: 'Backend & APIs Node.js',
-      desc: 'Outfit sigiloso en modo oscuro con franjas verde matrix y pruebas automatizadas en Jest para releases limpios.',
-      icon: '💻',
-      h: '#111827',
-      b: '#0b0f19',
-      s: '#10b981',
-      pants: '#090d14',
-      backpackText: 'NODE',
-      hair: '#111827',
-      visor: '#10b981',
-      coinsNeed: 250,
-      stopsNeed: 2
+      id: 'jake',
+      name: 'Jake Script',
+      sub: 'Full Engine Runner',
+      bio: 'El clásico runner con gorra roja de visera al frente y chaqueta de carreras.',
+      icon: '🧢',
+      badge: 'CORE',
+      fav: false,
+      outfits: [
+        {
+          id: 'jake_classic',
+          name: 'Jake Classic',
+          desc: 'Gorra roja icónica, sudadera con capucha blanca y denim clásico.',
+          h: '#ef4444',
+          b: '#f8fafc',
+          vest: null,
+          s: '#ef4444',
+          pants: '#1d4ed8',
+          hair: '#3a2312',
+          headphones: false,
+          star: false,
+          coinsNeed: 220,
+          keysNeed: 4
+        }
+      ]
     },
     {
-      id: 'gold',
-      n: 'Steff Metro Gold',
-      sub: 'Golden Master Runner',
-      desc: 'Edición dorada de prestigio. Ropa obsidiana con ribetes de oro puro y estela brillante para romper récords mundiales.',
-      icon: '👑',
-      h: '#ffd23f',
-      b: '#241804',
-      s: '#ffd23f',
-      pants: '#140e02',
-      backpackText: '★',
-      hair: '#ffd23f',
-      visor: '#ffd23f',
-      coinsNeed: 500,
-      stopsNeed: 3
+      id: 'fresh',
+      name: 'Fresh DevOps',
+      sub: 'Cloud & Docker',
+      bio: 'Carga con su radio estéreo y despliega infraestructura con música.',
+      icon: '📻',
+      badge: 'NEW',
+      fav: false,
+      outfits: [
+        {
+          id: 'fresh_classic',
+          name: 'Fresh Classic',
+          desc: 'Gafas retro, pantalón verde y boombox de sonido.',
+          h: '#15803d',
+          b: '#eab308',
+          vest: null,
+          s: '#15803d',
+          pants: '#166534',
+          hair: '#0a0a0a',
+          boombox: true,
+          headphones: false,
+          star: false,
+          coinsNeed: 350,
+          keysNeed: 6
+        }
+      ]
+    },
+    {
+      id: 'yutani',
+      name: 'Yutani AI',
+      sub: 'Neural & ML',
+      bio: 'Traje de exploración científica alienígena con sensores de datos neuronales.',
+      icon: '👽',
+      badge: 'TECH',
+      fav: false,
+      outfits: [
+        {
+          id: 'yutani_classic',
+          name: 'Yutani Science',
+          desc: 'Traje verde futurista con visor polarizado de análisis.',
+          h: '#22c55e',
+          b: '#15803d',
+          vest: null,
+          s: '#86efac',
+          pants: '#14532d',
+          hair: '#22c55e',
+          alien: true,
+          headphones: false,
+          star: false,
+          coinsNeed: 500,
+          keysNeed: 8
+        }
+      ]
     }
   ];
-  var skin = 0, storedUnlock = 0, totalCoins = 0, unlockedSkins = ['classic'];
+
+  var BOARDS_DATA = [
+    { id: 'classic', name: 'Freestyler', sub: 'Patineta Clásica', desc: 'La tabla clásica de Subway Surfers. Protección total contra 1 choque.', icon: '🛹', col: '#ff7a36', col2: '#0077cc', coinsNeed: 0, keysNeed: 0 },
+    { id: 'star', name: 'Star Board', sub: 'Estela Dorada', desc: 'Deja una estela brillante de estrellas doradas al surfear y otorga bonificación de velocidad.', icon: '⭐', col: '#ffd23f', col2: '#f59e0b', coinsNeed: 150, keysNeed: 2 },
+    { id: 'bouncer', name: 'Bouncer', sub: 'Super Salto', desc: 'Incorpora resortes automáticos en la tabla para saltar sin límite sobre los trenes.', icon: '🦘', col: '#10b981', col2: '#059669', coinsNeed: 300, keysNeed: 5 },
+    { id: 'cyber', name: 'Cyber Board', sub: 'Levitación Neón', desc: 'Patineta de gravedad cero con propulsores de iones cian de alta velocidad.', icon: '⚡', col: '#00f0d0', col2: '#7a43ff', coinsNeed: 500, keysNeed: 8 }
+  ];
+
+  var UPGRADES_DATA = [
+    { id: 'jetpack', name: 'Jetpack', desc: 'Aumenta el tiempo de vuelo por encima de los trenes recogiendo monedas.', icon: '🚀', baseSec: 6.5, max: 5 },
+    { id: 'sneakers', name: 'Super Sneakers', desc: 'Aumenta la duración de las zapatillas de super salto para volar sobre trenes.', icon: '👟', baseSec: 10, max: 5 },
+    { id: 'magnet', name: 'Imán de Monedas', desc: 'Aumenta el tiempo que el imán atrae todas las monedas de todos los carriles.', icon: '🧲', baseSec: 8, max: 5 },
+    { id: 'x2', name: 'Multiplicador x2', desc: 'Aumenta la duración del multiplicador de puntos dobles.', icon: '⭐', baseSec: 10, max: 5 }
+  ];
+
+  var COLLECTIONS_DATA = [
+    { id: 'station_0', name: 'Estación 1: Quién soy', desc: 'Desbloquea la primera parada para conocer la trayectoria técnica de Stefani Sánchez.', rCoins: 100, rKeys: 2 },
+    { id: 'station_1', name: 'Estación 2: Habilidades', desc: 'Aprende sobre Node.js, PostgreSQL, Docker y arquitectura de software.', rCoins: 150, rKeys: 3 },
+    { id: 'station_2', name: 'Estación 3: Proyectos', desc: 'Explora los 6 proyectos en producción y repositorios GitHub de Stefani.', rCoins: 200, rKeys: 4 },
+    { id: 'station_3', name: 'Estación 4: Contacto', desc: 'Conecta con Stefani en LinkedIn, GitHub o por email.', rCoins: 300, rKeys: 5 }
+  ];
+
+  // Variables de estado del inventario Subway Surfers
+  var totalCoins = 0, totalKeys = 15, totalBoards = 10;
+  var selectedCharId = 'stefani', selectedOutfitId = 'star';
+  var activeCharId = 'stefani', activeOutfitId = 'star';
+  var unlockedOutfits = ['star', 'classic'];
+  var unlockedChars = ['stefani'];
+  var favoriteChars = ['stefani'];
+  var activeBoardId = 'classic';
+  var unlockedBoards = ['classic'];
+  var upgradeLevels = { jetpack: 1, sneakers: 1, magnet: 1, x2: 1 };
+  var claimedCollections = [];
+  var activeSSTab = 'characters';
+
   try {
-    skin = parseInt(localStorage.getItem('subwaydev-skin') || '0', 10) || 0;
-    storedUnlock = parseInt(localStorage.getItem('subwaydev-unlock') || '0', 10) || 0;
     totalCoins = parseInt(localStorage.getItem('subwaydev-totalcoins') || '0', 10) || 0;
-    var stSkins = JSON.parse(localStorage.getItem('subwaydev-unlocked-skins') || '["classic"]');
-    if (Array.isArray(stSkins)) unlockedSkins = stSkins;
+    totalKeys = parseInt(localStorage.getItem('subwaydev-totalkeys') || '15', 10) || 15;
+    totalBoards = parseInt(localStorage.getItem('subwaydev-totalboards') || '10', 10) || 10;
+    activeCharId = localStorage.getItem('subwaydev-char') || 'stefani';
+    activeOutfitId = localStorage.getItem('subwaydev-outfit') || 'star';
+    selectedCharId = activeCharId;
+    selectedOutfitId = activeOutfitId;
+    activeBoardId = localStorage.getItem('subwaydev-board') || 'classic';
+    var uo = JSON.parse(localStorage.getItem('subwaydev-unlocked-outfits') || '["star","classic"]');
+    if (Array.isArray(uo)) unlockedOutfits = uo;
+    var uc = JSON.parse(localStorage.getItem('subwaydev-unlocked-chars') || '["stefani"]');
+    if (Array.isArray(uc)) unlockedChars = uc;
+    var ub = JSON.parse(localStorage.getItem('subwaydev-unlocked-boards') || '["classic"]');
+    if (Array.isArray(ub)) unlockedBoards = ub;
+    var upl = JSON.parse(localStorage.getItem('subwaydev-upgrades') || '{"jetpack":1,"sneakers":1,"magnet":1,"x2":1}');
+    if (upl && typeof upl === 'object') upgradeLevels = upl;
+    var cl = JSON.parse(localStorage.getItem('subwaydev-claimed-col') || '[]');
+    if (Array.isArray(cl)) claimedCollections = cl;
   } catch (e) {}
+
+  function getActiveOutfit() {
+    var c = CHARACTERS.find(function (ch) { return ch.id === activeCharId; }) || CHARACTERS[0];
+    return c.outfits.find(function (o) { return o.id === activeOutfitId; }) || c.outfits[0];
+  }
+  var SKINS = CHARACTERS[0].outfits;
+  var skin = 0;
 
   // Caza de letras de Subway Surfers: S-T-E-F-F
   var WORD_LETTERS = ['S', 'T', 'E', 'F', 'F'];
@@ -785,118 +1539,520 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
   function blurAll() { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); }
   function unlocked() { return Math.max(storedUnlock, found.filter(Boolean).length); }
 
-  function isSkinUnlocked(s) {
-    if (s.id === 'classic' || unlockedSkins.indexOf(s.id) !== -1) return true;
-    if (s.stopsNeed && unlocked() >= s.stopsNeed) return true;
-    if (s.coinsNeed && (totalCoins + coins) >= s.coinsNeed) return true;
-    return false;
+  /* Helper para dibujar rectángulos redondeados con contexto */
+  function srr(sctx, x, y, w, h, r) {
+    sctx.beginPath();
+    if (sctx.roundRect) sctx.roundRect(x, y, w, h, r); else sctx.rect(x, y, w, h);
+    sctx.fill();
   }
 
-  function unlockSkin(s, i) {
-    if (unlockedSkins.indexOf(s.id) === -1) {
-      unlockedSkins.push(s.id);
-      try { localStorage.setItem('subwaydev-unlocked-skins', JSON.stringify(unlockedSkins)); } catch (e) {}
+  /* Renderizado 3D del personaje en el Escenario Central (Showcase) */
+  function drawShowcaseChar(sctx, cObj, oObj, t) {
+    if (!sctx) return;
+    var W = sctx.canvas.width, H = sctx.canvas.height;
+    sctx.clearRect(0, 0, W, H);
+
+    var cx = W / 2, gy = H - 32, S = 95;
+    var idle = Math.sin(t * 3.2) * 2.5;
+
+    // Sombra ovalada realista en el podio
+    sctx.fillStyle = 'rgba(15,23,42,.22)';
+    sctx.beginPath();
+    sctx.ellipse(cx, gy, 0.44 * S, 0.11 * S, 0, 0, 6.283);
+    sctx.fill();
+
+    sctx.save();
+    sctx.translate(cx, gy + idle);
+
+    // PIERNAS Y PANTALONES (Pose Subway Surfers con piernas abiertas)
+    var pantsCol = oObj.pants || '#78350f';
+    sctx.fillStyle = pantsCol;
+    sctx.fillRect(-0.25 * S, -0.68 * S, 0.17 * S, 0.65 * S);
+    sctx.fillRect(0.08 * S, -0.68 * S, 0.17 * S, 0.65 * S);
+
+    // ZAPATILLAS AUTÉNTICAS SUBWAY SURFERS (Chunky skate sneakers)
+    var shoeCol = oObj.s || '#ffd23f';
+    sctx.save();
+    sctx.translate(-0.16 * S, 0);
+    sctx.fillStyle = shoeCol;
+    sctx.fillRect(-0.13 * S, -0.16 * S, 0.26 * S, 0.16 * S);
+    sctx.fillStyle = '#ffffff';
+    sctx.fillRect(-0.15 * S, -0.06 * S, 0.3 * S, 0.06 * S);
+    sctx.beginPath(); sctx.arc(0.09 * S, -0.07 * S, 0.07 * S, -Math.PI / 2, Math.PI / 2); sctx.fill();
+    sctx.fillStyle = '#ffffff';
+    sctx.fillRect(-0.07 * S, -0.15 * S, 0.09 * S, 0.03 * S);
+    sctx.fillRect(-0.06 * S, -0.11 * S, 0.08 * S, 0.03 * S);
+    sctx.restore();
+
+    sctx.save();
+    sctx.translate(0.16 * S, 0);
+    sctx.fillStyle = shoeCol;
+    sctx.fillRect(-0.13 * S, -0.16 * S, 0.26 * S, 0.16 * S);
+    sctx.fillStyle = '#ffffff';
+    sctx.fillRect(-0.15 * S, -0.06 * S, 0.3 * S, 0.06 * S);
+    sctx.beginPath(); sctx.arc(0.09 * S, -0.07 * S, 0.07 * S, -Math.PI / 2, Math.PI / 2); sctx.fill();
+    sctx.fillStyle = '#ffffff';
+    sctx.fillRect(-0.07 * S, -0.15 * S, 0.09 * S, 0.03 * S);
+    sctx.fillRect(-0.06 * S, -0.11 * S, 0.08 * S, 0.03 * S);
+    sctx.restore();
+
+    // TORSO Y SUDADERA
+    sctx.fillStyle = oObj.b || '#dc2626';
+    srr(sctx, -0.32 * S, -1.32 * S, 0.64 * S, 0.68 * S, 0.12 * S);
+
+    // Chaleco vaquero con estrella dorada (como Jake Star Outfit de Subway Surfers en imagen 1)
+    if (oObj.vest || oObj.star) {
+      sctx.fillStyle = oObj.vest || '#3b82f6';
+      srr(sctx, -0.27 * S, -1.3 * S, 0.54 * S, 0.62 * S, 0.1 * S);
+      sctx.fillStyle = oObj.b || '#dc2626';
+      sctx.fillRect(-0.09 * S, -1.3 * S, 0.18 * S, 0.62 * S);
+      sctx.fillStyle = '#ffd23f';
+      sctx.beginPath();
+      for (var sp = 0; sp < 5; sp++) {
+        var oa = sp * (Math.PI * 2 / 5) - Math.PI / 2, ia = oa + Math.PI / 5;
+        var or = 0.13 * S, ir = 0.06 * S;
+        if (sp === 0) sctx.moveTo(Math.cos(oa) * or, -1.02 * S + Math.sin(oa) * or);
+        else sctx.lineTo(Math.cos(oa) * or, -1.02 * S + Math.sin(oa) * or);
+        sctx.lineTo(Math.cos(ia) * ir, -1.02 * S + Math.sin(ia) * ir);
+      }
+      sctx.closePath();
+      sctx.fill();
+    } else {
+      sctx.fillStyle = 'rgba(0,0,0,.15)';
+      srr(sctx, -0.2 * S, -0.92 * S, 0.4 * S, 0.22 * S, 0.08 * S);
+      sctx.strokeStyle = '#ffffff'; sctx.lineWidth = 2.5;
+      sctx.beginPath();
+      sctx.moveTo(-0.08 * S, -1.25 * S); sctx.lineTo(-0.08 * S, -1.02 * S);
+      sctx.moveTo(0.08 * S, -1.25 * S); sctx.lineTo(0.08 * S, -1.02 * S);
+      sctx.stroke();
     }
-    skin = i;
-    try { localStorage.setItem('subwaydev-skin', String(i)); } catch (e) {}
-    sfx('power');
-    floater('¡' + s.n + '!', sx(P.x, 1), groundY - unit * 1.5, s.b);
-    toast('¡Personaje cambiado a ' + s.n + '!', 2500);
-    renderSkins();
+
+    // BRAZOS Y MANOS
+    sctx.fillStyle = oObj.b || '#dc2626';
+    sctx.fillRect(-0.47 * S, -1.26 * S, 0.16 * S, 0.46 * S);
+    sctx.fillRect(0.31 * S, -1.26 * S, 0.16 * S, 0.46 * S);
+    sctx.fillStyle = '#f5cb9b';
+    sctx.beginPath();
+    sctx.arc(-0.39 * S, -0.78 * S, 0.075 * S, 0, 6.283);
+    sctx.arc(0.39 * S, -0.78 * S, 0.075 * S, 0, 6.283);
+    sctx.fill();
+
+    // CABEZA Y ROSTRO 3D
+    var skinGrad = sctx.createRadialGradient(-0.06 * S, -1.56 * S, 0.05 * S, 0, -1.52 * S, 0.3 * S);
+    skinGrad.addColorStop(0, '#fef08a');
+    skinGrad.addColorStop(0.4, '#f5cb9b');
+    skinGrad.addColorStop(1, '#e0a66d');
+    sctx.fillStyle = skinGrad;
+    sctx.beginPath(); sctx.arc(0, -1.52 * S, 0.29 * S, 0, 6.283); sctx.fill();
+
+    // GORRA
+    sctx.fillStyle = oObj.h || '#ffd23f';
+    srr(sctx, -0.31 * S, -1.78 * S, 0.62 * S, 0.3 * S, 0.12 * S);
+    sctx.fillStyle = '#f59e0b';
+    sctx.beginPath(); sctx.arc(0, -1.79 * S, 0.045 * S, 0, 6.283); sctx.fill();
+    sctx.fillStyle = '#ffffff';
+    sctx.fillRect(-0.36 * S, -1.6 * S, 0.2 * S, 0.05 * S);
+    sctx.fillStyle = oObj.h || '#ffd23f';
+    srr(sctx, -0.4 * S, -1.64 * S, 0.26 * S, 0.06 * S, 0.03 * S);
+
+    // AURICULARES GRANDES AMARILLOS (HEADPHONES)
+    if (oObj.headphones) {
+      sctx.lineWidth = 0.09 * S; sctx.strokeStyle = '#f59e0b';
+      sctx.beginPath(); sctx.arc(0, -1.58 * S, 0.33 * S, Math.PI * 0.9, Math.PI * 0.1, true); sctx.stroke();
+      sctx.fillStyle = '#ffd23f';
+      srr(sctx, -0.4 * S, -1.65 * S, 0.15 * S, 0.26 * S, 0.06 * S);
+      sctx.fillStyle = '#1e293b';
+      srr(sctx, -0.38 * S, -1.61 * S, 0.11 * S, 0.18 * S, 0.04 * S);
+      sctx.fillStyle = '#ffd23f';
+      srr(sctx, 0.25 * S, -1.65 * S, 0.15 * S, 0.26 * S, 0.06 * S);
+      sctx.fillStyle = '#1e293b';
+      srr(sctx, 0.27 * S, -1.61 * S, 0.11 * S, 0.18 * S, 0.04 * S);
+    } else {
+      sctx.fillStyle = oObj.hair || '#3a2312';
+      sctx.beginPath();
+      sctx.arc(-0.31 * S, -1.58 * S, 0.085 * S, 0, 6.283);
+      sctx.fill();
+    }
+
+    // OJOS GRANDES CARTOON CON BRILLO ESPECULAR
+    if (oObj.visor) {
+      sctx.fillStyle = oObj.visor;
+      srr(sctx, -0.23 * S, -1.56 * S, 0.46 * S, 0.13 * S, 0.04 * S);
+      sctx.fillStyle = 'rgba(255,255,255,.7)';
+      sctx.fillRect(-0.19 * S, -1.53 * S, 0.19 * S, 0.03 * S);
+    } else {
+      var eyeY = -1.53 * S;
+      sctx.fillStyle = '#ffffff';
+      sctx.beginPath(); sctx.ellipse(-0.11 * S, eyeY, 0.075 * S, 0.09 * S, 0, 0, 6.283); sctx.fill();
+      sctx.beginPath(); sctx.ellipse(0.11 * S, eyeY, 0.075 * S, 0.09 * S, 0, 0, 6.283); sctx.fill();
+
+      sctx.fillStyle = '#451a03';
+      sctx.beginPath(); sctx.arc(-0.1 * S, eyeY, 0.05 * S, 0, 6.283); sctx.fill();
+      sctx.beginPath(); sctx.arc(0.1 * S, eyeY, 0.05 * S, 0, 6.283); sctx.fill();
+
+      sctx.fillStyle = '#0f172a';
+      sctx.beginPath(); sctx.arc(-0.1 * S, eyeY, 0.034 * S, 0, 6.283); sctx.fill();
+      sctx.beginPath(); sctx.arc(0.1 * S, eyeY, 0.034 * S, 0, 6.283); sctx.fill();
+
+      sctx.fillStyle = '#ffffff';
+      sctx.beginPath(); sctx.arc(-0.12 * S, eyeY - 0.022 * S, 0.022 * S, 0, 6.283); sctx.fill();
+      sctx.beginPath(); sctx.arc(0.08 * S, eyeY - 0.022 * S, 0.022 * S, 0, 6.283); sctx.fill();
+
+      sctx.strokeStyle = '#3a2312'; sctx.lineWidth = 3;
+      sctx.beginPath();
+      sctx.moveTo(-0.18 * S, eyeY - 0.095 * S); sctx.lineTo(-0.05 * S, eyeY - 0.105 * S);
+      sctx.moveTo(0.05 * S, eyeY - 0.105 * S); sctx.lineTo(0.18 * S, eyeY - 0.095 * S);
+      sctx.stroke();
+
+      sctx.strokeStyle = '#b91c1c'; sctx.lineWidth = 3;
+      sctx.beginPath();
+      sctx.arc(0, -1.4 * S, 0.088 * S, 0.2 * Math.PI, 0.8 * Math.PI);
+      sctx.stroke();
+    }
+
+    sctx.restore();
   }
 
-  function renderSkins() {
-    var u = unlocked();
-    var currentCoins = totalCoins + coins;
+  /* Bucle de animación del escenario 3D mientras el modal está abierto */
+  var scReqId = null;
+  function startShowcaseLoop() {
+    if (scReqId) cancelAnimationFrame(scReqId);
+    var scv = $('ssCharCanvas');
+    if (!scv) return;
+    var sctx = scv.getContext('2d');
+    function scStep() {
+      if (state !== 'skins') return;
+      var cObj = CHARACTERS.find(function (c) { return c.id === selectedCharId; }) || CHARACTERS[0];
+      var oObj = cObj.outfits.find(function (o) { return o.id === selectedOutfitId; }) || cObj.outfits[0];
+      drawShowcaseChar(sctx, cObj, oObj, performance.now() / 1000);
+      scReqId = requestAnimationFrame(scStep);
+    }
+    scReqId = requestAnimationFrame(scStep);
+  }
+  function stopShowcaseLoop() {
+    if (scReqId) cancelAnimationFrame(scReqId);
+    scReqId = null;
+  }
 
-    // 1. Selector rápido en Start Screen
-    var box = $('skins');
-    if (box) {
-      box.innerHTML = '';
-      SKINS.forEach(function (s, i) {
-        var b = document.createElement('button');
-        b.type = 'button';
-        var ok = isSkinUnlocked(s);
-        b.className = 'skin' + (i === skin ? ' sel' : '');
-        b.disabled = !ok;
-        b.innerHTML = '<span class="sw" style="background:linear-gradient(135deg,' + s.b + ' 50%,' + s.s + ' 50%)"></span>' + s.n + (ok ? '' : ' · 🔒');
-        b.addEventListener('click', function () {
-          skin = i;
-          try { localStorage.setItem('subwaydev-skin', String(i)); } catch (e) {}
-          sfx('power');
-          renderSkins();
+  /* Renderizado y Lógica General del Wardrobe Subway Surfers */
+  function renderSS() {
+    var curCoins = totalCoins + coins;
+    if ($('ssKeysVal')) $('ssKeysVal').textContent = totalKeys;
+    if ($('ssCoinsVal')) $('ssCoinsVal').textContent = curCoins;
+    if ($('ssBoardsVal')) $('ssBoardsVal').textContent = totalBoards;
+    if ($('ssMultVal')) $('ssMultVal').textContent = 'x' + mult;
+
+    // Actualizar botones de navegación inferior
+    document.querySelectorAll('.ss-nav-btn').forEach(function (btn) {
+      btn.classList.toggle('active', btn.getAttribute('data-tab') === activeSSTab);
+    });
+
+    // Mostrar pestaña activa
+    ['characters', 'boards', 'upgrades', 'collections'].forEach(function (tab) {
+      var el = $('tab-' + tab);
+      if (el) el.hidden = (tab !== activeSSTab);
+    });
+
+    if (activeSSTab === 'characters') renderSSCharacters();
+    else if (activeSSTab === 'boards') renderSSBoards();
+    else if (activeSSTab === 'upgrades') renderSSUpgrades();
+    else if (activeSSTab === 'collections') renderSSCollections();
+  }
+
+  function renderSSCharacters() {
+    var cObj = CHARACTERS.find(function (c) { return c.id === selectedCharId; }) || CHARACTERS[0];
+    var oObj = cObj.outfits.find(function (o) { return o.id === selectedOutfitId; }) || cObj.outfits[0];
+
+    if ($('ssCharName')) $('ssCharName').textContent = cObj.name;
+    if ($('ssOutfitName')) $('ssOutfitName').textContent = oObj.name;
+    if ($('ssCharHeart')) $('ssCharHeart').textContent = cObj.fav ? '❤️' : '🤍';
+
+    // 1. Columna lateral de Outfits
+    var ofStack = $('ssOutfitSidebar');
+    if (ofStack) {
+      ofStack.innerHTML = '';
+      cObj.outfits.forEach(function (outfit) {
+        var thumb = document.createElement('div');
+        var isCurrent = (outfit.id === selectedOutfitId);
+        thumb.className = 'ss-outfit-thumb' + (isCurrent ? ' active' : '');
+        thumb.style.background = 'linear-gradient(135deg,' + outfit.b + ' 40%,' + outfit.h + ' 100%)';
+        thumb.title = outfit.name;
+        thumb.textContent = outfit.star ? '⭐' : (outfit.headphones ? '🎧' : (outfit.visor ? '⚡' : '🧢'));
+        thumb.addEventListener('click', function () {
+          selectedOutfitId = outfit.id;
+          renderSS();
         });
-        box.appendChild(b);
+        ofStack.appendChild(thumb);
       });
     }
 
-    // 2. Vestidor completo en modal 'skinsModal'
-    var grid = $('skinsGrid');
-    var coinStatus = $('skinsCoinStatus');
-    if (coinStatus) {
-      coinStatus.innerHTML = '💰 Monedas acumuladas: <strong>' + currentCoins + '</strong> · 🎫 Estaciones desbloqueadas: <strong>' + u + '/4</strong>';
+    // 2. Botón de acción (Selected / Select / Desbloquear)
+    var actBtn = $('ssActionBtn');
+    if (actBtn) {
+      var isEquipped = (selectedCharId === activeCharId && selectedOutfitId === activeOutfitId);
+      var isUnlocked = (unlockedChars.indexOf(selectedCharId) !== -1 && unlockedOutfits.indexOf(selectedOutfitId) !== -1);
+      var curCoins = totalCoins + coins;
+
+      if (isEquipped) {
+        actBtn.textContent = 'Selected';
+        actBtn.className = 'ss-big-btn selected';
+        actBtn.disabled = true;
+      } else if (isUnlocked) {
+        actBtn.textContent = 'Select';
+        actBtn.className = 'ss-big-btn select';
+        actBtn.disabled = false;
+        actBtn.onclick = function () {
+          activeCharId = selectedCharId;
+          activeOutfitId = selectedOutfitId;
+          try {
+            localStorage.setItem('subwaydev-char', activeCharId);
+            localStorage.setItem('subwaydev-outfit', activeOutfitId);
+          } catch (e) {}
+          sfx('power');
+          toast('¡' + oObj.name + ' seleccionado!', 2000);
+          renderSS();
+        };
+      } else {
+        var costText = oObj.coinsNeed > 0 ? (oObj.coinsNeed + ' 🪙') : (oObj.keysNeed + ' 🔑');
+        actBtn.textContent = 'Desbloquear (' + costText + ')';
+        actBtn.className = 'ss-big-btn buy';
+        var canAfford = (oObj.coinsNeed > 0 ? curCoins >= oObj.coinsNeed : totalKeys >= oObj.keysNeed);
+        actBtn.disabled = !canAfford;
+        actBtn.onclick = function () {
+          if (oObj.coinsNeed > 0 && curCoins >= oObj.coinsNeed) {
+            totalCoins = Math.max(0, curCoins - oObj.coinsNeed);
+            coins = 0;
+            try { localStorage.setItem('subwaydev-totalcoins', String(totalCoins)); } catch (e) {}
+          } else if (oObj.keysNeed > 0 && totalKeys >= oObj.keysNeed) {
+            totalKeys = Math.max(0, totalKeys - oObj.keysNeed);
+            try { localStorage.setItem('subwaydev-totalkeys', String(totalKeys)); } catch (e) {}
+          } else return;
+
+          if (unlockedChars.indexOf(selectedCharId) === -1) unlockedChars.push(selectedCharId);
+          if (unlockedOutfits.indexOf(selectedOutfitId) === -1) unlockedOutfits.push(selectedOutfitId);
+          try {
+            localStorage.setItem('subwaydev-unlocked-chars', JSON.stringify(unlockedChars));
+            localStorage.setItem('subwaydev-unlocked-outfits', JSON.stringify(unlockedOutfits));
+          } catch (e) {}
+
+          activeCharId = selectedCharId;
+          activeOutfitId = selectedOutfitId;
+          try {
+            localStorage.setItem('subwaydev-char', activeCharId);
+            localStorage.setItem('subwaydev-outfit', activeOutfitId);
+          } catch (e) {}
+
+          sfx('token');
+          toast('¡' + oObj.name + ' desbloqueado!', 2500);
+          renderSS();
+        };
+      }
     }
+
+    // 3. Grid inferior de personajes
+    var grid = $('ssCharGrid');
     if (grid) {
       grid.innerHTML = '';
-      SKINS.forEach(function (s, i) {
+      var query = ($('ssCharSearch') ? $('ssCharSearch').value : '').toLowerCase().trim();
+      CHARACTERS.forEach(function (char) {
+        if (query && char.name.toLowerCase().indexOf(query) === -1 && char.sub.toLowerCase().indexOf(query) === -1) return;
         var card = document.createElement('div');
-        var ok = isSkinUnlocked(s);
-        var isCurrent = (i === skin);
-        card.className = 'skin-card' + (isCurrent ? ' active' : '') + (!ok ? ' locked' : '');
+        var isSelected = (char.id === selectedCharId);
+        var isCharUnlocked = (unlockedChars.indexOf(char.id) !== -1);
+        card.className = 'ss-char-card' + (isSelected ? ' active' : '') + (!isCharUnlocked ? ' locked' : '');
 
-        var topHtml = '<div class="skin-top">' +
-          '<div class="skin-avatar" style="background:linear-gradient(135deg,' + s.b + ' 40%,' + s.h + ' 100%)">' + s.icon + '</div>' +
-          '<div class="skin-info">' +
-            '<h3 class="skin-name">' + s.n + '</h3>' +
-            '<span class="skin-sub">' + s.sub + '</span>' +
-          '</div></div>';
+        card.innerHTML =
+          '<span class="ss-char-card-badge">' + char.badge + '</span>' +
+          '<div class="ss-char-card-avatar" style="background:linear-gradient(135deg,' + char.outfits[0].b + ' 40%,' + char.outfits[0].h + ' 100%)">' + char.icon + '</div>' +
+          '<h5 class="ss-char-card-name">' + char.name + '</h5>' +
+          '<span class="ss-char-card-check">' + (isCharUnlocked ? '✓' : '🔒') + '</span>';
 
-        var descHtml = '<p class="skin-desc">' + s.desc + '</p>';
-
-        var btnText = '';
-        var btnClass = 'skin-act';
-        var btnDisabled = false;
-
-        if (isCurrent) {
-          btnText = '✓ SELECCIONADO';
-          btnClass += ' sel';
-          btnDisabled = true;
-        } else if (ok) {
-          btnText = 'ELEGIR';
-        } else {
-          btnText = 'DESBLOQUEAR (' + s.coinsNeed + ' 💰)';
-          btnClass += ' buy';
-          btnDisabled = (currentCoins < s.coinsNeed && u < s.stopsNeed);
-        }
-
-        var btnHtml = '<button class="' + btnClass + '" type="button"' + (btnDisabled ? ' disabled' : '') + '>' + btnText + '</button>';
-
-        card.innerHTML = topHtml + descHtml + btnHtml;
-
-        var btnEl = card.querySelector('button');
-        btnEl.addEventListener('click', function () {
-          unlockSkin(s, i);
+        card.addEventListener('click', function () {
+          selectedCharId = char.id;
+          selectedOutfitId = char.outfits[0].id;
+          renderSS();
         });
-
         grid.appendChild(card);
       });
     }
   }
 
+  function renderSSBoards() {
+    var cont = $('ssBoardsContainer');
+    if (!cont) return;
+    cont.innerHTML = '<h3 style="font-family:var(--display);font-size:22px;margin:0 0 4px;color:#1e3a8a">HOVERBOARDS</h3><p style="margin:0 0 12px;font-size:14px;color:#64748b">Activa tu patineta con doble tap o tecla H para protegerte de choques.</p>';
+    var curCoins = totalCoins + coins;
+
+    BOARDS_DATA.forEach(function (b) {
+      var row = document.createElement('div');
+      var isEquipped = (b.id === activeBoardId);
+      var isUnlocked = (unlockedBoards.indexOf(b.id) !== -1);
+      row.className = 'ss-item-row' + (isEquipped ? ' active' : '');
+
+      var leftHtml =
+        '<div class="ss-item-icon" style="background:linear-gradient(135deg,' + b.col + ' 40%,' + b.col2 + ' 100%)">' + b.icon + '</div>' +
+        '<div class="ss-item-info">' +
+          '<h4>' + b.name + '</h4>' +
+          '<p>' + b.desc + '</p>' +
+        '</div>';
+
+      var btnHtml = '';
+      if (isEquipped) {
+        btnHtml = '<button class="ss-big-btn selected" style="font-size:14px;padding:6px 18px" disabled>Equipada</button>';
+      } else if (isUnlocked) {
+        btnHtml = '<button class="ss-big-btn select" style="font-size:14px;padding:6px 18px">Equipar</button>';
+      } else {
+        btnHtml = '<button class="ss-big-btn buy" style="font-size:14px;padding:6px 18px"' + (curCoins < b.coinsNeed ? ' disabled' : '') + '>Comprar (' + b.coinsNeed + ' 🪙)</button>';
+      }
+
+      row.innerHTML = leftHtml + btnHtml;
+      var btnEl = row.querySelector('button');
+      if (btnEl && !isEquipped) {
+        btnEl.addEventListener('click', function () {
+          if (isUnlocked) {
+            activeBoardId = b.id;
+            try { localStorage.setItem('subwaydev-board', activeBoardId); } catch (e) {}
+            sfx('boardon');
+            toast('¡Patineta ' + b.name + ' equipada!', 2000);
+          } else if (curCoins >= b.coinsNeed) {
+            totalCoins = Math.max(0, curCoins - b.coinsNeed);
+            coins = 0;
+            try { localStorage.setItem('subwaydev-totalcoins', String(totalCoins)); } catch (e) {}
+            unlockedBoards.push(b.id);
+            try { localStorage.setItem('subwaydev-unlocked-boards', JSON.stringify(unlockedBoards)); } catch (e) {}
+            activeBoardId = b.id;
+            try { localStorage.setItem('subwaydev-board', activeBoardId); } catch (e) {}
+            sfx('power');
+            toast('¡Patineta ' + b.name + ' desbloqueada!', 2200);
+          }
+          renderSS();
+        });
+      }
+      cont.appendChild(row);
+    });
+  }
+
+  function renderSSUpgrades() {
+    var cont = $('ssUpgradesContainer');
+    if (!cont) return;
+    cont.innerHTML = '<h3 style="font-family:var(--display);font-size:22px;margin:0 0 4px;color:#1e3a8a">MEJORAS DE POWER-UPS</h3><p style="margin:0 0 12px;font-size:14px;color:#64748b">Gasta tus monedas acumuladas para extender la duración de tus poderes en carrera.</p>';
+    var curCoins = totalCoins + coins;
+
+    UPGRADES_DATA.forEach(function (up) {
+      var lvl = upgradeLevels[up.id] || 1;
+      var cost = lvl * 100;
+      var isMax = lvl >= up.max;
+      var row = document.createElement('div');
+      row.className = 'ss-item-row';
+
+      var dotsHtml = '<div class="ss-level-bar">';
+      for (var d = 1; d <= up.max; d++) {
+        dotsHtml += '<span class="ss-level-dot' + (d <= lvl ? ' on' : '') + '"></span>';
+      }
+      dotsHtml += '</div>';
+
+      var leftHtml =
+        '<div class="ss-item-icon" style="background:#e0f2fe;color:#0284c7">' + up.icon + '</div>' +
+        '<div class="ss-item-info">' +
+          '<h4>' + up.name + ' (Nivel ' + lvl + '/' + up.max + ')</h4>' +
+          '<p>' + up.desc + '</p>' +
+          dotsHtml +
+        '</div>';
+
+      var btnHtml = isMax
+        ? '<button class="ss-big-btn selected" style="font-size:14px;padding:6px 14px" disabled>MAX</button>'
+        : '<button class="ss-big-btn buy" style="font-size:13px;padding:6px 14px"' + (curCoins < cost ? ' disabled' : '') + '>Subir (' + cost + ' 🪙)</button>';
+
+      row.innerHTML = leftHtml + btnHtml;
+      var btnEl = row.querySelector('button');
+      if (btnEl && !isMax) {
+        btnEl.addEventListener('click', function () {
+          if (curCoins >= cost) {
+            totalCoins = Math.max(0, curCoins - cost);
+            coins = 0;
+            upgradeLevels[up.id] = lvl + 1;
+            try {
+              localStorage.setItem('subwaydev-totalcoins', String(totalCoins));
+              localStorage.setItem('subwaydev-upgrades', JSON.stringify(upgradeLevels));
+            } catch (e) {}
+            refreshPWDUR();
+            sfx('power');
+            toast('¡' + up.name + ' mejorado a Nivel ' + (lvl + 1) + '!', 2200);
+            renderSS();
+          }
+        });
+      }
+      cont.appendChild(row);
+    });
+  }
+
+  function renderSSCollections() {
+    var cont = $('ssCollectionsContainer');
+    if (!cont) return;
+    cont.innerHTML = '<h3 style="font-family:var(--display);font-size:22px;margin:0 0 4px;color:#1e3a8a">COLECCIONES & RECOMPENSAS</h3><p style="margin:0 0 12px;font-size:14px;color:#64748b">Desbloquea las estaciones del portafolio en carrera para reclamar premios.</p>';
+
+    COLLECTIONS_DATA.forEach(function (col, idx) {
+      var isUnlocked = found[idx] || (unlocked() > idx);
+      var isClaimed = (claimedCollections.indexOf(col.id) !== -1);
+      var row = document.createElement('div');
+      row.className = 'ss-item-row' + (isClaimed ? ' active' : '');
+
+      var leftHtml =
+        '<div class="ss-item-icon" style="background:#fef3c7;color:#d97706">🎫</div>' +
+        '<div class="ss-item-info">' +
+          '<h4>' + col.name + '</h4>' +
+          '<p>' + col.desc + '</p>' +
+          '<span style="font-size:12px;font-weight:700;color:#059669">+' + col.rCoins + ' 🪙  +' + col.rKeys + ' 🔑</span>' +
+        '</div>';
+
+      var btnHtml = '';
+      if (isClaimed) {
+        btnHtml = '<button class="ss-big-btn selected" style="font-size:13px;padding:6px 14px" disabled>Reclamado ✓</button>';
+      } else if (isUnlocked) {
+        btnHtml = '<button class="ss-big-btn select" style="font-size:13px;padding:6px 14px">¡Reclamar!</button>';
+      } else {
+        btnHtml = '<button class="ss-big-btn" style="font-size:13px;padding:6px 14px;background:#cbd5e1;color:#64748b" disabled>Bloqueado 🔒</button>';
+      }
+
+      row.innerHTML = leftHtml + btnHtml;
+      var btnEl = row.querySelector('button');
+      if (btnEl && isUnlocked && !isClaimed) {
+        btnEl.addEventListener('click', function () {
+          claimedCollections.push(col.id);
+          totalCoins += col.rCoins;
+          totalKeys += col.rKeys;
+          try {
+            localStorage.setItem('subwaydev-claimed-col', JSON.stringify(claimedCollections));
+            localStorage.setItem('subwaydev-totalcoins', String(totalCoins));
+            localStorage.setItem('subwaydev-totalkeys', String(totalKeys));
+          } catch (e) {}
+          sfx('token');
+          toast('¡Recompensa reclamada: +' + col.rCoins + ' monedas y +' + col.rKeys + ' llaves!', 2500);
+          renderSS();
+        });
+      }
+      cont.appendChild(row);
+    });
+  }
+
+  function renderSkins() { renderSS(); }
+
   function openSkins() {
     if (state !== 'skins') prevState = state;
     state = 'skins';
     showFor('skins');
-    renderSkins();
+    renderSS();
+    startShowcaseLoop();
     blurAll();
   }
   function closeSkins() {
+    stopShowcaseLoop();
     state = prevState || 'start';
     showFor(state);
     if (state === 'start') refreshStart();
     blurAll();
   }
-  function refreshStart() { renderSkins(); $('bestLine').textContent = best ? 'Récord: ' + best + ' puntos' : ''; }
+  function refreshStart() { renderSS(); $('bestLine').textContent = best ? 'Récord: ' + best + ' puntos' : ''; }
   function startGame() {
     reset(); state = 'play'; showFor('play'); blurAll(); musicStart();
     sfx('whistle');
@@ -990,6 +2146,72 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
     openSkins();
   });
   $('closeSkinsModal').addEventListener('click', closeSkins);
+
+  // Navegación entre las 4 pestañas de la tienda y vestidor estilo Subway Surfers
+  document.querySelectorAll('.ss-nav-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      activeSSTab = btn.getAttribute('data-tab');
+      sfx('tap');
+      renderSS();
+    });
+  });
+
+  // Favorito del personaje actual
+  if ($('ssCharHeart')) {
+    $('ssCharHeart').addEventListener('click', function () {
+      var cObj = CHARACTERS.find(function (c) { return c.id === selectedCharId; });
+      if (cObj) {
+        cObj.fav = !cObj.fav;
+        sfx('token');
+        renderSSCharacters();
+      }
+    });
+  }
+
+  // Buscador de personajes en el cajón inferior
+  if ($('ssCharSearch')) {
+    $('ssCharSearch').addEventListener('input', function () {
+      renderSSCharacters();
+    });
+  }
+
+  // Botones de recursos en la barra superior (+)
+  if ($('ssAddKeysBtn')) {
+    $('ssAddKeysBtn').addEventListener('click', function () {
+      totalKeys += 5;
+      try { localStorage.setItem('subwaydev-totalkeys', String(totalKeys)); } catch (e) {}
+      sfx('token');
+      toast('¡+5 Llaves añadidas a tu inventario!', 1800);
+      renderSS();
+    });
+  }
+  if ($('ssAddCoinsBtn')) {
+    $('ssAddCoinsBtn').addEventListener('click', function () {
+      totalCoins += 500;
+      try { localStorage.setItem('subwaydev-totalcoins', String(totalCoins)); } catch (e) {}
+      sfx('coin');
+      toast('¡+500 Monedas doradas añadidas!', 1800);
+      renderSS();
+    });
+  }
+  if ($('ssAddBoardsBtn')) {
+    $('ssAddBoardsBtn').addEventListener('click', function () {
+      totalBoards += 10;
+      try { localStorage.setItem('subwaydev-totalboards', String(totalBoards)); } catch (e) {}
+      sfx('boardon');
+      toast('¡+10 Hoverboards listas para surfear!', 1800);
+      renderSS();
+    });
+  }
+  if ($('ssSoundToggle')) {
+    $('ssSoundToggle').addEventListener('click', function () {
+      sfxOn = !sfxOn;
+      musicOn = sfxOn;
+      if (!musicOn) musicStop();
+      else if (state === 'play') musicStart();
+      toast(sfxOn ? 'Sonido del juego activado 🔊' : 'Sonido del juego silenciado 🔇', 1800);
+    });
+  }
   $('pauseBtn').addEventListener('click', function () { if (state === 'play') pauseGame(); else if (state === 'pause') resumeGame(); });
   $('todBtn').addEventListener('click', toggleTOD);
   $('resume').addEventListener('click', resumeGame);
