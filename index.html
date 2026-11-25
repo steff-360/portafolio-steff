@@ -1,174 +1,1012 @@
 <!doctype html>
-<html lang="es" data-theme="dark">
+<html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <meta name="theme-color" content="#090d16">
-  <meta name="description" content="Stefani Sánchez — Portafolio Videojuego Interactivo. Full Stack Developer especializada en Node.js, PostgreSQL, TypeScript, Docker y EdTech.">
-  <title>Stefani Sánchez · Interactive Portfolio Game</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vía Libre · Stefani Sánchez — Portafolio Jugable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: pantalla completa. Canvas del juego al fondo, HUD arriba, tarjetas de parada (tickets) sobre un velo. Patio de vías que pasa de atardecer a noche y amanecer. */
+:root {
+  --ink: #0f1a22;
+  --ink-2: #1b2c38;
+  --lamp: #ffd23f;
+  --signal: #e8503a;
+  --teal: #2fb8a6;
+  --paper: #f4efe6;
+  --mute: #9fb3bf;
+  --display: 'Bungee', 'Impact', sans-serif;
+  --body: 'Barlow', system-ui, sans-serif;
+  --cond: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  position: relative; margin: 0; background: var(--ink); color: var(--paper);
+  font-family: var(--body); overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none;
+}
+#game { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.vig { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 48%, transparent 52%, rgba(5, 10, 14, .6)); }
+
+.hud {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 2; pointer-events: none;
+  padding-block: 12px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 10px 16px;
+}
+.score-box { display: flex; flex-direction: column; gap: 4px; }
+.score { font-family: var(--display); font-size: clamp(28px, 7vw, 40px); line-height: 1; text-shadow: 0 3px 0 rgba(0,0,0,.4); font-variant-numeric: tabular-nums; }
+.score small { display: block; font-family: var(--cond); font-size: 13px; letter-spacing: .18em; color: var(--lamp); text-shadow: none; margin-bottom: 2px; }
+.mult { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 3px; background: var(--lamp); color: var(--ink); font-size: 16px; vertical-align: 8px; text-shadow: none; transition: transform .15s; }
+.mult.pop { transform: scale(1.4); }
+.meta { display: flex; align-items: center; gap: 16px; font-family: var(--cond); font-weight: 700; font-size: 19px; letter-spacing: .06em; text-shadow: 0 2px 0 rgba(0,0,0,.4); }
+.coin-n { display: inline-flex; align-items: center; gap: 7px; }
+.coin-dot { width: 15px; height: 15px; border-radius: 50%; background: var(--lamp); box-shadow: inset -3px -3px 0 rgba(0,0,0,.2), 0 0 10px rgba(255,210,63,.6); }
+.lives { display: inline-flex; gap: 6px; }
+.lives i { width: 12px; height: 12px; border-radius: 50%; background: var(--signal); box-shadow: 0 0 8px rgba(232,80,58,.8); }
+.lives i.off { background: transparent; box-shadow: none; border: 2px solid rgba(244,239,230,.35); }
+.powers { display: flex; flex-wrap: wrap; gap: 6px; min-height: 26px; }
+.pw-chip { position: relative; overflow: hidden; font-family: var(--cond); font-weight: 700; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; padding: 4px 9px 7px; border-radius: 3px; background: rgba(15,26,34,.75); border: 1px solid currentColor; }
+.pw-chip i { position: absolute; left: 0; bottom: 0; height: 3px; background: currentColor; width: 100%; }
+.pw-magnet { color: #ff7b62; } .pw-shield { color: #5fe0cd; } .pw-x2 { color: var(--lamp); }
+.controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: flex-end; }
+.pip, .sbtn {
+  pointer-events: auto; cursor: pointer; font-family: var(--cond); font-weight: 700; font-size: 14px; letter-spacing: .08em; text-transform: uppercase;
+  padding: 6px 10px; border-radius: 3px; color: var(--mute); background: rgba(15,26,34,.6); border: 1px dashed rgba(244,239,230,.35);
+}
+.pip.on { background: var(--lamp); color: var(--ink); border: 1px solid var(--lamp); }
+.sbtn { border-style: solid; color: var(--paper); }
+.pip:focus-visible, .sbtn:focus-visible, .btn:focus-visible, .skin:focus-visible { outline: 3px solid var(--lamp); outline-offset: 2px; }
+
+.overlay {
+  position: absolute; inset: 0; z-index: 5; display: grid; place-items: center; overflow-y: auto;
+  padding-block: 24px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background: rgba(8, 14, 20, .55); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+}
+.hero { text-align: center; max-width: 580px; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.hero > * { animation: rise .6s cubic-bezier(.2,.8,.2,1) both; }
+.hero > *:nth-child(2) { animation-delay: .07s; } .hero > *:nth-child(3) { animation-delay: .14s; }
+.hero > *:nth-child(4) { animation-delay: .21s; } .hero > *:nth-child(5) { animation-delay: .28s; } .hero > *:nth-child(6) { animation-delay: .35s; }
+@keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+.hero h1 { margin: 0; font-family: var(--display); font-weight: 400; font-size: clamp(56px, 15vw, 116px); line-height: .88; text-wrap: balance; text-shadow: 0 5px 0 var(--signal), 0 12px 28px rgba(0,0,0,.45); }
+.rails { width: min(320px, 70%); height: 14px; background:
+  repeating-linear-gradient(90deg, #2a2420 0 8px, transparent 8px 22px) center / 100% 100% no-repeat,
+  linear-gradient(#9aa7ae, #9aa7ae) 0 3px / 100% 2px no-repeat, linear-gradient(#9aa7ae, #9aa7ae) 0 9px / 100% 2px no-repeat; opacity: .85; }
+.hero .sub { margin: 0; font-family: var(--cond); font-weight: 700; font-size: 18px; letter-spacing: .16em; text-transform: uppercase; color: var(--lamp); }
+.hero .lead { margin: 0; font-size: 17px; line-height: 1.45; max-width: 46ch; text-wrap: balance; }
+.row { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+.btn { font-family: var(--display); font-size: 17px; cursor: pointer; padding: 13px 24px; border-radius: 4px; border: 2px solid var(--paper); background: transparent; color: var(--paper); text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+.btn.primary { background: var(--lamp); border-color: var(--lamp); color: var(--ink); box-shadow: 0 4px 0 #b88e0a; }
+.btn.primary:active { transform: translateY(3px); box-shadow: 0 1px 0 #b88e0a; }
+.btn[disabled] { opacity: .35; cursor: default; }
+.skins { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.skin { display: inline-flex; align-items: center; gap: 8px; padding: 6px 11px; border-radius: 4px; border: 2px solid rgba(244,239,230,.3); background: rgba(15,26,34,.55); color: var(--paper); font-family: var(--cond); font-weight: 700; font-size: 14px; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
+.skin.sel { border-color: var(--lamp); }
+.skin[disabled] { opacity: .5; cursor: default; }
+.sw { width: 14px; height: 14px; border-radius: 50%; }
+.best { margin: 0; font-family: var(--cond); font-weight: 700; font-size: 16px; letter-spacing: .12em; text-transform: uppercase; color: var(--mute); }
+.keys { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 6px 14px; width: 100%; font-family: var(--cond); font-weight: 600; font-size: 15px; letter-spacing: .04em; color: var(--mute); }
+.keys b { color: var(--paper); font-weight: 700; }
+.over-stats { margin: 0; font-family: var(--cond); font-weight: 600; font-size: 20px; letter-spacing: .04em; line-height: 1.5; }
+.newbest { color: var(--lamp); font-family: var(--display); font-size: 18px; margin: 0; }
+
+.ticket { position: relative; width: 100%; max-width: 520px; background: var(--paper); color: var(--ink); border-radius: 6px; overflow: hidden; box-shadow: 0 18px 50px rgba(0,0,0,.55); animation: rise .35s cubic-bezier(.2,.8,.2,1) both; }
+.ticket::after { content: attr(data-n); position: absolute; right: 14px; top: 38px; font-family: var(--display); font-size: 96px; line-height: 1; color: rgba(15,26,34,.07); pointer-events: none; }
+.t-head { display: flex; justify-content: space-between; gap: 12px; padding: 10px 20px; background: var(--ink-2); color: var(--lamp); font-family: var(--cond); font-weight: 700; font-size: 15px; letter-spacing: .14em; text-transform: uppercase; }
+.t-body { position: relative; z-index: 1; padding: 20px 22px 6px; max-height: calc(100dvh - 230px); overflow-y: auto; touch-action: pan-y; user-select: text; -webkit-user-select: text; }
+.t-body h2 { margin: 0 0 12px; font-family: var(--display); font-weight: 400; font-size: clamp(24px, 6vw, 30px); line-height: 1.05; text-wrap: balance; }
+.t-body p { margin: 0 0 12px; font-size: 16px; line-height: 1.5; }
+.t-foot { position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; padding: 14px 22px 20px; border-top: 2px dashed rgba(15,26,34,.25); margin-top: 8px; }
+.ticket .btn { color: var(--ink); border-color: var(--ink); font-size: 15px; padding: 10px 18px; }
+.ticket .btn.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); box-shadow: 0 3px 0 #000; }
+.facts { margin: 4px 0 8px; display: grid; gap: 8px; }
+.facts div { display: grid; grid-template-columns: 110px 1fr; gap: 10px; border-top: 1px solid rgba(15,26,34,.15); padding-top: 8px; }
+.facts dt { font-family: var(--cond); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; font-size: 13px; color: #5b6b76; margin: 0; padding-top: 2px; }
+.facts dd { margin: 0; font-size: 16px; line-height: 1.35; }
+.list { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 10px; }
+.list li { border-top: 1px solid rgba(15,26,34,.15); padding-top: 9px; font-size: 16px; line-height: 1.4; }
+.list strong { font-family: var(--cond); font-size: 18px; letter-spacing: .02em; display: block; }
+ol.list { counter-reset: s; }
+ol.list li { counter-increment: s; padding-left: 38px; position: relative; }
+ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px; width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: var(--lamp); font-family: var(--display); font-size: 13px; display: grid; place-items: center; }
+.badge { display: inline-block; margin-left: 8px; padding: 1px 7px; border-radius: 3px; font-family: var(--cond); font-weight: 700; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; vertical-align: 2px; background: var(--teal); color: var(--ink); text-decoration: none; }
+.badge.idea { background: transparent; border: 1px dashed #5b6b76; color: #5b6b76; }
+.badge.link { background: var(--signal); color: #fff; }
+
+.toast { position: absolute; z-index: 6; left: 50%; transform: translateX(-50%); bottom: calc(24px + env(safe-area-inset-bottom, 0px)); max-width: calc(100% - 32px); padding: 10px 16px; border-radius: 4px; background: var(--paper); color: var(--ink); font-family: var(--cond); font-weight: 700; font-size: 17px; letter-spacing: .03em; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,.45); pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .hero > *, .ticket { animation: none; } .mult { transition: none; } }
+.pip .n { display: none; }
+@media (max-width: 480px) {
+  .facts div { grid-template-columns: 1fr; gap: 2px; } .controls { justify-content: flex-start; gap: 4px; }
+  .pip .full { display: none; } .pip .n { display: inline; }
+  .pip, .sbtn { font-size: 13px; padding: 5px 9px; }
+}
+</style>
 </head>
 <body>
+<canvas id="game" role="img" aria-label="Juego de carreras Vía Libre: corre por las vías y recoge las paradas del portafolio de Stefani"></canvas>
+<div class="vig"></div>
 
-  <!-- MUNDO DEL VIDEOJUEGO (SIDE-SCROLLER CINEMATOGRÁFICO) -->
-  <canvas id="world-canvas"></canvas>
-
-  <!-- HUD SUPERIOR PROFESIONAL -->
-  <header class="hud-header">
-    <div class="hud-brand">
-      <img src="./Captura%20de%20pantalla%202026-09-18%20150116.png" alt="Stefani Sánchez" class="hud-avatar">
-      <div class="hud-identity">
-        <strong>Stefani Sánchez</strong>
-        <span>Full Stack Developer · Interactive Story</span>
-      </div>
+<div class="hud">
+  <div class="score-box">
+    <div class="score"><small>PUNTOS</small><span id="scoreN">0</span><span class="mult" id="mult" hidden>x2</span></div>
+    <div class="meta">
+      <span id="dist">0 m</span>
+      <span class="coin-n"><span class="coin-dot"></span><span id="coins">0</span></span>
+      <span class="lives" id="lives" aria-label="Vidas"><i></i><i></i><i></i></span>
     </div>
-
-    <div class="hud-center">
-      <div class="chapter-pill">
-        <span class="cp-dot"></span>
-        <span id="hud-zone">01 · INICIO</span>
-      </div>
-      <div class="progress-track" aria-label="Progreso del recorrido">
-        <div class="progress-fill" id="hud-progress"></div>
-      </div>
-    </div>
-
-    <div class="hud-controls">
-      <button class="hud-btn" id="theme-toggle" type="button" aria-label="Cambiar modo Claro u Oscuro" title="Cambiar modo Claro / Oscuro">
-        <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="5"></circle>
-          <line x1="12" y1="1" x2="12" y2="3"></line>
-          <line x1="12" y1="21" x2="12" y2="23"></line>
-          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-          <line x1="1" y1="12" x2="3" y2="12"></line>
-          <line x1="21" y1="12" x2="23" y2="12"></line>
-          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-        </svg>
-        <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-        </svg>
-        <span id="theme-label">Claro</span>
-      </button>
-
-      <button class="hud-btn" id="sound-toggle" type="button" aria-label="Activar o silenciar sonido" title="Sonido">
-        <span id="sound-icon">🔊</span>
-      </button>
-
-      <button class="hud-btn hud-btn-accent" id="open-overview" type="button">
-        Resumen CV
-      </button>
-    </div>
-  </header>
-
-  <!-- PANEL NARRATIVO / INSPECTOR DE ZONA (SE ACTUALIZA AL CAMINAR) -->
-  <section class="story-card" id="story-card" aria-live="polite">
-    <div class="sc-header">
-      <span class="sc-tag" id="sc-tag">CAPÍTULO 01 · PRESENTACIÓN</span>
-      <span class="sc-counter" id="sc-counter">1 / 12</span>
-    </div>
-    <h2 class="sc-title" id="sc-title">Hola, soy Stefani Sánchez.</h2>
-    <p class="sc-body" id="sc-body">
-      Desarrolladora Full Stack especializada en Node.js, PostgreSQL, TypeScript y Docker. Camina hacia la derecha con las flechas para recorrer mi historia, proyectos y habilidades.
-    </p>
-    <div class="sc-tags" id="sc-tags"></div>
-    <div class="sc-actions" id="sc-actions"></div>
-  </section>
-
-  <!-- BARRA DE NAVEGACIÓN POR CAPÍTULOS (CAMINA AUTOMÁTICO O SALTA DIRECTO) -->
-  <nav class="chapter-nav" aria-label="Capítulos del portafolio">
-    <button class="chap-btn is-active" data-zone="0" type="button">01. Quién soy</button>
-    <button class="chap-btn" data-zone="1" type="button">02. Perfil</button>
-    <button class="chap-btn" data-zone="2" type="button">03. Proyectos</button>
-    <button class="chap-btn" data-zone="3" type="button">04. Stack</button>
-    <button class="chap-btn" data-zone="4" type="button">05. Contacto</button>
-  </nav>
-
-  <!-- CONTROLES TÁCTILES / EN PANTALLA -->
-  <div class="pad-controls">
-    <button class="pad-btn" id="btn-left" type="button" aria-label="Caminar a la izquierda">◀</button>
-    <button class="pad-btn" id="btn-jump" type="button" aria-label="Saltar">▲</button>
-    <button class="pad-btn" id="btn-right" type="button" aria-label="Caminar a la derecha">▶</button>
-  </div>
-
-  <!-- PANTALLA DE BIENVENIDA -->
-  <div class="intro-overlay is-active" id="intro-overlay">
-    <div class="intro-card">
-      <div class="intro-top">
-        <img src="./Captura%20de%20pantalla%202026-09-18%20150116.png" alt="Stefani Sánchez" class="intro-avatar">
-        <div>
-          <span class="intro-kicker">PORTAFOLIO INTERACTIVO</span>
-          <h1>Stefani Sánchez<span>.</span></h1>
-          <p class="intro-role">Full Stack Developer · Arquitectura Backend &amp; EdTech</p>
-        </div>
-      </div>
-
-      <p class="intro-desc">
-        Recorre mi portafolio como una experiencia interactiva. Camina por cada estación para conocer quién soy, explorar mis <strong>6 proyectos reales</strong>, revisar mi stack técnico y contactarme directamente.
-      </p>
-
-      <div class="intro-keys">
-        <div><kbd>←</kbd><kbd>→</kbd> o <kbd>A</kbd><kbd>D</kbd> <span>Caminar</span></div>
-        <div><kbd>↑</kbd> / <kbd>Espacio</kbd> <span>Saltar</span></div>
-        <div><kbd>Click</kbd> en capítulos <span>Ir directo</span></div>
-      </div>
-
-      <div class="intro-actions">
-        <button class="btn-start" id="start-game-btn" type="button">Iniciar recorrido interactivo →</button>
-        <button class="btn-overview" id="intro-overview-btn" type="button">Ver resumen ejecutivo</button>
-      </div>
+    <div class="powers">
+      <span class="pw-chip pw-magnet" id="pwMagnet" hidden>Imán<i></i></span>
+      <span class="pw-chip pw-shield" id="pwShield" hidden>Escudo<i></i></span>
+      <span class="pw-chip pw-x2" id="pwX2" hidden>Monedas x2<i></i></span>
     </div>
   </div>
+  <div class="controls">
+    <span id="pips" style="display:contents"></span>
+    <button class="sbtn" id="pauseBtn" type="button" aria-label="Pausa">Pausa</button>
+    <button class="sbtn" id="sound" type="button">Sonido: sí</button>
+  </div>
+</div>
 
-  <!-- MODAL DE RESUMEN EJECUTIVO (PARA RECLUTADORES) -->
-  <aside class="overview-modal" id="overview-modal" aria-hidden="true">
-    <div class="om-backdrop" id="om-backdrop"></div>
-    <div class="om-panel">
-      <div class="om-header">
-        <div>
-          <h2>Stefani Sánchez — Resumen Ejecutivo</h2>
-          <p>Full Stack Developer · Node.js · PostgreSQL · TypeScript · Docker</p>
-        </div>
-        <button class="om-close" id="om-close" type="button" aria-label="Cerrar resumen">✕</button>
-      </div>
-
-      <div class="om-body">
-        <section class="om-sec">
-          <h3>Sobre mí</h3>
-          <p>
-            Desarrolladora Full Stack enfocada en arquitectura backend limpia, bases de datos relacionales con PostgreSQL, contenedores Docker, pruebas con Jest y experiencias educativas gamificadas (EdTech).
-          </p>
-        </section>
-
-        <section class="om-sec">
-          <h3>Proyectos (6)</h3>
-          <div class="om-projects" id="om-projects"></div>
-        </section>
-
-        <section class="om-sec">
-          <h3>Stack Técnico</h3>
-          <div class="om-skills" id="om-skills"></div>
-        </section>
-
-        <section class="om-sec">
-          <h3>Contacto Directo</h3>
-          <div class="om-contact">
-            <code>steff.18random@gmail.com</code>
-            <button class="om-copy-btn" id="om-copy-btn" type="button">Copiar correo</button>
-            <a href="https://www.linkedin.com/in/stefani-s%C3%A1nchez-b35b65279" target="_blank" rel="noopener noreferrer" class="om-link">LinkedIn ↗</a>
-            <a href="https://github.com/steff-360" target="_blank" rel="noopener noreferrer" class="om-link">GitHub ↗</a>
-          </div>
-        </section>
-      </div>
+<section class="overlay" id="start">
+  <div class="hero">
+    <p class="sub">Portafolio de Stefani Sánchez · Full Stack & EdTech</p>
+    <h1>VÍA<br>LIBRE</h1>
+    <div class="rails" aria-hidden="true"></div>
+    <p class="lead">Corre por las vías del código. Cada ficha brillante desbloquea una parada que cuenta quién soy, mis proyectos y mi stack.</p>
+    <div class="skins" id="skins" role="group" aria-label="Traje"></div>
+    <div class="row">
+      <button class="btn primary" id="play" type="button">Correr</button>
+      <button class="btn" id="read" type="button">Leer sin jugar</button>
     </div>
-  </aside>
+    <p class="best" id="bestLine"></p>
+    <div class="keys">
+      <span><b>← →</b> o <b>A D</b> carriles</span>
+      <span><b>↑</b> o <b>Espacio</b> salta</span>
+      <span><b>↓</b> o <b>S</b> desliza</span>
+      <span><b>P</b> pausa · en móvil, <b>desliza</b></span>
+    </div>
+  </div>
+</section>
 
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<section class="overlay" id="pause" hidden>
+  <div class="hero">
+    <p class="sub">En pausa</p>
+    <h1 style="font-size:clamp(44px,12vw,84px)">RESPIRA</h1>
+    <div class="row"><button class="btn primary" id="resume" type="button">Continuar</button></div>
+  </div>
+</section>
 
-  <script src="./script.js" defer></script>
+<section class="overlay" id="over" hidden>
+  <div class="hero">
+    <p class="sub">Fin de línea</p>
+    <h1 style="font-size:clamp(40px,11vw,76px)">SE ACABÓ<br>EL TREN</h1>
+    <p class="newbest" id="newBest" hidden>Nuevo récord</p>
+    <p class="over-stats" id="overStats"></p>
+    <div class="row">
+      <button class="btn primary" id="again" type="button">Correr otra vez</button>
+      <button class="btn" id="readOver" type="button">Leer portafolio</button>
+    </div>
+  </div>
+</section>
+
+<section class="overlay" id="card" hidden></section>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+
+  /* ---------- Contenido del portafolio real de Stefani ---------- */
+  var SECTIONS = [
+    { k: 'Quién soy', title: 'Hola, soy Stefani Sánchez.',
+      html: '<p>Soy desarrolladora <strong>Full Stack</strong> apasionada por fusionar <strong>arquitectura backend robusta</strong> con <strong>experiencias interactivas y EdTech</strong>.</p>' +
+            '<p>Creo software que no solo es confiable y escalable bajo el capó, sino que divierte, enseña y resuelve problemas cotidianos.</p>' +
+            '<dl class="facts">' +
+            '<div><dt>Rol</dt><dd>Full Stack Developer</dd></div>' +
+            '<div><dt>Especialidad</dt><dd>Backend, APIs REST, Bases de Datos & EdTech</dd></div>' +
+            '<div><dt>Core Stack</dt><dd>Node.js, PostgreSQL, TypeScript, Docker, Express</dd></div>' +
+            '<div><dt>Ubicación</dt><dd>Remoto / Global</dd></div></dl>' },
+    { k: 'Habilidades', title: 'Lo que hay bajo el capó',
+      html: '<ul class="list">' +
+            '<li><strong>Backend & APIs (92%)</strong>Node.js, Express, TypeScript, arquitectura modular, autenticación segura con JWT y manejo robusto de excepciones.</li>' +
+            '<li><strong>Bases de Datos & SQL (90%)</strong>PostgreSQL avanzado: diseño relacional, queries analíticas, índices de alto rendimiento, triggers y funciones almacenadas.</li>' +
+            '<li><strong>DevOps & Testing (82%)</strong>Docker, Docker Compose, entornos reproducibles, Supabase y pruebas unitarias/integración con Jest.</li>' +
+            '<li><strong>Frontend & Gamificación (80%)</strong>HTML5 Canvas, CSS3 moderno, JavaScript ES6+, diseño interactivo orientado a aprendizaje activo.</li>' +
+            '<li><strong>Control de versiones</strong>Git, GitHub, flujos de trabajo colaborativos y entregas continuas sin fricción.</li></ul>' },
+    { k: 'Proyectos', title: 'Lo que he construido',
+      html: '<ul class="list">' +
+            '<li><strong>Escape Room Programación<a class="badge link" href="https://steff-360.github.io/escape-room-programacion/" target="_blank">Demo Live ↗</a></strong>Videojuego educativo desarrollado en HTML5 Canvas nativo y JavaScript. Rompecabezas de lógica, estructuras algorítmicas y mecánicas gamificadas.</li>' +
+            '<li><strong>Job Listings API<a class="badge link" href="https://github.com/steff-360" target="_blank">GitHub ↗</a></strong>API REST completa para gestión de vacantes de empleo con Node.js, Express, autenticación JWT y persistencia en PostgreSQL.</li>' +
+            '<li><strong>TechZone PostgreSQL<a class="badge link" href="https://github.com/steff-360" target="_blank">GitHub ↗</a></strong>Modelado completo de base de datos relacional para tienda tecnológica con optimización de índices y procedimientos.</li>' +
+            '<li><strong>Algodones Maravilla CLI<a class="badge link" href="https://github.com/steff-360" target="_blank">GitHub ↗</a></strong>Herramienta en línea de comandos para control de inventario en TypeScript aplicando Clean Code y POO.</li>' +
+            '<li><strong>CampusLands CLI<a class="badge link" href="https://github.com/steff-360" target="_blank">GitHub ↗</a></strong>Plataforma de gestión académica estudiantil con registro de asistencias y notas.</li>' +
+            '<li><strong>Docker + Supabase Infra<a class="badge link" href="https://github.com/steff-360" target="_blank">GitHub ↗</a></strong>Infraestructura de microservicios reproducibles en Docker Compose con base en PostgreSQL/Supabase.</li></ul>' },
+    { k: 'Contacto', title: 'Trabajemos juntos',
+      html: '<p>Estoy disponible para sumarme a equipos de producto, proyectos de tecnología educativa o retos Full Stack desafiantes.</p>' +
+            '<dl class="facts">' +
+            '<div><dt>Email</dt><dd><strong>steff.18random@gmail.com</strong></dd></div>' +
+            '<div><dt>LinkedIn</dt><dd><a class="badge link" href="https://www.linkedin.com/in/stefani-s%C3%A1nchez-b35b65279" target="_blank">Ver perfil ↗</a></dd></div>' +
+            '<div><dt>GitHub</dt><dd><a class="badge link" href="https://github.com/steff-360" target="_blank">@steff-360 ↗</a></dd></div></dl>' +
+            '<p style="margin-top:14px">Escríbeme un mensaje y charlemos sobre cómo aportar valor a tu proyecto.</p>' }
+  ];
+  var found = [false, false, false, false];
+
+  var SKINS = [
+    { n: 'Turquesa', h: '#1f8a7c', b: '#2fb8a6', s: '#e8503a', need: 0 },
+    { n: 'Brasa', h: '#9c2c1a', b: '#e8503a', s: '#ffd23f', need: 2 },
+    { n: 'Neón', h: '#3a2f8f', b: '#7a63ff', s: '#5ff0d0', need: 4 }
+  ];
+  var skin = 0, storedUnlock = 0;
+
+  /* ---------- Estado ---------- */
+  var cv = $('game'), ctx = cv.getContext('2d');
+  var W = 0, H = 0, DPR = 1, horizon = 0, groundY = 0, cx = 0, unit = 100, camX = 0;
+  var F = 8, ZFAR = 72, PN = 1.4;
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var state = 'start', prevState = 'start', cardMode = 'read', cardIdx = 0;
+  var dist = 0, scroll = 0, coins = 0, bonus = 0, streak = 0, mult = 1, lives = 3, speed = 14, ents = [], spawnAcc = 0;
+  var cpDist = 40, cpActive = false, cpSpawn = false, shake = 0, flash = 0, freeze = 0, time = 0, best = 0, celebrated = false, firstRun = true;
+  var dustT = 0, wasAir = false, pu = 0;
+  var pw = { magnet: 0, shield: 0, x2: 0 };
+  var PWDUR = { magnet: 8, shield: 15, x2: 10 };
+  var PWNAME = { magnet: 'IMÁN', shield: 'ESCUDO', x2: 'MONEDAS x2' };
+  var PWCOL = { magnet: '#ff7b62', shield: '#5fe0cd', x2: '#ffd23f' };
+  var P = { lane: 0, x: 0, y: 0, vy: 0, slide: 0, run: 0, inv: 0, jumpBuf: 0 };
+  var parts = [], floaters = [];
+  try {
+    best = parseInt(localStorage.getItem('vialibre-best') || '0', 10) || 0;
+    storedUnlock = parseInt(localStorage.getItem('vialibre-unlock') || '0', 10) || 0;
+    skin = parseInt(localStorage.getItem('vialibre-skin') || '0', 10) || 0;
+  } catch (e) {}
+
+  var TRAINCOL = [
+    { f: '#e8503a', s: '#a6331f', t: '#ff7b62' },
+    { f: '#e0a82e', s: '#9a7314', t: '#f7c95a' },
+    { f: '#2fb8a6', s: '#1b7c6f', t: '#5fe0cd' }
+  ];
+
+  /* ---------- Paleta día / noche ---------- */
+  function hex(c) { return [parseInt(c.slice(1, 3), 16), parseInt(c.slice(3, 5), 16), parseInt(c.slice(5, 7), 16)]; }
+  var PAL = [
+    { top: '#0d1923', mid: '#2a3a4d', hor: '#f08a4b', bld: '#142029', bld2: '#22323f', g0: '#5b4b46', g1: '#2e3238', lamp: 0.35, star: 0.5 },
+    { top: '#050a12', mid: '#13293a', hor: '#2f8f9a', bld: '#0a121a', bld2: '#13212c', g0: '#1f3d47', g1: '#1a2a33', lamp: 1, star: 1 },
+    { top: '#16213f', mid: '#6a5a86', hor: '#ffc27a', bld: '#171f33', bld2: '#2a3350', g0: '#6a5a58', g1: '#323640', lamp: 0.5, star: 0.6 }
+  ];
+  var PKEYS = ['top', 'mid', 'hor', 'bld', 'bld2', 'g0', 'g1'];
+  PAL.forEach(function (p) { PKEYS.forEach(function (k) { p[k + '_'] = hex(p[k]); }); });
+  var pal = { lamp: 0.35, star: 0.5, hor_: [240, 138, 75] };
+  function updatePal() {
+    var ph = (dist / 450) % 3, i = Math.floor(ph), t = ph - i; t = t * t * (3 - 2 * t);
+    var a = PAL[i], b = PAL[(i + 1) % 3];
+    PKEYS.forEach(function (k) {
+      var A = a[k + '_'], B = b[k + '_'];
+      var r = Math.round(A[0] + (B[0] - A[0]) * t), g = Math.round(A[1] + (B[1] - A[1]) * t), bl = Math.round(A[2] + (B[2] - A[2]) * t);
+      pal[k] = 'rgb(' + r + ',' + g + ',' + bl + ')'; pal[k + '_'] = [r, g, bl];
+    });
+    pal.lamp = a.lamp + (b.lamp - a.lamp) * t; pal.star = a.star + (b.star - a.star) * t;
+  }
+
+  /* Fondo determinista */
+  var seed = 7;
+  function rnd() { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
+  function makeBuild(minH, maxH, minW, maxW) {
+    var arr = [], x = -0.02, i = 0;
+    while (x < 1.05) { var w = minW + rnd() * (maxW - minW); arr.push({ x: x, w: w, h: minH + rnd() * (maxH - minH), i: i++ }); x += w * 0.85; }
+    return arr;
+  }
+  var BUILD1 = makeBuild(0.02, 0.09, 0.03, 0.06), BUILD2 = makeBuild(0.04, 0.15, 0.04, 0.1), STARS = [], si;
+  for (si = 0; si < 50; si++) STARS.push({ x: rnd(), y: rnd() * 0.7, s: 0.6 + rnd() * 1.2 });
+  var farTrain = { x: -1, t: 6 };
+  var BOARDS = [['STEFANI', 'Full Stack Developer'], ['NODE.JS · SQL', 'Arquitectura backend'], ['EDTECH', 'Gamificación y código'], ['DOCKER', 'Entornos reproducibles'], ['¿HABLAMOS?', 'steff.18random@gmail.com']];
+  var SLINES = [];
+  for (si = 0; si < 26; si++) SLINES.push({ a: rnd() * 6.283, p: rnd() });
+
+  /* ---------- Proyección ---------- */
+  function sy(p) { return horizon + (groundY - horizon) * p; }
+  function sx(x, p) { return cx + (x - camX) * unit * p; }
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = cv.clientWidth; H = cv.clientHeight;
+    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    horizon = H * 0.34; groundY = H * 0.86; cx = W / 2;
+    unit = Math.min(W * 0.3, H * 0.24);
+  }
+  window.addEventListener('resize', resize);
+
+  function poly(pts, fill) {
+    ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+    for (var i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+    ctx.closePath(); ctx.fillStyle = fill; ctx.fill();
+  }
+  function rr(x, y, w, h, r) {
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h);
+    ctx.fill();
+  }
+
+  /* ---------- Partículas y textos flotantes ---------- */
+  function emit(x, y, n, o) {
+    for (var i = 0; i < n && parts.length < 420; i++) {
+      var a = (o.a0 || 0) + Math.random() * (o.da == null ? 6.283 : o.da), sp = (o.s || 100) * (0.4 + Math.random() * 0.8);
+      parts.push({ x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - (o.up || 0), g: o.g == null ? 400 : o.g, l: o.l || 0.5, m: o.l || 0.5, r: (o.r || 3) * (0.6 + Math.random() * 0.8), c: o.c || '#ffd23f' });
+    }
+  }
+  function floater(txt, x, y, c) { floaters.push({ t: txt, x: x, y: y, l: 1.1, c: c || '#ffd23f' }); }
+  function stepFx(dt) {
+    var i;
+    for (i = parts.length - 1; i >= 0; i--) {
+      var p = parts[i]; p.l -= dt;
+      if (p.l <= 0) { parts.splice(i, 1); continue; }
+      p.vy += p.g * dt; p.x += p.vx * dt; p.y += p.vy * dt;
+    }
+    for (i = floaters.length - 1; i >= 0; i--) {
+      var f = floaters[i]; f.l -= dt; f.y -= 46 * dt;
+      if (f.l <= 0) floaters.splice(i, 1);
+    }
+  }
+  function drawFx() {
+    var i;
+    for (i = 0; i < parts.length; i++) {
+      var p = parts[i], k = p.l / p.m;
+      ctx.globalAlpha = Math.max(0, k); ctx.fillStyle = p.c;
+      ctx.beginPath(); ctx.arc(p.x, p.y, Math.max(0.5, p.r * (0.5 + k * 0.5)), 0, 6.283); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (i = 0; i < floaters.length; i++) {
+      var f = floaters[i];
+      ctx.globalAlpha = Math.min(1, f.l * 2);
+      ctx.font = Math.max(16, unit * 0.2) + 'px Bungee, Impact, sans-serif';
+      ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(10,16,22,.8)'; ctx.strokeText(f.t, f.x, f.y);
+      ctx.fillStyle = f.c; ctx.fillText(f.t, f.x, f.y);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* ---------- Audio (efectos y música procedural) ---------- */
+  var ac = null, master = null, muted = false;
+  function ensureAC() {
+    try {
+      if (!ac) { ac = new (window.AudioContext || window.webkitAudioContext)(); master = ac.createGain(); master.gain.value = muted ? 0 : 1; master.connect(ac.destination); }
+      if (ac.state === 'suspended') ac.resume();
+      return true;
+    } catch (e) { return false; }
+  }
+  function nt(f1, f2, d, type, g, t0) {
+    if (!ensureAC()) return;
+    var t = t0 || ac.currentTime, o = ac.createOscillator(), gn = ac.createGain();
+    o.type = type; o.frequency.setValueAtTime(f1, t);
+    if (f2 && f2 !== f1) o.frequency.exponentialRampToValueAtTime(f2, t + d);
+    gn.gain.setValueAtTime(0.0001, t); gn.gain.exponentialRampToValueAtTime(g, t + 0.01); gn.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    o.connect(gn); gn.connect(master); o.start(t); o.stop(t + d + 0.03);
+  }
+  function sfx(n, k) {
+    if (muted) return;
+    if (n === 'coin') nt(880 * (1 + (k % 8) * 0.07), 1400 * (1 + (k % 8) * 0.07), 0.09, 'square', 0.05);
+    else if (n === 'jump') nt(300, 560, 0.14, 'triangle', 0.12);
+    else if (n === 'slide') nt(420, 160, 0.16, 'triangle', 0.1);
+    else if (n === 'crash') { nt(200, 45, 0.35, 'sawtooth', 0.16); nt(90, 40, 0.3, 'square', 0.1); }
+    else if (n === 'shield') { nt(500, 1000, 0.18, 'sine', 0.14); }
+    else if (n === 'power') { nt(440, 880, 0.12, 'square', 0.06); nt(660, 1320, 0.2, 'square', 0.06, ac.currentTime + 0.08); }
+    else if (n === 'token') { nt(520, 780, 0.14, 'square', 0.07); nt(780, 1170, 0.18, 'square', 0.07, ac.currentTime + 0.11); nt(1040, 1560, 0.3, 'square', 0.07, ac.currentTime + 0.24); }
+  }
+  var mus = { on: false, timer: 0, step: 0, next: 0 };
+  var ROOTS = [110, 110, 87.31, 98], ARP = [0, 3, 7, 12, 7, 3, 10, 7];
+  function playStep(s, t) {
+    var root = ROOTS[Math.floor(s / 8) % 4];
+    if (s % 4 === 0) nt(130, 42, 0.14, 'sine', 0.22, t);
+    if (s % 8 === 0 || s % 8 === 3 || s % 8 === 5) nt(root, root, 0.2, 'triangle', 0.18, t);
+    nt(root * 4 * Math.pow(2, ARP[s % 8] / 12), 0, 0.1, 'square', 0.022, t);
+  }
+  function sched() {
+    if (!mus.on || !ac) return;
+    while (mus.next < ac.currentTime + 0.12) { playStep(mus.step, mus.next); mus.next += 60 / 124 / 2; mus.step = (mus.step + 1) % 32; }
+  }
+  function musicStart() { if (mus.on || !ensureAC()) return; mus.on = true; mus.next = ac.currentTime + 0.05; mus.step = 0; mus.timer = setInterval(sched, 25); }
+  function musicStop() { mus.on = false; clearInterval(mus.timer); }
+  function setMuted(m) {
+    muted = m; $('sound').textContent = 'Sonido: ' + (muted ? 'no' : 'sí');
+    if (master) master.gain.value = muted ? 0 : 1;
+  }
+  $('sound').addEventListener('click', function () { setMuted(!muted); this.blur(); });
+
+  /* ---------- Generación de filas ---------- */
+  function add(o) { ents.push(o); }
+  function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function coinLine(lane, z, n, y) { for (var i = 0; i < n; i++) add({ t: 'coin', lane: lane, z: z + i * 1.4, y: y || 0.55, got: false }); }
+  function nextIdx() { return found.indexOf(false); }
+  var PWKINDS = ['magnet', 'shield', 'x2'];
+
+  function spawnRow(z, safe) {
+    var L = shuffle([-1, 0, 1]), r = Math.random(), len, n, i;
+    if (safe) {
+      if (r < 0.5) {
+        var l = Math.random() < 0.5 ? -1 : 1; len = 5 + Math.random() * 4;
+        add({ t: 'train', lane: l, z: z, len: len, c: TRAINCOL[Math.floor(Math.random() * 3)] });
+        coinLine(0, z, Math.floor(len / 1.4)); return len;
+      }
+      coinLine(Math.random() < 0.6 ? 0 : (Math.random() < 0.5 ? -1 : 1), z, 7); return 10;
+    }
+    if (cpSpawn) {
+      cpSpawn = false; cpActive = true;
+      add({ t: 'token', lane: L[0], z: z + 3, idx: nextIdx(), got: false });
+      coinLine(L[1], z, 6); coinLine(L[2], z, 6); return 9;
+    }
+    if (r < 0.32) {
+      n = Math.random() < 0.4 ? 2 : 1; len = 0;
+      for (i = 0; i < n; i++) {
+        var tl = 5 + Math.random() * 4; len = Math.max(len, tl);
+        add({ t: 'train', lane: L[i], z: z, len: tl, c: TRAINCOL[Math.floor(Math.random() * 3)] });
+      }
+      coinLine(n === 1 ? L[1] : L[2], z, Math.floor(len / 1.4));
+      return len;
+    }
+    if (r < 0.58) {
+      n = Math.random() < 0.5 ? 2 : 1;
+      for (i = 0; i < n; i++) { add({ t: 'bar', lane: L[i], z: z }); add({ t: 'coin', lane: L[i], z: z, y: 1.35, got: false }); }
+      coinLine(L[n], z - 2, 5);
+      return 3;
+    }
+    if (r < 0.76) {
+      n = Math.random() < 0.5 ? 2 : 1;
+      for (i = 0; i < n; i++) { add({ t: 'over', lane: L[i], z: z }); coinLine(L[i], z - 1.4, 4, 0.35); }
+      return 3;
+    }
+    coinLine(L[0], z, 8);
+    if (Math.random() < 0.22) add({ t: 'pw', k: PWKINDS[Math.floor(Math.random() * 3)], lane: L[0], z: z + 2.8, got: false });
+    else if (Math.random() < 0.45) add({ t: 'bar', lane: L[0], z: z + 8 * 1.4 + 1 });
+    return 14;
+  }
+
+  /* ---------- Acciones del jugador ---------- */
+  function moveLane(d) { P.lane = Math.max(-1, Math.min(1, P.lane + d)); }
+  function doJump() { P.vy = 8.6; P.slide = 0; sfx('jump'); emit(sx(P.x, 1), groundY, 6, { s: 70, up: 20, g: 200, l: 0.35, r: 2.5, c: 'rgba(225,205,180,.8)' }); }
+  function jump() { if (P.y <= 0.001) doJump(); else P.jumpBuf = 0.14; }
+  function slide() { if (P.y > 0.001) { P.vy = -16; } else { P.slide = 0.65; sfx('slide'); } }
+  function score() { return Math.floor(dist) + bonus; }
+
+  /* ---------- Flujo ---------- */
+  function reset() {
+    dist = 0; coins = 0; bonus = 0; streak = 0; mult = 1; lives = 3; speed = 9; ents = []; parts = []; floaters = [];
+    P.lane = 0; P.x = 0; P.y = 0; P.vy = 0; P.slide = 0; P.inv = 0; P.jumpBuf = 0;
+    pw.magnet = 0; pw.shield = 0; pw.x2 = 0; flash = 0; freeze = 0; shake = 0;
+    spawnAcc = -(ZFAR - 26); cpDist = 40; cpActive = false; cpSpawn = false;
+  }
+  function showFor(st) {
+    $('start').hidden = st !== 'start'; $('over').hidden = st !== 'over'; $('card').hidden = st !== 'card'; $('pause').hidden = st !== 'pause';
+  }
+  function blurAll() { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); }
+  function unlocked() { return Math.max(storedUnlock, found.filter(Boolean).length); }
+  function renderSkins() {
+    var box = $('skins'), u = unlocked(); box.innerHTML = '';
+    SKINS.forEach(function (s, i) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'skin' + (i === skin ? ' sel' : '');
+      var ok = u >= s.need; b.disabled = !ok;
+      b.innerHTML = '<span class="sw" style="background:linear-gradient(135deg,' + s.b + ' 50%,' + s.s + ' 50%)"></span>' + s.n + (ok ? '' : ' · ' + s.need + ' fichas');
+      b.addEventListener('click', function () { skin = i; try { localStorage.setItem('vialibre-skin', String(i)); } catch (e) {} renderSkins(); });
+      box.appendChild(b);
+    });
+  }
+  function refreshStart() { renderSkins(); $('bestLine').textContent = best ? 'Récord: ' + best + ' puntos' : ''; }
+  function startGame() {
+    reset(); state = 'play'; showFor('play'); blurAll(); musicStart();
+    if (firstRun) { firstRun = false; toast('Busca las fichas brillantes: cada una abre una parada de mi portafolio.', 4200); }
+  }
+  function pauseGame() { if (state !== 'play') return; state = 'pause'; showFor('pause'); musicStop(); blurAll(); }
+  function resumeGame() { if (state !== 'pause') return; state = 'play'; showFor('play'); musicStart(); blurAll(); }
+  function gameOver() {
+    state = 'over'; musicStop();
+    var sc = score(), isBest = sc > best;
+    if (isBest) { best = sc; try { localStorage.setItem('vialibre-best', String(best)); } catch (e) {} }
+    var n = found.filter(Boolean).length;
+    if (n > storedUnlock) { storedUnlock = n; try { localStorage.setItem('vialibre-unlock', String(n)); } catch (e) {} }
+    $('newBest').hidden = !isBest;
+    $('overStats').innerHTML = sc + ' puntos<br>' + Math.floor(dist) + ' m · ' + coins + ' monedas · ' + n + '/4 paradas<br>Récord ' + best;
+    showFor('over');
+  }
+
+  var toastTimer = 0;
+  function toast(msg, ms) {
+    var t = $('toast'); t.textContent = msg; t.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.hidden = true; }, ms || 3000);
+  }
+
+  /* Tarjeta de parada */
+  function finaleHtml() {
+    return '<p>¡Increíble! Desbloqueaste todas las paradas de mi portafolio.</p>' +
+      '<dl class="facts"><div><dt>Puntos</dt><dd>' + score() + '</dd></div><div><dt>Distancia</dt><dd>' + Math.floor(dist) + ' m</dd></div><div><dt>Monedas</dt><dd>' + coins + '</dd></div></dl>' +
+      '<p>¿Lista/o para construir algo extraordinario juntas? Contáctame a <strong>steff.18random@gmail.com</strong>.</p>';
+  }
+  function renderCard() {
+    var s = cardIdx === 4 ? { k: 'Línea completa', title: 'Portafolio Completo', html: finaleHtml() } : SECTIONS[cardIdx], foot;
+    if (cardMode === 'play') {
+      foot = '<button class="btn primary" data-act="close" type="button">Seguir corriendo</button>';
+    } else {
+      foot = '<button class="btn" data-act="prev" type="button"' + (cardIdx === 0 ? ' disabled' : '') + '>Anterior</button>' +
+             '<button class="btn" data-act="next" type="button"' + (cardIdx === 3 ? ' disabled' : '') + '>Siguiente</button>' +
+             '<button class="btn primary" data-act="close" type="button">Cerrar</button>';
+    }
+    $('card').innerHTML = '<div class="ticket" role="dialog" aria-label="' + s.k + '" data-n="' + (cardIdx === 4 ? '★' : cardIdx + 1) + '">' +
+      '<div class="t-head"><span>' + (cardIdx === 4 ? 'Fin del recorrido' : 'Parada ' + (cardIdx + 1) + ' de 4') + '</span><span>' + s.k + '</span></div>' +
+      '<div class="t-body"><h2>' + s.title + '</h2>' + s.html + '</div>' +
+      '<div class="t-foot">' + foot + '</div></div>';
+  }
+  function openCard(i) {
+    cardIdx = i;
+    if (state !== 'card') { prevState = state; cardMode = prevState === 'play' ? 'play' : 'read'; }
+    state = 'card'; showFor('card'); renderCard(); blurAll();
+  }
+  function step(d) { var n = cardIdx + d; if (n >= 0 && n <= 3) { cardIdx = n; renderCard(); } }
+  function closeCard() {
+    if (cardMode === 'play') {
+      if (found.every(Boolean) && !celebrated) { celebrated = true; cardIdx = 4; renderCard(); emit(cx, H * 0.4, 40, { s: 260, up: 160, g: 300, l: 1.2, r: 4, c: '#ffd23f' }); return; }
+      state = 'play'; showFor('play'); P.inv = Math.max(P.inv, 1.0); blurAll();
+    } else { state = prevState; showFor(state); if (state === 'start') refreshStart(); }
+  }
+  $('card').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b || b.disabled) return;
+    var a = b.getAttribute('data-act');
+    if (a === 'close') closeCard(); else if (a === 'prev') step(-1); else if (a === 'next') step(1);
+  });
+
+  var pipsEl = $('pips'), pipBtns = [];
+  SECTIONS.forEach(function (s, i) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'pip'; b.setAttribute('aria-label', 'Parada ' + (i + 1) + ': ' + s.k);
+    b.innerHTML = '<span class="n">' + (i + 1) + '</span><span class="full">' + s.k + '</span>';
+    b.addEventListener('click', function () {
+      b.blur();
+      if (state !== 'play') return;
+      if (found[i]) openCard(i); else toast('Aún no recoges esa parada. Sigue corriendo por las vías.', 2200);
+    });
+    pipsEl.appendChild(b); pipBtns.push(b);
+  });
+  function refreshPips() { pipBtns.forEach(function (b, i) { b.classList.toggle('on', found[i]); }); }
+  refreshPips(); refreshStart();
+
+  $('play').addEventListener('click', startGame);
+  $('again').addEventListener('click', function () { startGame(); });
+  $('read').addEventListener('click', function () { openCard(0); });
+  $('readOver').addEventListener('click', function () { openCard(0); });
+  $('pauseBtn').addEventListener('click', function () { if (state === 'play') pauseGame(); else if (state === 'pause') resumeGame(); });
+  $('resume').addEventListener('click', resumeGame);
+  document.addEventListener('visibilitychange', function () { if (document.hidden) pauseGame(); });
+
+  /* ---------- Entrada ---------- */
+  window.addEventListener('keydown', function (e) {
+    var k = e.key;
+    if (e.target && e.target.closest && e.target.closest('button') && (k === 'Enter' || k === ' ')) return;
+    if (state === 'play') {
+      if (k === 'ArrowLeft' || k === 'a' || k === 'A') moveLane(-1);
+      else if (k === 'ArrowRight' || k === 'd' || k === 'D') moveLane(1);
+      else if (k === 'ArrowUp' || k === 'w' || k === 'W' || k === ' ') jump();
+      else if (k === 'ArrowDown' || k === 's' || k === 'S') slide();
+      else if (k === 'p' || k === 'P' || k === 'Escape') pauseGame();
+      else return;
+      e.preventDefault();
+    } else if (state === 'pause') {
+      if (k === 'p' || k === 'P' || k === 'Escape' || k === 'Enter' || k === ' ') { e.preventDefault(); resumeGame(); }
+    } else if (state === 'start' || state === 'over') {
+      if (k === 'Enter' || k === ' ') { e.preventDefault(); startGame(); }
+    } else if (state === 'card') {
+      if (k === 'Escape' || k === 'Enter' || k === ' ') { e.preventDefault(); closeCard(); }
+      else if (cardMode === 'read' && k === 'ArrowRight') step(1);
+      else if (cardMode === 'read' && k === 'ArrowLeft') step(-1);
+    }
+  });
+  var x0 = 0, y0 = 0, swiping = false;
+  cv.addEventListener('pointerdown', function (e) { x0 = e.clientX; y0 = e.clientY; swiping = true; try { cv.setPointerCapture(e.pointerId); } catch (er) {} });
+  cv.addEventListener('pointermove', function (e) {
+    if (!swiping || state !== 'play') return;
+    var dx = e.clientX - x0, dy = e.clientY - y0;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < 26) return;
+    if (Math.abs(dx) > Math.abs(dy)) moveLane(dx > 0 ? 1 : -1); else if (dy < 0) jump(); else slide();
+    swiping = false;
+  });
+  cv.addEventListener('pointerup', function () { swiping = false; });
+  cv.addEventListener('pointercancel', function () { swiping = false; });
+
+  /* ---------- Actualización ---------- */
+  function crash(e) {
+    e.ghost = true;
+    var px = sx(P.x, 1), py = groundY - (P.y + 0.5) * unit;
+    if (pw.shield > 0) {
+      pw.shield = 0; P.inv = 1.2; sfx('shield'); floater('¡ESCUDO!', px, py - unit * 0.6, '#5fe0cd');
+      emit(px, py, 26, { s: 260, g: 0, l: 0.5, r: 3, c: '#5fe0cd' });
+      return;
+    }
+    lives--; streak = 0; mult = 1; P.inv = 1.8; sfx('crash'); freeze = 0.07; flash = 0.55;
+    if (!reduce) shake = 0.4;
+    var col = e.c ? e.c.f : '#e8503a';
+    emit(px, py, 30, { s: 340, up: 150, g: 700, l: 0.7, r: 4, c: col });
+    emit(px, py, 14, { s: 220, up: 100, g: 600, l: 0.6, r: 3, c: '#f4efe6' });
+    if (lives <= 0) gameOver();
+  }
+  function world(dt, sp, safe) {
+    spawnAcc -= sp * dt;
+    while (spawnAcc <= 0) {
+      var z = ZFAR + spawnAcc, len = spawnRow(z, safe);
+      spawnAcc += len + 10 + sp * 0.3 + Math.random() * 3;
+    }
+    for (var i = 0; i < ents.length; i++) ents[i].z -= sp * dt;
+  }
+  function update(dt) {
+    flash = Math.max(0, flash - dt * 2.5);
+    if (shake > 0) shake = Math.max(0, shake - dt);
+    if (state === 'card' || state === 'pause') return;
+    if (freeze > 0) { freeze -= dt; return; }
+    stepFx(dt);
+    if (state === 'play' || state === 'start') { var sp = state === 'play' ? speed : 9; scroll += sp * dt; P.run += dt * (sp / 14); }
+    camX = P.x * 0.45;
+    farTrain.t -= dt;
+    if (farTrain.t <= 0 && farTrain.x < 0) { farTrain.x = -0.6; farTrain.t = 0; }
+    if (farTrain.x > -1) { farTrain.x += dt * 0.09; if (farTrain.x > 1.1) { farTrain.x = -1; farTrain.t = 14 + Math.random() * 14; } }
+    if (state === 'start') {
+      P.x += (0 - P.x) * Math.min(1, dt * 8);
+      world(dt, 9, true);
+      ents = ents.filter(function (e) { return e.z + (e.len || 0.5) > -8; });
+      return;
+    }
+    if (state !== 'play') return;
+
+    var base = Math.min(28, 14 + dist * 0.007);
+    speed += (base - speed) * Math.min(1, dt * 1.5);
+    dist += speed * dt;
+    P.inv = Math.max(0, P.inv - dt); P.slide = Math.max(0, P.slide - dt); P.jumpBuf = Math.max(0, P.jumpBuf - dt);
+    pw.magnet = Math.max(0, pw.magnet - dt); pw.x2 = Math.max(0, pw.x2 - dt); pw.shield = Math.max(0, pw.shield - dt);
+    P.x += (P.lane - P.x) * Math.min(1, dt * 14);
+    P.vy -= 30 * dt; P.y += P.vy * dt;
+    if (P.y <= 0) {
+      if (wasAir) emit(sx(P.x, 1), groundY, 8, { s: 90, up: 30, g: 200, l: 0.4, r: 3, c: 'rgba(225,205,180,.8)' });
+      P.y = 0; P.vy = 0; wasAir = false;
+      if (P.jumpBuf > 0) { P.jumpBuf = 0; doJump(); }
+    } else if (P.y > 0.05) wasAir = true;
+    dustT -= dt;
+    if (dustT <= 0 && P.y <= 0.001) { dustT = 0.06; emit(sx(P.x, 1) + (Math.random() - 0.5) * unit * 0.2, groundY, 1, { s: 45, up: 25, g: 160, l: 0.35, r: 2.4, c: 'rgba(225,205,180,.7)' }); }
+    if (!cpActive && !cpSpawn && nextIdx() >= 0 && dist >= cpDist) cpSpawn = true;
+    world(dt, speed, false);
+
+    var px = sx(P.x, 1);
+    for (var i = 0; i < ents.length; i++) {
+      var e = ents[i];
+      if (e.got || e.ghost) continue;
+      if (e.t === 'coin') {
+        if (pw.magnet > 0 && e.z < 12 && e.z > -1) {
+          e.lane += (P.x - e.lane) * Math.min(1, dt * 7); e.y += (P.y + 0.55 - e.y) * Math.min(1, dt * 7); e.z -= speed * dt * 0.6;
+        }
+        if (Math.abs(e.z) < 0.6 && Math.abs(e.lane - P.x) < 0.6 && Math.abs(e.y - (P.y + (P.slide > 0 ? 0.3 : 0.55))) < 0.75) {
+          e.got = true; coins++; streak++;
+          var nm = Math.min(5, 1 + Math.floor(streak / 10));
+          if (nm > mult) { mult = nm; pu = 0.18; floater('x' + mult + '!', px, groundY - unit * 1.5, '#ffd23f'); }
+          bonus += 10 * mult * (pw.x2 > 0 ? 2 : 1);
+          sfx('coin', streak);
+          emit(sx(e.lane, 1), groundY - e.y * unit, 7, { s: 150, up: 40, g: 300, l: 0.4, r: 2.6, c: '#ffe98a' });
+        }
+      } else if (e.t === 'pw') {
+        if (Math.abs(e.z) < 0.8 && Math.abs(e.lane - P.x) < 0.7) {
+          e.got = true; pw[e.k] = PWDUR[e.k]; sfx('power');
+          floater(PWNAME[e.k], px, groundY - unit * 1.5, PWCOL[e.k]);
+          emit(px, groundY - unit * 0.7, 22, { s: 220, g: 100, l: 0.55, r: 3, c: PWCOL[e.k] });
+        }
+      } else if (e.t === 'token') {
+        if (Math.abs(e.z) < 0.9 && Math.abs(e.lane - P.x) < 0.7 && Math.abs(0.95 - (P.y + 0.55)) < 1.0) {
+          e.got = true; found[e.idx] = true; cpActive = false; cpDist = dist + 130; refreshPips(); sfx('token');
+          storedUnlock = Math.max(storedUnlock, found.filter(Boolean).length);
+          try { localStorage.setItem('vialibre-unlock', String(storedUnlock)); } catch (er) {}
+          var cols = ['#ffd23f', '#e8503a', '#2fb8a6', '#f4efe6'];
+          for (var c = 0; c < 4; c++) emit(sx(e.lane, 1), groundY - 0.95 * unit, 12, { s: 300, up: 140, g: 400, l: 0.9, r: 4, c: cols[c] });
+          openCard(e.idx); return;
+        }
+        if (e.z < -4) { e.got = true; cpActive = false; cpDist = dist + 60; }
+      } else {
+        var front = e.z, back = e.z + (e.len || 0.5);
+        if (front < 0.35 && back > -0.35 && Math.abs(e.lane - P.x) < 0.6) {
+          var hit = false;
+          if (e.t === 'train') hit = true;
+          else if (e.t === 'bar') hit = P.y < 0.45;
+          else if (e.t === 'over') { var top = P.y + (P.slide > 0 ? 0.5 : 1.1); hit = top > 0.8 && P.y < 1.15; }
+          if (hit && P.inv <= 0) { crash(e); if (state !== 'play') return; }
+        }
+      }
+    }
+    if (pu > 0) pu -= dt;
+    ents = ents.filter(function (e) { return !e.got && e.z + (e.len || 0.5) > -8; });
+  }
+
+  /* ---------- Dibujo ---------- */
+  function drawBG() {
+    var g = ctx.createLinearGradient(0, 0, 0, horizon);
+    g.addColorStop(0, pal.top); g.addColorStop(0.6, pal.mid); g.addColorStop(1, pal.hor);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, horizon + 1);
+    ctx.fillStyle = 'rgba(244,239,230,.85)';
+    var s, st, tw;
+    for (s = 0; s < STARS.length; s++) {
+      st = STARS[s]; tw = 0.5 + 0.5 * Math.sin(time * 1.5 + s);
+      ctx.globalAlpha = (0.2 + 0.6 * tw) * pal.star * (1 - st.y * 0.8); ctx.fillRect(st.x * W, st.y * horizon, st.s, st.s);
+    }
+    ctx.globalAlpha = 1;
+    var hr = pal.hor_, rg = ctx.createRadialGradient(cx, horizon, 0, cx, horizon, W * 0.62);
+    rg.addColorStop(0, 'rgba(' + hr[0] + ',' + hr[1] + ',' + hr[2] + ',.6)'); rg.addColorStop(1, 'rgba(' + hr[0] + ',' + hr[1] + ',' + hr[2] + ',0)');
+    ctx.fillStyle = rg; ctx.fillRect(0, 0, W, horizon + 1);
+    drawSkyline(BUILD1, pal.bld2, 3, 0.45);
+    if (farTrain.x > -1) {
+      var tx = farTrain.x * W, th = Math.max(4, H * 0.012), ty = horizon - H * 0.05;
+      ctx.fillStyle = pal.bld; ctx.fillRect(tx, ty, W * 0.5, th);
+      ctx.fillStyle = 'rgba(255,210,100,.8)';
+      for (var w = 0; w < 26; w++) ctx.fillRect(tx + 6 + w * (W * 0.5 - 12) / 26, ty + th * 0.3, Math.max(2, W * 0.008), th * 0.4);
+    }
+    drawSkyline(BUILD2, pal.bld, 7, 1);
+  }
+  function drawSkyline(arr, col, par, litK) {
+    for (var b = 0; b < arr.length; b++) {
+      var bd = arr[b], x = bd.x * W - camX * par, w = bd.w * W, h = bd.h * H;
+      ctx.fillStyle = col; ctx.fillRect(x, horizon - h, w, h + 1);
+      var cols = Math.max(1, Math.floor(w / 9)), rows = Math.max(1, Math.floor(h / 12));
+      ctx.fillStyle = 'rgba(255,205,115,' + (0.35 + pal.lamp * 0.5) * litK + ')';
+      for (var r = 0; r < rows; r++) for (var c = 0; c < cols; c++) {
+        if (((bd.i * 7 + r * 13 + c * 31) % 6) === 0) ctx.fillRect(x + 4 + c * (w - 8) / cols, horizon - h + 6 + r * 12, 3, 4);
+      }
+    }
+  }
+  function drawBoards() {
+    var off = scroll % 30, base = Math.floor(scroll / 30);
+    for (var n = 0; n < 3; n++) {
+      var z = n * 30 - off + 2, idx = base + n;
+      if (z < 0.5 || z > ZFAR - 6) continue;
+      var side = idx % 2 ? -1 : 1, z2 = z + 4, p1 = F / (F + z), p2 = F / (F + z2), x = side * 3.7;
+      var nx = sx(x, p1), fx = sx(x, p2), g1 = sy(p1), g2 = sy(p2);
+      var yt1 = g1 - 3.1 * unit * p1, yb1 = g1 - 1.5 * unit * p1, yt2 = g2 - 3.1 * unit * p2, yb2 = g2 - 1.5 * unit * p2;
+      ctx.globalAlpha = Math.min(1, (ZFAR - z) / 22);
+      ctx.fillStyle = '#0c141a';
+      ctx.fillRect(sx(x, F / (F + z + 0.6)) - 2, g1 - 1.5 * unit * p1 * 0.0 - (g1 - yb1) * 0 - 0, 0, 0);
+      var la = F / (F + z + 0.7), lb = F / (F + z + 3.3);
+      ctx.fillRect(sx(x, la) - Math.max(1, 0.05 * unit * la), sy(la) - 1.6 * unit * la, Math.max(2, 0.1 * unit * la), 1.6 * unit * la);
+      ctx.fillRect(sx(x, lb) - Math.max(1, 0.05 * unit * lb), sy(lb) - 1.6 * unit * lb, Math.max(2, 0.1 * unit * lb), 1.6 * unit * lb);
+      poly([[nx, yt1], [fx, yt2], [fx, yb2], [nx, yb1]], '#10202b');
+      var Ls = nx < fx ? { x: nx, yt: yt1, yb: yb1 } : { x: fx, yt: yt2, yb: yb2 };
+      var Rs = nx < fx ? { x: fx, yt: yt2, yb: yb2 } : { x: nx, yt: yt1, yb: yb1 };
+      var wL = 260, hL = 100, bd = BOARDS[((idx % BOARDS.length) + BOARDS.length) % BOARDS.length];
+      ctx.save();
+      ctx.transform((Rs.x - Ls.x) / wL, (Rs.yt - Ls.yt) / wL, 0, ((Ls.yb - Ls.yt) + (Rs.yb - Rs.yt)) / 2 / hL, Ls.x, Ls.yt);
+      ctx.strokeStyle = '#ffd23f'; ctx.lineWidth = 4; ctx.strokeRect(5, 5, wL - 10, hL - 10);
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#f4efe6'; ctx.font = '30px Bungee, Impact, sans-serif'; ctx.fillText(bd[0], wL / 2, 40);
+      ctx.fillStyle = '#ffd23f'; ctx.font = '700 17px "Barlow Condensed", "Arial Narrow", sans-serif'; ctx.fillText(bd[1].toUpperCase(), wL / 2, 74);
+      ctx.restore();
+      ctx.globalAlpha = 1;
+    }
+  }
+  function drawTrack() {
+    var g = ctx.createLinearGradient(0, horizon, 0, H);
+    g.addColorStop(0, pal.g0); g.addColorStop(0.35, pal.g1); g.addColorStop(1, '#141b21');
+    ctx.fillStyle = g; ctx.fillRect(0, horizon, W, H - horizon);
+    var yN = sy(PN), i, z, p, y, s;
+    g = ctx.createLinearGradient(0, horizon, 0, H); g.addColorStop(0, '#7a655a'); g.addColorStop(1, '#35302c');
+    poly([[cx, horizon], [sx(1.55, PN), yN], [sx(-1.55, PN), yN]], g);
+    for (i = -1; i <= 1; i += 2) poly([[cx, horizon], [sx(i * 1.55, PN), yN], [sx(i * 1.68, PN), yN]], 'rgba(255,210,63,.75)');
+    var off = scroll % 2;
+    ctx.fillStyle = '#2a2420';
+    for (z = -off; z < ZFAR; z += 2) {
+      if (z < -1) continue;
+      p = F / (F + z); y = sy(p);
+      ctx.fillRect(sx(-1.5, p), y - Math.max(1, 0.1 * unit * p), 3 * unit * p, Math.max(1, 0.1 * unit * p));
+    }
+    for (var l = -1; l <= 1; l++) for (var o = -1; o <= 1; o += 2) {
+      var x = l + o * 0.26;
+      poly([[cx, horizon], [sx(x - 0.03, PN), yN], [sx(x + 0.03, PN), yN]], '#9aa7ae');
+    }
+    var off2 = scroll % 10, la = 0.18 + pal.lamp * 0.5;
+    for (z = -off2; z < ZFAR; z += 10) {
+      if (z < -1.2) continue;
+      p = F / (F + z); y = sy(p);
+      for (s = -1; s <= 1; s += 2) {
+        var px = sx(s * 2.6, p), top = y - 2.6 * unit * p, pw2 = Math.max(1, 0.06 * unit * p);
+        ctx.fillStyle = '#0c141a'; ctx.fillRect(px - pw2 / 2, top, pw2, y - top);
+        var ax = px - s * 0.55 * unit * p;
+        ctx.fillRect(Math.min(px, ax), top, Math.abs(ax - px), pw2);
+        var gl = ctx.createRadialGradient(ax, top, 0, ax, top, 0.75 * unit * p);
+        gl.addColorStop(0, 'rgba(255,210,100,' + la + ')'); gl.addColorStop(1, 'rgba(255,210,100,0)');
+        ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(ax, top, 0.75 * unit * p, 0, 6.283); ctx.fill();
+        ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.arc(ax, top, Math.max(1, 0.08 * unit * p), 0, 6.283); ctx.fill();
+      }
+    }
+    drawBoards();
+    var hz = ctx.createLinearGradient(0, horizon, 0, horizon + H * 0.1), hr = pal.hor_;
+    hz.addColorStop(0, 'rgba(' + hr[0] + ',' + hr[1] + ',' + hr[2] + ',.3)'); hz.addColorStop(1, 'rgba(' + hr[0] + ',' + hr[1] + ',' + hr[2] + ',0)');
+    ctx.fillStyle = hz; ctx.fillRect(0, horizon, W, H * 0.1);
+  }
+  function drawTrain(e) {
+    var zf = Math.max(e.z, -0.3), zb = Math.max(e.z + e.len, -0.3);
+    var p1 = F / (F + zf), p2 = F / (F + zb), c = e.c, TH = 1.9;
+    var xl = e.lane - 0.42, xr = e.lane + 0.42;
+    var y1 = sy(p1), y1t = y1 - TH * unit * p1, y2 = sy(p2), y2t = y2 - TH * unit * p2;
+    var x1l = sx(xl, p1), x1r = sx(xr, p1), x2l = sx(xl, p2), x2r = sx(xr, p2);
+    if (e.lane !== 0) {
+      var sn = e.lane < 0 ? x1r : x1l, sf = e.lane < 0 ? x2r : x2l;
+      poly([[sn, y1], [sf, y2], [sf, y2t], [sn, y1t]], c.s);
+      poly([[sn, y1 - 0.95 * unit * p1], [sf, y2 - 0.95 * unit * p2], [sf, y2 - 1.5 * unit * p2], [sn, y1 - 1.5 * unit * p1]], 'rgba(12,20,26,.85)');
+      poly([[sn, y1 - 1.0 * unit * p1], [sf, y2 - 1.0 * unit * p2], [sf, y2 - 1.45 * unit * p2], [sn, y1 - 1.45 * unit * p1]], 'rgba(255,205,115,' + (0.1 + pal.lamp * 0.28) + ')');
+      poly([[sn, y1 - 0.35 * unit * p1], [sf, y2 - 0.35 * unit * p2], [sf, y2 - 0.45 * unit * p2], [sn, y1 - 0.45 * unit * p1]], 'rgba(244,239,230,.5)');
+    }
+    poly([[x1l, y1t], [x1r, y1t], [x2r, y2t], [x2l, y2t]], c.t);
+    poly([[sx(e.lane - 0.12, p1), y1t], [sx(e.lane + 0.12, p1), y1t], [sx(e.lane + 0.12, p2), y2t], [sx(e.lane - 0.12, p2), y2t]], 'rgba(0,0,0,.18)');
+    ctx.fillStyle = c.f; ctx.fillRect(x1l, y1t, x1r - x1l, y1 - y1t);
+    var w = x1r - x1l, h = y1 - y1t;
+    ctx.fillStyle = '#0f1a22'; ctx.fillRect(x1l + w * 0.12, y1t + h * 0.12, w * 0.76, h * 0.34);
+    ctx.fillStyle = 'rgba(255,210,63,.28)'; ctx.fillRect(x1l + w * 0.12, y1t + h * 0.12, w * 0.76, h * 0.08);
+    ctx.fillStyle = 'rgba(244,239,230,.85)'; ctx.fillRect(x1l, y1t + h * 0.56, w, h * 0.07);
+    ctx.fillStyle = '#0f1a22'; ctx.fillRect(x1l, y1 - h * 0.1, w, h * 0.1);
+    var hl = Math.max(1, h * 0.06);
+    ctx.fillStyle = '#ffd23f';
+    ctx.beginPath(); ctx.arc(x1l + w * 0.2, y1 - h * 0.22, hl, 0, 6.283); ctx.fill();
+    ctx.beginPath(); ctx.arc(x1r - w * 0.2, y1 - h * 0.22, hl, 0, 6.283); ctx.fill();
+    if (pal.lamp > 0.4 && e.z > 0) {
+      var gl = ctx.createRadialGradient(x1l + w / 2, y1 - h * 0.22, 0, x1l + w / 2, y1 - h * 0.22, w * 0.9);
+      gl.addColorStop(0, 'rgba(255,235,160,' + pal.lamp * 0.35 + ')'); gl.addColorStop(1, 'rgba(255,235,160,0)');
+      ctx.fillStyle = gl; ctx.fillRect(x1l - w * 0.4, y1 - h * 0.9, w * 1.8, h);
+    }
+  }
+  function drawBar(e) {
+    var z = Math.max(e.z, -0.3), p = F / (F + z), y = sy(p), hh = 0.45 * unit * p;
+    var x0 = sx(e.lane - 0.44, p), w = 0.88 * unit * p, n = 6, i;
+    ctx.fillStyle = '#0c141a'; ctx.fillRect(x0 + w * 0.08, y - hh * 0.2, w * 0.1, hh * 0.2); ctx.fillRect(x0 + w * 0.82, y - hh * 0.2, w * 0.1, hh * 0.2);
+    for (i = 0; i < n; i++) { ctx.fillStyle = i % 2 ? '#f4efe6' : '#e8503a'; ctx.fillRect(x0 + w * i / n, y - hh, w / n + 0.5, hh * 0.8); }
+    ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.fillRect(x0, y - hh, w, Math.max(1, hh * 0.1));
+  }
+  function drawOver(e) {
+    var z = Math.max(e.z, -0.3), p = F / (F + z), y = sy(p), u = unit * p;
+    var x0 = sx(e.lane - 0.5, p), w = 1.0 * u, i, n = 8;
+    ctx.fillStyle = '#0c141a';
+    ctx.fillRect(sx(e.lane - 0.46, p), y - 1.25 * u, 0.07 * u, 1.25 * u);
+    ctx.fillRect(sx(e.lane + 0.39, p), y - 1.25 * u, 0.07 * u, 1.25 * u);
+    for (i = 0; i < n; i++) { ctx.fillStyle = i % 2 ? '#0f1a22' : '#ffd23f'; ctx.fillRect(x0 + w * i / n, y - 1.15 * u, w / n + 0.5, 0.35 * u); }
+    ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.fillRect(x0, y - 0.8 * u, w, Math.max(1, 0.04 * u));
+  }
+  function drawCoin(e) {
+    var z = Math.max(e.z, -0.3), p = F / (F + z), x = sx(e.lane, p), y = sy(p) - e.y * unit * p, r = 0.17 * unit * p;
+    var w = Math.max(r * 0.15, Math.abs(Math.cos(time * 5 + e.z * 0.5)) * r);
+    ctx.fillStyle = 'rgba(255,210,63,.18)'; ctx.beginPath(); ctx.arc(x, y, r * 1.7, 0, 6.283); ctx.fill();
+    ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.ellipse(x, y, w, r, 0, 0, 6.283); ctx.fill();
+    ctx.fillStyle = '#ffe98a'; ctx.beginPath(); ctx.ellipse(x, y, w * 0.55, r * 0.6, 0, 0, 6.283); ctx.fill();
+  }
+  function drawPw(e) {
+    var z = Math.max(e.z, -0.3), p = F / (F + z), x = sx(e.lane, p), yg = sy(p), u = unit * p, col = PWCOL[e.k];
+    var cy = yg - (0.85 + 0.08 * Math.sin(time * 4)) * u, r = 0.3 * u;
+    var rg = ctx.createRadialGradient(x, cy, 0, x, cy, r * 2.4);
+    rg.addColorStop(0, col); rg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.globalAlpha *= 0.5; ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(x, cy, r * 2.4, 0, 6.283); ctx.fill(); ctx.globalAlpha /= 0.5;
+    ctx.fillStyle = '#0f1a22'; ctx.beginPath(); ctx.arc(x, cy, r, 0, 6.283); ctx.fill();
+    ctx.strokeStyle = col; ctx.lineWidth = Math.max(1.5, r * 0.18); ctx.beginPath(); ctx.arc(x, cy, r, 0, 6.283); ctx.stroke();
+    ctx.fillStyle = col; ctx.strokeStyle = col; ctx.lineWidth = Math.max(1.5, r * 0.2);
+    if (e.k === 'x2') { ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = (r * 0.95) + 'px Bungee, Impact, sans-serif'; ctx.fillText('x2', x, cy + r * 0.05); }
+    else if (e.k === 'magnet') { ctx.beginPath(); ctx.arc(x, cy + r * 0.05, r * 0.42, Math.PI, 0); ctx.lineTo(x + r * 0.42, cy + r * 0.45); ctx.moveTo(x - r * 0.42, cy + r * 0.05); ctx.lineTo(x - r * 0.42, cy + r * 0.45); ctx.stroke(); }
+    else { ctx.beginPath(); ctx.moveTo(x, cy - r * 0.5); ctx.lineTo(x + r * 0.42, cy - r * 0.3); ctx.lineTo(x + r * 0.34, cy + r * 0.15); ctx.lineTo(x, cy + r * 0.52); ctx.lineTo(x - r * 0.34, cy + r * 0.15); ctx.lineTo(x - r * 0.42, cy - r * 0.3); ctx.closePath(); ctx.fill(); }
+  }
+  function drawToken(e) {
+    var z = Math.max(e.z, -0.3), p = F / (F + z), x = sx(e.lane, p), yg = sy(p);
+    var hov = 0.95 + 0.08 * Math.sin(time * 3), cy = yg - hov * unit * p, w = 0.82 * unit * p, h = 0.56 * unit * p;
+    var bg = ctx.createLinearGradient(0, yg - 3.2 * unit * p, 0, yg);
+    bg.addColorStop(0, 'rgba(190,255,245,0)'); bg.addColorStop(1, 'rgba(190,255,245,.38)');
+    ctx.fillStyle = bg; ctx.fillRect(x - 0.28 * unit * p, yg - 3.2 * unit * p, 0.56 * unit * p, 3.2 * unit * p);
+    var rg = ctx.createRadialGradient(x, cy, 0, x, cy, w * (1 + 0.1 * Math.sin(time * 6)));
+    rg.addColorStop(0, 'rgba(255,230,140,.65)'); rg.addColorStop(1, 'rgba(255,230,140,0)');
+    ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(x, cy, w * 1.15, 0, 6.283); ctx.fill();
+    ctx.fillStyle = '#f4efe6'; rr(x - w / 2, cy - h / 2, w, h, h * 0.14);
+    ctx.fillStyle = '#ffd23f'; ctx.fillRect(x - w / 2 + w * 0.16, cy - h / 2, Math.max(1, w * 0.02), h);
+    ctx.fillStyle = '#0f1a22'; ctx.font = Math.max(8, h * 0.62) + 'px Bungee, Impact, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(String(e.idx + 1), x + w * 0.06, cy + h * 0.04);
+  }
+  function drawEnt(e) {
+    ctx.globalAlpha = Math.max(0, Math.min(1, (ZFAR - e.z) / 16)) * (e.ghost ? 0.35 : 1);
+    if (e.t === 'train') drawTrain(e); else if (e.t === 'bar') drawBar(e); else if (e.t === 'over') drawOver(e);
+    else if (e.t === 'coin') drawCoin(e); else if (e.t === 'token') drawToken(e); else if (e.t === 'pw') drawPw(e);
+    ctx.globalAlpha = 1;
+  }
+  function drawPlayer() {
+    var S = unit, px = sx(P.x, 1), py = groundY - P.y * S, sk = SKINS[skin] || SKINS[0];
+    ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath();
+    ctx.ellipse(px, groundY, 0.3 * S * (1 - Math.min(P.y, 1.2) * 0.2), 0.07 * S, 0, 0, 6.283); ctx.fill();
+    if (P.inv > 0 && pw.shield <= 0 && Math.floor(P.inv * 16) % 2 === 0) ctx.globalAlpha = 0.35;
+    ctx.save(); ctx.translate(px, py);
+    ctx.rotate((P.lane - P.x) * 0.18);
+    if (P.slide > 0) ctx.scale(1.1, 0.58);
+    var air = P.y > 0.02, t = P.run * 13, sw = Math.sin(t), aw = air ? -0.1 : sw * 0.1;
+    var bob = air || state !== 'play' && state !== 'start' ? 0 : Math.abs(sw) * 0.025;
+    ctx.translate(0, -bob * S);
+    var l1 = air ? 0.14 : Math.max(0, sw) * 0.14, l2 = air ? 0.14 : Math.max(0, -sw) * 0.14;
+    ctx.fillStyle = sk.h;
+    rr(-0.34 * S, (-0.8 + aw) * S, 0.1 * S, 0.3 * S, 0.05 * S);
+    rr(0.24 * S, (-0.8 - aw) * S, 0.1 * S, 0.3 * S, 0.05 * S);
+    ctx.fillStyle = '#14232d';
+    ctx.fillRect(-0.16 * S, -0.44 * S, 0.13 * S, (0.44 - l1) * S);
+    ctx.fillRect(0.03 * S, -0.44 * S, 0.13 * S, (0.44 - l2) * S);
+    ctx.fillStyle = '#ffd23f';
+    ctx.fillRect(-0.18 * S, -(0.07 + l1) * S, 0.17 * S, 0.07 * S);
+    ctx.fillRect(0.01 * S, -(0.07 + l2) * S, 0.17 * S, 0.07 * S);
+    ctx.fillStyle = sk.b; rr(-0.24 * S, -0.86 * S, 0.48 * S, 0.46 * S, 0.1 * S);
+    ctx.fillStyle = 'rgba(0,0,0,.16)'; ctx.fillRect(-0.24 * S, -0.52 * S, 0.48 * S, 0.12 * S);
+    ctx.fillStyle = '#e0a82e'; rr(-0.17 * S, -0.82 * S, 0.34 * S, 0.34 * S, 0.06 * S);
+    ctx.fillStyle = '#9a7314'; ctx.fillRect(-0.17 * S, -0.66 * S, 0.34 * S, 0.035 * S);
+    ctx.fillStyle = 'rgba(244,239,230,.7)'; ctx.fillRect(-0.12 * S, -0.78 * S, 0.24 * S, 0.02 * S);
+    ctx.fillStyle = sk.h; ctx.beginPath(); ctx.arc(0, -0.97 * S, 0.2 * S, 0, 6.283); ctx.fill();
+    ctx.strokeStyle = '#ffd23f'; ctx.lineWidth = Math.max(1, 0.025 * S);
+    ctx.beginPath(); ctx.arc(0, -0.97 * S, 0.13 * S, Math.PI * 0.15, Math.PI * 0.85); ctx.stroke();
+    var wv = Math.sin(t * 0.7) * 0.05 + (P.lane - P.x) * 0.2;
+    ctx.fillStyle = sk.s; ctx.beginPath();
+    ctx.moveTo(0.12 * S, -0.8 * S); ctx.lineTo((0.6 + wv) * S, (-0.84 - wv) * S);
+    ctx.lineTo((0.62 + wv) * S, (-0.76 - wv) * S); ctx.lineTo(0.14 * S, -0.72 * S); ctx.closePath(); ctx.fill();
+    ctx.restore(); ctx.globalAlpha = 1;
+    if (pw.shield > 0) {
+      var cyy = groundY - (P.y + 0.55) * S;
+      ctx.strokeStyle = 'rgba(95,224,205,' + (0.55 + 0.25 * Math.sin(time * 8)) + ')'; ctx.lineWidth = Math.max(2, S * 0.04);
+      ctx.fillStyle = 'rgba(95,224,205,.12)'; ctx.beginPath(); ctx.arc(px, cyy, S * 0.72, 0, 6.283); ctx.fill(); ctx.stroke();
+    }
+    if (pw.magnet > 0) {
+      ctx.strokeStyle = 'rgba(255,123,98,' + (0.3 + 0.3 * Math.sin(time * 10)) + ')'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(px, groundY - (P.y + 0.55) * S, S * (0.8 + 0.15 * ((time * 2) % 1)), 0, 6.283); ctx.stroke();
+    }
+  }
+  function drawSpeedLines() {
+    if (state !== 'play' || speed < 17) return;
+    var k = Math.min(1, (speed - 17) / 11);
+    ctx.strokeStyle = 'rgba(244,239,230,' + 0.22 * k + ')'; ctx.lineWidth = 1.5;
+    var vy = horizon + (groundY - horizon) * 0.4;
+    for (var i = 0; i < SLINES.length; i++) {
+      var s = SLINES[i], f = (time * 1.6 + s.p) % 1, r1 = (0.25 + f * 0.9) * W, r2 = r1 + (0.05 + 0.25 * f) * W;
+      var ca = Math.cos(s.a), sa = Math.sin(s.a) * 0.7;
+      ctx.beginPath(); ctx.moveTo(cx + ca * r1, vy + sa * r1); ctx.lineTo(cx + ca * r2, vy + sa * r2); ctx.stroke();
+    }
+  }
+  function draw() {
+    updatePal();
+    ctx.save();
+    if (shake > 0) ctx.translate((Math.random() - 0.5) * shake * 30, (Math.random() - 0.5) * shake * 30);
+    drawBG(); drawTrack();
+    var far = ents.filter(function (e) { return e.z >= 0; }).sort(function (a, b) { return b.z - a.z; });
+    var near = ents.filter(function (e) { return e.z < 0; }).sort(function (a, b) { return b.z - a.z; });
+    far.forEach(drawEnt); drawPlayer(); near.forEach(drawEnt);
+    drawSpeedLines(); drawFx();
+    ctx.restore();
+    if (flash > 0) { ctx.fillStyle = 'rgba(232,80,58,' + flash * 0.45 + ')'; ctx.fillRect(0, 0, W, H); }
+  }
+
+  /* ---------- HUD y bucle ---------- */
+  var hs = { s: -1, c: -1, l: -1, m: 0, d: -1 }, livesEl = $('lives');
+  function chip(id, v, k) {
+    var el = $(id), on = v > 0;
+    if (el.hidden === on) el.hidden = !on;
+    if (on) el.lastChild.style.width = Math.min(100, v / PWDUR[k] * 100) + '%';
+  }
+  function hud() {
+    var sc = score(), d = Math.floor(dist);
+    if (sc !== hs.s) { hs.s = sc; $('scoreN').textContent = sc; }
+    if (d !== hs.d) { hs.d = d; $('dist').textContent = d + ' m'; }
+    if (coins !== hs.c) { hs.c = coins; $('coins').textContent = coins; }
+    if (lives !== hs.l) { hs.l = lives; for (var i = 0; i < livesEl.children.length; i++) livesEl.children[i].classList.toggle('off', i >= lives); }
+    if (mult !== hs.m) { hs.m = mult; $('mult').hidden = mult < 2; $('mult').textContent = 'x' + mult; }
+    $('mult').classList.toggle('pop', pu > 0);
+    chip('pwMagnet', pw.magnet, 'magnet'); chip('pwShield', pw.shield, 'shield'); chip('pwX2', pw.x2, 'x2');
+  }
+  var last = 0;
+  function frame(ts) {
+    var dt = Math.min(0.05, (ts - last) / 1000 || 0); last = ts;
+    if (state !== 'pause' && state !== 'card') time += dt;
+    update(dt); draw(); hud();
+    requestAnimationFrame(frame);
+  }
+  resize(); reset(); speed = 9;
+  for (var warm = 0; warm < 40; warm++) world(0.1, 9, true);
+  requestAnimationFrame(function (ts) { last = ts; frame(ts); });
+})();
+</script>
 </body>
 </html>
