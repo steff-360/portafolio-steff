@@ -27,9 +27,9 @@ try {
   totalBoards = parseInt(localStorage.getItem('subwaydev-totalboards') || '5', 10);
 } catch (e) {}
 
-// Desbloqueos de la tienda
-var unlockedChars = ['stefani', 'jake'];
-var unlockedOutfits = ['star', 'classic', 'jake-star'];
+// Desbloqueos de la tienda (Personajes de Subway Surfers)
+var unlockedChars = ['stefani', 'jake', 'tricky', 'fresh', 'yutani'];
+var unlockedOutfits = ['star', 'classic', 'cyber', 'terminal', 'jake-star', 'jake-classic', 'tricky-cam', 'fresh-funk', 'yutani-alien'];
 var unlockedBoards = ['freestyler'];
 var upgradeLevels = { jetpack: 1, sneakers: 1, magnet: 1, x2: 1 };
 var claimedCollections = [];

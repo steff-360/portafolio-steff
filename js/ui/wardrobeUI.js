@@ -51,6 +51,12 @@ function renderSSCharacters() {
       thumb.textContent = outfit.star ? '⭐' : (outfit.headphones ? '🎧' : (outfit.visor ? '⚡' : '🧢'));
       thumb.addEventListener('click', function () {
         selectedOutfitId = outfit.id;
+        var isOutfitUnlocked = (unlockedOutfits.indexOf(outfit.id) !== -1);
+        if (isOutfitUnlocked) {
+          activeOutfitId = outfit.id;
+          try { localStorage.setItem('subwaydev-outfit', activeOutfitId); } catch (e) {}
+          toast('¡Atuendo ' + outfit.name + ' seleccionado!', 1500);
+        }
         renderSS();
       });
       ofStack.appendChild(thumb);
@@ -141,6 +147,15 @@ function renderSSCharacters() {
       card.addEventListener('click', function () {
         selectedCharId = char.id;
         selectedOutfitId = char.outfits[0].id;
+        if (isCharUnlocked) {
+          activeCharId = char.id;
+          activeOutfitId = char.outfits[0].id;
+          try {
+            localStorage.setItem('subwaydev-char', activeCharId);
+            localStorage.setItem('subwaydev-outfit', activeOutfitId);
+          } catch (e) {}
+          toast('¡Personaje ' + char.name + ' seleccionado!', 1500);
+        }
         renderSS();
       });
       grid.appendChild(card);
