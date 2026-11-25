@@ -102,7 +102,7 @@ function drawTrack() {
   ctx.fillStyle = g;
   ctx.fillRect(0, horizon, W, H - horizon);
 
-  var yN = sy(PN);
+  var yN = Math.max(H, sy(PN));
 
   // Balasto de las vías del tren (grava central)
   var bgG = ctx.createLinearGradient(0, horizon, 0, H);
@@ -116,10 +116,11 @@ function drawTrack() {
   }
 
   // Traviesas de madera del ferrocarril
-  var off = scroll % 2;
-  for (var z = -off; z < ZFAR; z += 2) {
-    if (z < -1) continue;
+  var off = scroll % 1.5;
+  for (var z = -off; z < ZFAR; z += 1.5) {
+    if (z < -0.8) continue;
     var p = F / (F + z), y = sy(p);
+    if (y > H + 5) continue;
     var slW = 3.1 * unit * p, slH = Math.max(1.5, 0.12 * unit * p), slX = sx(-1.55, p);
     ctx.fillStyle = '#2d231c';
     ctx.fillRect(slX, y - slH, slW, slH);

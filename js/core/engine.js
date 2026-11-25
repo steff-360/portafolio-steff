@@ -4,7 +4,7 @@
    ============================================================ */
 
 var W = 0, H = 0, cx = 0, horizon = 0, groundY = 0, unit = 0;
-var F = 280, ZFAR = 44, PN = F / (F + ZFAR);
+var F = 5.4, ZFAR = 38, PN = 1.28;
 
 function sx(x, p) { return cx + (x - camX) * unit * p; }
 function sy(p) { return horizon + (groundY - horizon) * p; }

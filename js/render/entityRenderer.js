@@ -281,10 +281,10 @@ function drawEnt(e) {
 function drawInspector() {
   if (!inspector.active) return;
   if (state !== 'over' && inspector.dist > 3.6) return;
-  var z = -inspector.dist;
-  var p = F / (F + z);
   var flankX = (state === 'over') ? 0.32 : 0.48;
-  var ix = sx(inspector.lane + flankX, p), iy = sy(p);
+  var p = (state === 'over') ? 1.05 : (0.94 / (1.0 + inspector.dist * 0.22));
+  var ix = sx(inspector.lane + flankX, p);
+  var iy = (state === 'over') ? (groundY - 0.05 * unit) : (groundY + 0.12 * unit * (1 - p));
   var S = unit * p;
   if (state !== 'over' && (iy - 1.4 * S) > H) return;
   var runTime = time * 15;
@@ -450,8 +450,8 @@ function drawInspector() {
 }
 
 function drawSpeedLines() {
-  if (speed < 22 || reduce) return;
-  var nLines = Math.min(8, Math.floor((speed - 22) * 1.5));
+  if (speed < 14 || reduce) return;
+  var nLines = Math.min(8, Math.floor((speed - 12) * 1.5));
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
   ctx.lineWidth = 1.5;
   for (var i = 0; i < nLines; i++) {
