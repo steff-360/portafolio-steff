@@ -120,6 +120,29 @@ body {
 .skin.sel { border-color: var(--lamp); background: rgba(255,210,63,.15); }
 .skin[disabled] { opacity: .5; cursor: default; }
 .sw { width: 14px; height: 14px; border-radius: 50%; }
+
+/* Grid de Vestidor de Personajes estilo Subway Surfers */
+.skins-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; width: 100%; max-width: 680px; text-align: left; }
+.skin-card {
+  position: relative; background: rgba(15,26,34,.88); border: 2px solid rgba(244,239,230,.2);
+  border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.4); transition: transform .15s, border-color .15s, box-shadow .15s;
+}
+.skin-card.active { border-color: var(--lamp); background: rgba(255,210,63,.12); box-shadow: 0 0 16px rgba(255,210,63,.3); }
+.skin-card.locked { opacity: .72; }
+.skin-top { display: flex; align-items: center; gap: 10px; }
+.skin-avatar {
+  width: 44px; height: 44px; border-radius: 50%; border: 2px solid #fff;
+  display: grid; place-items: center; font-size: 22px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,.3);
+}
+.skin-info { display: flex; flex-direction: column; gap: 2px; }
+.skin-name { font-family: var(--display); font-size: 17px; margin: 0; color: #fff; }
+.skin-sub { font-family: var(--cond); font-size: 13px; font-weight: 700; color: var(--lamp); text-transform: uppercase; letter-spacing: .08em; }
+.skin-desc { font-size: 13.5px; line-height: 1.35; color: var(--mute); margin: 0; flex: 1; }
+.skin-act { margin-top: 6px; padding: 8px 12px; font-family: var(--display); font-size: 14px; border-radius: 4px; cursor: pointer; border: 1px solid var(--paper); background: transparent; color: var(--paper); }
+.skin-act.sel { background: var(--lamp); border-color: var(--lamp); color: var(--ink); font-weight: 700; cursor: default; }
+.skin-act.buy { background: var(--teal); border-color: var(--teal); color: var(--ink); font-weight: 700; }
+.skin-act:disabled { opacity: .45; cursor: default; }
 .best { margin: 0; font-family: var(--cond); font-weight: 700; font-size: 16px; letter-spacing: .12em; text-transform: uppercase; color: var(--mute); }
 .keys { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 6px 14px; width: 100%; font-family: var(--cond); font-weight: 600; font-size: 15px; letter-spacing: .04em; color: var(--mute); }
 .keys b { color: var(--paper); font-weight: 700; }
@@ -188,6 +211,7 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
   </div>
   <div class="controls">
     <span id="pips" style="display:contents"></span>
+    <button class="sbtn" id="hudSkinsBtn" type="button" aria-label="Cambiar Personaje" title="Vestidor de Personajes">👤 Trajes</button>
     <button class="sbtn" id="pauseBtn" type="button" aria-label="Pausa">Pausa</button>
     <button class="sbtn" id="sound" type="button">Sonido: sí</button>
   </div>
@@ -206,6 +230,7 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
     <div class="skins" id="skins" role="group" aria-label="Traje"></div>
     <div class="row">
       <button class="btn primary" id="play" type="button">¡Correr Ahora!</button>
+      <button class="btn" id="openSkinsBtn" type="button">👤 Personajes</button>
       <button class="btn" id="read" type="button">Leer sin jugar</button>
     </div>
     <p class="best" id="bestLine"></p>
@@ -235,7 +260,21 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
     <p class="over-stats" id="overStats"></p>
     <div class="row">
       <button class="btn primary" id="again" type="button">Correr otra vez</button>
+      <button class="btn" id="openSkinsOver" type="button">👤 Personajes</button>
       <button class="btn" id="readOver" type="button">Ver Portafolio Completo</button>
+    </div>
+  </div>
+</section>
+
+<section class="overlay" id="skinsModal" hidden>
+  <div class="hero" style="max-width:740px">
+    <div class="subway-sign">Metro Dev · Vestidor de Personajes</div>
+    <h1 style="font-size:clamp(32px,8vw,56px);margin-bottom:4px">PERSONAJES</h1>
+    <p class="sub" style="margin-bottom:4px">Elige el outfit de Stefani para correr por las vías</p>
+    <p class="lead" id="skinsCoinStatus" style="font-size:15px;color:var(--lamp);margin-bottom:14px"></p>
+    <div class="skins-grid" id="skinsGrid"></div>
+    <div class="row" style="margin-top:16px">
+      <button class="btn primary" id="closeSkinsModal" type="button">Listo para correr</button>
     </div>
   </div>
 </section>
@@ -286,11 +325,75 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
   var found = [false, false, false, false];
 
   var SKINS = [
-    { n: 'Graffiti', h: '#0077cc', b: '#00d2b4', s: '#ff3b30', need: 0 },
-    { n: 'Subway Red', h: '#9c1c1a', b: '#ff3b30', s: '#ffd23f', need: 2 },
-    { n: 'Cyber Neon', h: '#3a1f8f', b: '#7a43ff', s: '#00f0d0', need: 4 }
+    {
+      id: 'classic',
+      n: 'Steff Clásica',
+      sub: 'Técnica en Software',
+      desc: 'El outfit clásico de metro: gorra hacia atrás azul, sudadera teal y mochila con </> para desplegar código veloz.',
+      icon: '🛹',
+      h: '#0077cc',
+      b: '#00d2b4',
+      s: '#ff3b30',
+      backpackText: '</>',
+      hair: '#3a2312',
+      visor: null,
+      coinsNeed: 0,
+      stopsNeed: 0
+    },
+    {
+      id: 'cyber',
+      n: 'Steff Cyber Hacker',
+      sub: 'PostgreSQL & Docker Pro',
+      desc: 'Jacket neón con visor cian de realidad aumentada, optimizada para arquitectura de datos y microservicios.',
+      icon: '⚡',
+      h: '#7a43ff',
+      b: '#1b1435',
+      s: '#00f0d0',
+      backpackText: 'SQL',
+      hair: '#00f0d0',
+      visor: '#00f0d0',
+      coinsNeed: 100,
+      stopsNeed: 1
+    },
+    {
+      id: 'terminal',
+      n: 'Steff Terminal Ninja',
+      sub: 'Backend & APIs Node.js',
+      desc: 'Outfit sigiloso en modo oscuro con franjas verde matrix y pruebas automatizadas en Jest para releases limpios.',
+      icon: '💻',
+      h: '#111827',
+      b: '#0b0f19',
+      s: '#10b981',
+      backpackText: 'NODE',
+      hair: '#111827',
+      visor: '#10b981',
+      coinsNeed: 250,
+      stopsNeed: 2
+    },
+    {
+      id: 'gold',
+      n: 'Steff Metro Gold',
+      sub: 'Golden Master Runner',
+      desc: 'Edición dorada de prestigio. Ropa obsidiana con ribetes de oro puro y estela brillante para romper récords mundiales.',
+      icon: '👑',
+      h: '#ffd23f',
+      b: '#241804',
+      s: '#ffd23f',
+      backpackText: '★',
+      hair: '#ffd23f',
+      visor: '#ffd23f',
+      coinsNeed: 500,
+      stopsNeed: 3
+    }
   ];
-  var skin = 0, storedUnlock = 0;
+  var skin = 0, storedUnlock = 0, totalCoins = 0, unlockedSkins = ['classic'];
+  try {
+    skin = parseInt(localStorage.getItem('subwaydev-skin') || '0', 10) || 0;
+    storedUnlock = parseInt(localStorage.getItem('subwaydev-unlock') || '0', 10) || 0;
+    totalCoins = parseInt(localStorage.getItem('subwaydev-totalcoins') || '0', 10) || 0;
+    var stSkins = JSON.parse(localStorage.getItem('subwaydev-unlocked-skins') || '["classic"]');
+    if (Array.isArray(stSkins)) unlockedSkins = stSkins;
+  } catch (e) {}
 
   // Caza de letras de Subway Surfers: S-T-E-F-F
   var WORD_LETTERS = ['S', 'T', 'E', 'F', 'F'];
@@ -614,19 +717,125 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
     }
   }
   function showFor(st) {
-    $('start').hidden = st !== 'start'; $('over').hidden = st !== 'over'; $('card').hidden = st !== 'card'; $('pause').hidden = st !== 'pause';
+    $('start').hidden = st !== 'start';
+    $('over').hidden = st !== 'over';
+    $('card').hidden = st !== 'card';
+    $('pause').hidden = st !== 'pause';
+    $('skinsModal').hidden = st !== 'skins';
   }
   function blurAll() { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); }
   function unlocked() { return Math.max(storedUnlock, found.filter(Boolean).length); }
+
+  function isSkinUnlocked(s) {
+    if (s.id === 'classic' || unlockedSkins.indexOf(s.id) !== -1) return true;
+    if (s.stopsNeed && unlocked() >= s.stopsNeed) return true;
+    if (s.coinsNeed && (totalCoins + coins) >= s.coinsNeed) return true;
+    return false;
+  }
+
+  function unlockSkin(s, i) {
+    if (unlockedSkins.indexOf(s.id) === -1) {
+      unlockedSkins.push(s.id);
+      try { localStorage.setItem('subwaydev-unlocked-skins', JSON.stringify(unlockedSkins)); } catch (e) {}
+    }
+    skin = i;
+    try { localStorage.setItem('subwaydev-skin', String(i)); } catch (e) {}
+    sfx('power');
+    floater('¡' + s.n + '!', sx(P.x, 1), groundY - unit * 1.5, s.b);
+    toast('¡Personaje cambiado a ' + s.n + '!', 2500);
+    renderSkins();
+  }
+
   function renderSkins() {
-    var box = $('skins'), u = unlocked(); box.innerHTML = '';
-    SKINS.forEach(function (s, i) {
-      var b = document.createElement('button'); b.type = 'button'; b.className = 'skin' + (i === skin ? ' sel' : '');
-      var ok = u >= s.need; b.disabled = !ok;
-      b.innerHTML = '<span class="sw" style="background:linear-gradient(135deg,' + s.b + ' 50%,' + s.s + ' 50%)"></span>' + s.n + (ok ? '' : ' · ' + s.need + ' fichas');
-      b.addEventListener('click', function () { skin = i; try { localStorage.setItem('subwaydev-skin', String(i)); } catch (e) {} renderSkins(); });
-      box.appendChild(b);
-    });
+    var u = unlocked();
+    var currentCoins = totalCoins + coins;
+
+    // 1. Selector rápido en Start Screen
+    var box = $('skins');
+    if (box) {
+      box.innerHTML = '';
+      SKINS.forEach(function (s, i) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        var ok = isSkinUnlocked(s);
+        b.className = 'skin' + (i === skin ? ' sel' : '');
+        b.disabled = !ok;
+        b.innerHTML = '<span class="sw" style="background:linear-gradient(135deg,' + s.b + ' 50%,' + s.s + ' 50%)"></span>' + s.n + (ok ? '' : ' · 🔒');
+        b.addEventListener('click', function () {
+          skin = i;
+          try { localStorage.setItem('subwaydev-skin', String(i)); } catch (e) {}
+          sfx('power');
+          renderSkins();
+        });
+        box.appendChild(b);
+      });
+    }
+
+    // 2. Vestidor completo en modal 'skinsModal'
+    var grid = $('skinsGrid');
+    var coinStatus = $('skinsCoinStatus');
+    if (coinStatus) {
+      coinStatus.innerHTML = '💰 Monedas acumuladas: <strong>' + currentCoins + '</strong> · 🎫 Estaciones desbloqueadas: <strong>' + u + '/4</strong>';
+    }
+    if (grid) {
+      grid.innerHTML = '';
+      SKINS.forEach(function (s, i) {
+        var card = document.createElement('div');
+        var ok = isSkinUnlocked(s);
+        var isCurrent = (i === skin);
+        card.className = 'skin-card' + (isCurrent ? ' active' : '') + (!ok ? ' locked' : '');
+
+        var topHtml = '<div class="skin-top">' +
+          '<div class="skin-avatar" style="background:linear-gradient(135deg,' + s.b + ' 40%,' + s.h + ' 100%)">' + s.icon + '</div>' +
+          '<div class="skin-info">' +
+            '<h3 class="skin-name">' + s.n + '</h3>' +
+            '<span class="skin-sub">' + s.sub + '</span>' +
+          '</div></div>';
+
+        var descHtml = '<p class="skin-desc">' + s.desc + '</p>';
+
+        var btnText = '';
+        var btnClass = 'skin-act';
+        var btnDisabled = false;
+
+        if (isCurrent) {
+          btnText = '✓ SELECCIONADO';
+          btnClass += ' sel';
+          btnDisabled = true;
+        } else if (ok) {
+          btnText = 'ELEGIR';
+        } else {
+          btnText = 'DESBLOQUEAR (' + s.coinsNeed + ' 💰)';
+          btnClass += ' buy';
+          btnDisabled = (currentCoins < s.coinsNeed && u < s.stopsNeed);
+        }
+
+        var btnHtml = '<button class="' + btnClass + '" type="button"' + (btnDisabled ? ' disabled' : '') + '>' + btnText + '</button>';
+
+        card.innerHTML = topHtml + descHtml + btnHtml;
+
+        var btnEl = card.querySelector('button');
+        btnEl.addEventListener('click', function () {
+          unlockSkin(s, i);
+        });
+
+        grid.appendChild(card);
+      });
+    }
+  }
+
+  function openSkins() {
+    if (state !== 'skins') prevState = state;
+    state = 'skins';
+    showFor('skins');
+    renderSkins();
+    blurAll();
+  }
+  function closeSkins() {
+    state = prevState || 'start';
+    showFor(state);
+    if (state === 'start') refreshStart();
+    blurAll();
   }
   function refreshStart() { renderSkins(); $('bestLine').textContent = best ? 'Récord: ' + best + ' puntos' : ''; }
   function startGame() {
@@ -642,6 +851,8 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
     inspector.dist = 0.22;
     inspector.lane = P.lane + 0.35;
     inspector.timer = 20;
+    totalCoins += coins;
+    try { localStorage.setItem('subwaydev-totalcoins', String(totalCoins)); } catch (e) {}
     var sc = score(), isBest = sc > best;
     if (isBest) { best = sc; try { localStorage.setItem('subwaydev-best', String(best)); } catch (e) {} }
     var n = found.filter(Boolean).length;
@@ -713,6 +924,13 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
   $('again').addEventListener('click', function () { startGame(); });
   $('read').addEventListener('click', function () { openCard(0); });
   $('readOver').addEventListener('click', function () { openCard(0); });
+  $('openSkinsBtn').addEventListener('click', openSkins);
+  $('openSkinsOver').addEventListener('click', openSkins);
+  $('hudSkinsBtn').addEventListener('click', function () {
+    if (state === 'play') pauseGame();
+    openSkins();
+  });
+  $('closeSkinsModal').addEventListener('click', closeSkins);
   $('pauseBtn').addEventListener('click', function () { if (state === 'play') pauseGame(); else if (state === 'pause') resumeGame(); });
   $('resume').addEventListener('click', resumeGame);
   $('boardTrigger').addEventListener('click', activateHoverboard);
@@ -740,6 +958,8 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
       if (k === 'Escape' || k === 'Enter' || k === ' ') { e.preventDefault(); closeCard(); }
       else if (cardMode === 'read' && k === 'ArrowRight') step(1);
       else if (cardMode === 'read' && k === 'ArrowLeft') step(-1);
+    } else if (state === 'skins') {
+      if (k === 'Escape' || k === 'Enter' || k === ' ') { e.preventDefault(); closeSkins(); }
     }
   });
 
@@ -1256,14 +1476,14 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
       ctx.fillStyle = '#c77dff';
       ctx.fillRect(-0.16 * S, -0.75 * S, 0.32 * S, 0.08 * S);
     } else {
-      // Mochila técnica con laptop y símbolo </>
+      // Mochila técnica con laptop y símbolo del personaje
       ctx.fillStyle = '#0f1a24';
       rr(-0.18 * S, -0.82 * S, 0.36 * S, 0.32 * S, 0.06 * S);
-      ctx.fillStyle = '#00d2b4';
-      ctx.font = '700 ' + Math.max(9, 0.12 * S) + 'px monospace';
+      ctx.fillStyle = sk.s || '#00d2b4';
+      ctx.font = '700 ' + Math.max(8, 0.11 * S) + 'px monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('</>', 0, -0.66 * S);
+      ctx.fillText(sk.backpackText || '</>', 0, -0.66 * S);
     }
 
     if (P.slide > 0) {
@@ -1296,16 +1516,24 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
     ctx.fillStyle = '#9a7314'; ctx.fillRect(-0.17 * S, -0.66 * S, 0.34 * S, 0.035 * S);
     ctx.fillStyle = 'rgba(244,239,230,.7)'; ctx.fillRect(-0.12 * S, -0.78 * S, 0.24 * S, 0.02 * S);
 
-    // Gorra hacia atrás y coleta
+    // Gorra hacia atrás y coleta dinámica
     ctx.fillStyle = sk.h;
     rr(-0.2 * S, -1.12 * S, 0.4 * S, 0.16 * S, 0.06 * S);
     ctx.fillRect(-0.26 * S, -1.04 * S, 0.12 * S, 0.04 * S);
-    ctx.fillStyle = '#3a2312';
+    ctx.fillStyle = sk.hair || '#3a2312';
     ctx.beginPath();
     ctx.arc(-0.22 * S, -0.96 * S, 0.07 * S, 0, 6.283);
     ctx.fill();
 
-    ctx.fillStyle = sk.h; ctx.beginPath(); ctx.arc(0, -0.97 * S, 0.2 * S, 0, 6.283); ctx.fill();
+    ctx.fillStyle = '#f0c896';
+    ctx.beginPath(); ctx.arc(0, -0.97 * S, 0.2 * S, 0, 6.283); ctx.fill();
+
+    // Visor cibernético si el traje lo incluye
+    if (sk.visor) {
+      ctx.fillStyle = sk.visor;
+      ctx.fillRect(-0.15 * S, -1.02 * S, 0.3 * S, 0.05 * S);
+    }
+
     ctx.strokeStyle = '#ffd23f'; ctx.lineWidth = Math.max(1, 0.025 * S);
     ctx.beginPath(); ctx.arc(0, -0.97 * S, 0.13 * S, Math.PI * 0.15, Math.PI * 0.85); ctx.stroke();
     var wv = Math.sin(t * 0.7) * 0.05 + (P.lane - P.x) * 0.2;
@@ -1313,6 +1541,13 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
     ctx.moveTo(0.12 * S, -0.8 * S); ctx.lineTo((0.6 + wv) * S, (-0.84 - wv) * S);
     ctx.lineTo((0.62 + wv) * S, (-0.76 - wv) * S); ctx.lineTo(0.14 * S, -0.72 * S); ctx.closePath(); ctx.fill();
     ctx.restore(); ctx.globalAlpha = 1;
+
+    // Estela de partículas de estilo según el personaje
+    if (state === 'play') {
+      if (sk.id === 'gold' && Math.random() < 0.25) emit(px + (Math.random() - 0.5) * 16, groundY - P.y * S, 1, { s: 30, g: 0, l: 0.3, r: 2.2, c: '#ffd23f' });
+      if (sk.id === 'cyber' && Math.random() < 0.25) emit(px + (Math.random() - 0.5) * 16, groundY - P.y * S, 1, { s: 30, g: 0, l: 0.3, r: 2.2, c: '#00f0d0' });
+      if (sk.id === 'terminal' && Math.random() < 0.25) emit(px + (Math.random() - 0.5) * 16, groundY - P.y * S, 1, { s: 30, g: 0, l: 0.3, r: 2.2, c: '#10b981' });
+    }
 
     if (pw.shield > 0) {
       var cyy = groundY - (P.y + 0.55) * S;
