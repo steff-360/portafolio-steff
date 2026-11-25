@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Vía Libre · Stefani Sánchez — Portafolio Jugable</title>
+<title>Steff Runner · Stefani Sánchez — Técnica en Desarrollo de Software</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
@@ -75,7 +75,7 @@ body {
 .hero > *:nth-child(2) { animation-delay: .07s; } .hero > *:nth-child(3) { animation-delay: .14s; }
 .hero > *:nth-child(4) { animation-delay: .21s; } .hero > *:nth-child(5) { animation-delay: .28s; } .hero > *:nth-child(6) { animation-delay: .35s; }
 @keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
-.hero h1 { margin: 0; font-family: var(--display); font-weight: 400; font-size: clamp(56px, 15vw, 116px); line-height: .88; text-wrap: balance; text-shadow: 0 5px 0 var(--signal), 0 12px 28px rgba(0,0,0,.45); }
+.hero h1 { margin: 0; font-family: var(--display); font-weight: 400; font-size: clamp(52px, 14vw, 108px); line-height: .88; text-wrap: balance; text-shadow: 0 5px 0 var(--signal), 0 12px 28px rgba(0,0,0,.45); }
 .rails { width: min(320px, 70%); height: 14px; background:
   repeating-linear-gradient(90deg, #2a2420 0 8px, transparent 8px 22px) center / 100% 100% no-repeat,
   linear-gradient(#9aa7ae, #9aa7ae) 0 3px / 100% 2px no-repeat, linear-gradient(#9aa7ae, #9aa7ae) 0 9px / 100% 2px no-repeat; opacity: .85; }
@@ -131,7 +131,7 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
 </style>
 </head>
 <body>
-<canvas id="game" role="img" aria-label="Juego de carreras Vía Libre: corre por las vías y recoge las paradas del portafolio de Stefani"></canvas>
+<canvas id="game" role="img" aria-label="Steff Runner: corre por las vías y recoge las paradas del portafolio de Stefani Sánchez"></canvas>
 <div class="vig"></div>
 
 <div class="hud">
@@ -157,10 +157,10 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
 
 <section class="overlay" id="start">
   <div class="hero">
-    <p class="sub">Portafolio de Stefani Sánchez · Full Stack & EdTech</p>
-    <h1>VÍA<br>LIBRE</h1>
+    <p class="sub">Portafolio de Stefani Sánchez · Técnica en Desarrollo de Software</p>
+    <h1>STEFF<br>RUNNER</h1>
     <div class="rails" aria-hidden="true"></div>
-    <p class="lead">Corre por las vías del código. Cada ficha brillante desbloquea una parada que cuenta quién soy, mis proyectos y mi stack.</p>
+    <p class="lead">Corre por las vías del código. Cada ficha brillante desbloquea una parada que cuenta quién soy, mis proyectos y mis habilidades técnicas.</p>
     <div class="skins" id="skins" role="group" aria-label="Traje"></div>
     <div class="row">
       <button class="btn primary" id="play" type="button">Correr</button>
@@ -205,38 +205,40 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
 
-  /* ---------- Contenido del portafolio real de Stefani ---------- */
+  /* ---------- Contenido del portafolio real de Stefani Sánchez ---------- */
   var SECTIONS = [
     { k: 'Quién soy', title: 'Hola, soy Stefani Sánchez.',
-      html: '<p>Soy desarrolladora <strong>Full Stack</strong> apasionada por fusionar <strong>arquitectura backend robusta</strong> con <strong>experiencias interactivas y EdTech</strong>.</p>' +
-            '<p>Creo software que no solo es confiable y escalable bajo el capó, sino que divierte, enseña y resuelve problemas cotidianos.</p>' +
+      html: '<p>Soy <strong>Técnica en Desarrollo de Software</strong> apasionada por crear soluciones prácticas, sólidas y eficientes, combinando lógica de programación con proyectos interactivos.</p>' +
+            '<p>Cuento con formación y experiencia práctica en desarrollo backend, gestión de bases de datos relacionales, herramientas de terminal y aplicaciones web didácticas.</p>' +
             '<dl class="facts">' +
-            '<div><dt>Rol</dt><dd>Full Stack Developer</dd></div>' +
-            '<div><dt>Especialidad</dt><dd>Backend, APIs REST, Bases de Datos & EdTech</dd></div>' +
-            '<div><dt>Core Stack</dt><dd>Node.js, PostgreSQL, TypeScript, Docker, Express</dd></div>' +
-            '<div><dt>Ubicación</dt><dd>Remoto / Global</dd></div></dl>' },
-    { k: 'Habilidades', title: 'Lo que hay bajo el capó',
+            '<div><dt>Nombre</dt><dd>Stefani Sánchez</dd></div>' +
+            '<div><dt>Título</dt><dd>Técnica en Desarrollo de Software</dd></div>' +
+            '<div><dt>Enfoque</dt><dd>Backend, APIs REST, Bases de Datos & EdTech</dd></div>' +
+            '<div><dt>Tecnologías</dt><dd>Node.js, PostgreSQL, TypeScript, Docker, Express, Git</dd></div>' +
+            '<div><dt>Ubicación</dt><dd>Disponible para trabajo remoto / presencial</dd></div></dl>' },
+    { k: 'Habilidades', title: 'Arsenal técnico y herramientas',
       html: '<ul class="list">' +
-            '<li><strong>Backend & APIs (92%)</strong>Node.js, Express, TypeScript, arquitectura modular, autenticación segura con JWT y manejo robusto de excepciones.</li>' +
-            '<li><strong>Bases de Datos & SQL (90%)</strong>PostgreSQL avanzado: diseño relacional, queries analíticas, índices de alto rendimiento, triggers y funciones almacenadas.</li>' +
-            '<li><strong>DevOps & Testing (82%)</strong>Docker, Docker Compose, entornos reproducibles, Supabase y pruebas unitarias/integración con Jest.</li>' +
-            '<li><strong>Frontend & Gamificación (80%)</strong>HTML5 Canvas, CSS3 moderno, JavaScript ES6+, diseño interactivo orientado a aprendizaje activo.</li>' +
-            '<li><strong>Control de versiones</strong>Git, GitHub, flujos de trabajo colaborativos y entregas continuas sin fricción.</li></ul>' },
-    { k: 'Proyectos', title: 'Lo que he construido',
+            '<li><strong>Desarrollo Backend & APIs</strong>Construcción de APIs REST modulares con Node.js y Express, tipado seguro con TypeScript, autenticación JWT y manejo estructurado de errores.</li>' +
+            '<li><strong>Bases de Datos & SQL</strong>Diseño de esquemas relacionales con PostgreSQL, consultas optimizadas, funciones almacenadas, vistas e integridad referencial.</li>' +
+            '<li><strong>DevOps & Contenedores</strong>Empaquetado de aplicaciones y servicios mediante Docker y Docker Compose para entornos reproducibles y confiables.</li>' +
+            '<li><strong>Pruebas & Control de Calidad</strong>Pruebas automatizadas unitarias y de integración con Jest para asegurar código confiable.</li>' +
+            '<li><strong>Frontend & Gamificación</strong>Desarrollo con HTML5 Canvas, CSS3 y JavaScript moderno para crear dinámicas interactivas educativas.</li>' +
+            '<li><strong>Herramientas de Trabajo</strong>Git, GitHub, Linux, desarrollo en consola (CLI) y metodologías ágiles.</li></ul>' },
+    { k: 'Proyectos', title: 'Proyectos reales destacados',
       html: '<ul class="list">' +
-            '<li><strong>Escape Room Programación<a class="badge link" href="https://steff-360.github.io/escape-room-programacion/" target="_blank">Demo Live ↗</a></strong>Videojuego educativo desarrollado en HTML5 Canvas nativo y JavaScript. Rompecabezas de lógica, estructuras algorítmicas y mecánicas gamificadas.</li>' +
-            '<li><strong>Job Listings API<a class="badge link" href="https://github.com/steff-360" target="_blank">GitHub ↗</a></strong>API REST completa para gestión de vacantes de empleo con Node.js, Express, autenticación JWT y persistencia en PostgreSQL.</li>' +
-            '<li><strong>TechZone PostgreSQL<a class="badge link" href="https://github.com/steff-360" target="_blank">GitHub ↗</a></strong>Modelado completo de base de datos relacional para tienda tecnológica con optimización de índices y procedimientos.</li>' +
-            '<li><strong>Algodones Maravilla CLI<a class="badge link" href="https://github.com/steff-360" target="_blank">GitHub ↗</a></strong>Herramienta en línea de comandos para control de inventario en TypeScript aplicando Clean Code y POO.</li>' +
-            '<li><strong>CampusLands CLI<a class="badge link" href="https://github.com/steff-360" target="_blank">GitHub ↗</a></strong>Plataforma de gestión académica estudiantil con registro de asistencias y notas.</li>' +
-            '<li><strong>Docker + Supabase Infra<a class="badge link" href="https://github.com/steff-360" target="_blank">GitHub ↗</a></strong>Infraestructura de microservicios reproducibles en Docker Compose con base en PostgreSQL/Supabase.</li></ul>' },
-    { k: 'Contacto', title: 'Trabajemos juntos',
-      html: '<p>Estoy disponible para sumarme a equipos de producto, proyectos de tecnología educativa o retos Full Stack desafiantes.</p>' +
+            '<li><strong>Escape Room Programación<a class="badge link" href="https://steff-360.github.io/escape-room-programacion/" target="_blank">Demo Live ↗</a></strong>Videojuego didáctico interactivo desarrollado en Canvas y JavaScript puro para enseñar conceptos lógicos y algorítmicos.</li>' +
+            '<li><strong>Job Listings API<a class="badge link" href="https://github.com/steff-360" target="_blank">GitHub ↗</a></strong>API REST con Node.js, Express y PostgreSQL para gestión de ofertas laborales, con autenticación segura por tokens JWT.</li>' +
+            '<li><strong>TechZone PostgreSQL<a class="badge link" href="https://github.com/steff-360" target="_blank">GitHub ↗</a></strong>Diseño relacional avanzado y optimización de base de datos para una tienda tecnológica.</li>' +
+            '<li><strong>Algodones Maravilla CLI<a class="badge link" href="https://github.com/steff-360" target="_blank">GitHub ↗</a></strong>Sistema de control de inventario en consola desarrollado en TypeScript con principios de Clean Code y POO.</li>' +
+            '<li><strong>CampusLands CLI<a class="badge link" href="https://github.com/steff-360" target="_blank">GitHub ↗</a></strong>Aplicación CLI para seguimiento académico y control de asistencias de estudiantes.</li>' +
+            '<li><strong>Docker + Supabase Infra<a class="badge link" href="https://github.com/steff-360" target="_blank">GitHub ↗</a></strong>Orquestación de microservicios reproducibles en contenedores Docker Compose con persistencia.</li></ul>' },
+    { k: 'Contacto', title: 'Conectemos',
+      html: '<p>Estoy lista para incorporarme a equipos de tecnología, proyectos de desarrollo de software o iniciativas educativas.</p>' +
             '<dl class="facts">' +
             '<div><dt>Email</dt><dd><strong>steff.18random@gmail.com</strong></dd></div>' +
-            '<div><dt>LinkedIn</dt><dd><a class="badge link" href="https://www.linkedin.com/in/stefani-s%C3%A1nchez-b35b65279" target="_blank">Ver perfil ↗</a></dd></div>' +
-            '<div><dt>GitHub</dt><dd><a class="badge link" href="https://github.com/steff-360" target="_blank">@steff-360 ↗</a></dd></div></dl>' +
-            '<p style="margin-top:14px">Escríbeme un mensaje y charlemos sobre cómo aportar valor a tu proyecto.</p>' }
+            '<div><dt>LinkedIn</dt><dd><a class="badge link" href="https://www.linkedin.com/in/stefani-s%C3%A1nchez-b35b65279" target="_blank">Stefani Sánchez ↗</a></dd></div>' +
+            '<div><dt>GitHub</dt><dd><a class="badge link" href="https://github.com/steff-360" target="_blank">github.com/steff-360 ↗</a></dd></div></dl>' +
+            '<p style="margin-top:14px">¡Envíame un mensaje y conversemos sobre nuevas oportunidades!</p>' }
   ];
   var found = [false, false, false, false];
 
@@ -263,9 +265,9 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
   var P = { lane: 0, x: 0, y: 0, vy: 0, slide: 0, run: 0, inv: 0, jumpBuf: 0 };
   var parts = [], floaters = [];
   try {
-    best = parseInt(localStorage.getItem('vialibre-best') || '0', 10) || 0;
-    storedUnlock = parseInt(localStorage.getItem('vialibre-unlock') || '0', 10) || 0;
-    skin = parseInt(localStorage.getItem('vialibre-skin') || '0', 10) || 0;
+    best = parseInt(localStorage.getItem('steffrunner-best') || '0', 10) || 0;
+    storedUnlock = parseInt(localStorage.getItem('steffrunner-unlock') || '0', 10) || 0;
+    skin = parseInt(localStorage.getItem('steffrunner-skin') || '0', 10) || 0;
   } catch (e) {}
 
   var TRAINCOL = [
@@ -306,7 +308,7 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
   var BUILD1 = makeBuild(0.02, 0.09, 0.03, 0.06), BUILD2 = makeBuild(0.04, 0.15, 0.04, 0.1), STARS = [], si;
   for (si = 0; si < 50; si++) STARS.push({ x: rnd(), y: rnd() * 0.7, s: 0.6 + rnd() * 1.2 });
   var farTrain = { x: -1, t: 6 };
-  var BOARDS = [['STEFANI', 'Full Stack Developer'], ['NODE.JS · SQL', 'Arquitectura backend'], ['EDTECH', 'Gamificación y código'], ['DOCKER', 'Entornos reproducibles'], ['¿HABLAMOS?', 'steff.18random@gmail.com']];
+  var BOARDS = [['STEFANI SÁNCHEZ', 'Técnica en Software'], ['NODE.JS & SQL', 'Backend y Bases de Datos'], ['TYPESCRIPT', 'Código limpio y tipado'], ['DOCKER', 'Entornos reproducibles'], ['¿HABLAMOS?', 'steff.18random@gmail.com']];
   var SLINES = [];
   for (si = 0; si < 26; si++) SLINES.push({ a: rnd() * 6.283, p: rnd() });
 
@@ -493,7 +495,7 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
       var b = document.createElement('button'); b.type = 'button'; b.className = 'skin' + (i === skin ? ' sel' : '');
       var ok = u >= s.need; b.disabled = !ok;
       b.innerHTML = '<span class="sw" style="background:linear-gradient(135deg,' + s.b + ' 50%,' + s.s + ' 50%)"></span>' + s.n + (ok ? '' : ' · ' + s.need + ' fichas');
-      b.addEventListener('click', function () { skin = i; try { localStorage.setItem('vialibre-skin', String(i)); } catch (e) {} renderSkins(); });
+      b.addEventListener('click', function () { skin = i; try { localStorage.setItem('steffrunner-skin', String(i)); } catch (e) {} renderSkins(); });
       box.appendChild(b);
     });
   }
@@ -507,9 +509,9 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
   function gameOver() {
     state = 'over'; musicStop();
     var sc = score(), isBest = sc > best;
-    if (isBest) { best = sc; try { localStorage.setItem('vialibre-best', String(best)); } catch (e) {} }
+    if (isBest) { best = sc; try { localStorage.setItem('steffrunner-best', String(best)); } catch (e) {} }
     var n = found.filter(Boolean).length;
-    if (n > storedUnlock) { storedUnlock = n; try { localStorage.setItem('vialibre-unlock', String(n)); } catch (e) {} }
+    if (n > storedUnlock) { storedUnlock = n; try { localStorage.setItem('steffrunner-unlock', String(n)); } catch (e) {} }
     $('newBest').hidden = !isBest;
     $('overStats').innerHTML = sc + ' puntos<br>' + Math.floor(dist) + ' m · ' + coins + ' monedas · ' + n + '/4 paradas<br>Récord ' + best;
     showFor('over');
@@ -523,9 +525,9 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
 
   /* Tarjeta de parada */
   function finaleHtml() {
-    return '<p>¡Increíble! Desbloqueaste todas las paradas de mi portafolio.</p>' +
+    return '<p>¡Felicidades! Recorriste todas las paradas de mi portafolio.</p>' +
       '<dl class="facts"><div><dt>Puntos</dt><dd>' + score() + '</dd></div><div><dt>Distancia</dt><dd>' + Math.floor(dist) + ' m</dd></div><div><dt>Monedas</dt><dd>' + coins + '</dd></div></dl>' +
-      '<p>¿Lista/o para construir algo extraordinario juntas? Contáctame a <strong>steff.18random@gmail.com</strong>.</p>';
+      '<p>Soy Stefani Sánchez, Técnica en Desarrollo de Software. Contáctame directamente a <strong>steff.18random@gmail.com</strong>.</p>';
   }
   function renderCard() {
     var s = cardIdx === 4 ? { k: 'Línea completa', title: 'Portafolio Completo', html: finaleHtml() } : SECTIONS[cardIdx], foot;
@@ -701,7 +703,7 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
         if (Math.abs(e.z) < 0.9 && Math.abs(e.lane - P.x) < 0.7 && Math.abs(0.95 - (P.y + 0.55)) < 1.0) {
           e.got = true; found[e.idx] = true; cpActive = false; cpDist = dist + 130; refreshPips(); sfx('token');
           storedUnlock = Math.max(storedUnlock, found.filter(Boolean).length);
-          try { localStorage.setItem('vialibre-unlock', String(storedUnlock)); } catch (er) {}
+          try { localStorage.setItem('steffrunner-unlock', String(storedUnlock)); } catch (er) {}
           var cols = ['#ffd23f', '#e8503a', '#2fb8a6', '#f4efe6'];
           for (var c = 0; c < 4; c++) emit(sx(e.lane, 1), groundY - 0.95 * unit, 12, { s: 300, up: 140, g: 400, l: 0.9, r: 4, c: cols[c] });
           openCard(e.idx); return;
@@ -779,8 +781,8 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
       ctx.transform((Rs.x - Ls.x) / wL, (Rs.yt - Ls.yt) / wL, 0, ((Ls.yb - Ls.yt) + (Rs.yb - Rs.yt)) / 2 / hL, Ls.x, Ls.yt);
       ctx.strokeStyle = '#ffd23f'; ctx.lineWidth = 4; ctx.strokeRect(5, 5, wL - 10, hL - 10);
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#f4efe6'; ctx.font = '30px Bungee, Impact, sans-serif'; ctx.fillText(bd[0], wL / 2, 40);
-      ctx.fillStyle = '#ffd23f'; ctx.font = '700 17px "Barlow Condensed", "Arial Narrow", sans-serif'; ctx.fillText(bd[1].toUpperCase(), wL / 2, 74);
+      ctx.fillStyle = '#f4efe6'; ctx.font = '28px Bungee, Impact, sans-serif'; ctx.fillText(bd[0], wL / 2, 40);
+      ctx.fillStyle = '#ffd23f'; ctx.font = '700 16px "Barlow Condensed", "Arial Narrow", sans-serif'; ctx.fillText(bd[1].toUpperCase(), wL / 2, 74);
       ctx.restore();
       ctx.globalAlpha = 1;
     }
