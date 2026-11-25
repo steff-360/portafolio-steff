@@ -25,6 +25,58 @@
   --shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
   --pill-bg: rgba(15, 23, 42, 0.78);
 }
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #edf4f8;
+  --bg2: #e3edf4;
+  --bg3: #d8e6ef;
+  --surface: #f7fafc;
+  --border: rgba(10,31,48,.10);
+  --border2: rgba(10,31,48,.18);
+  --text: #102437;
+  --text2: #4d6475;
+  --text3: #6d8292;
+  --cyan-g: rgba(0,129,164,.22);
+  --coral-g: rgba(225,45,82,.20);
+  --gold-g: rgba(191,123,0,.20);
+}
+[data-theme="light"] body {
+  background: var(--bg);
+  color: var(--text);
+}
+[data-theme="light"] body::before {
+  opacity: .55;
+  background:
+    linear-gradient(rgba(14,93,125,.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(14,93,125,.08) 1px, transparent 1px);
+}
+[data-theme="light"] body::after { opacity: .018; }
+[data-theme="light"] .nav.is-scrolled { background: rgba(237,244,248,.88); }
+[data-theme="light"] .loader,
+[data-theme="light"] .mobile-menu { background: rgba(237,244,248,.98); }
+[data-theme="light"] .photo-frame { box-shadow: 0 24px 60px rgba(40,77,101,.18); }
+[data-theme="light"] .orbit-badge,
+[data-theme="light"] .stat-pill,
+[data-theme="light"] .value-card,
+[data-theme="light"] .email-card,
+[data-theme="light"] .arcade-wrap,
+[data-theme="light"] .game-hud { background: rgba(247,250,252,.92); }
+[data-theme="light"] .mission-rail,
+[data-theme="light"] .xp-hud { background: rgba(247,250,252,.88); }
+[data-theme="light"] .arcade-section { background: #dceaf1; }
+[data-theme="light"] .arcade-title { color: var(--text); }
+[data-theme="light"] .ac-cell { background: rgba(16,36,55,.06); }
+[data-theme="light"] .ac-stat strong { color: var(--text); }
+[data-theme="light"] .theme-icon { background: rgba(6,182,212,.12); color: var(--cyan); }
+[data-theme="light"] .hero-status,
+[data-theme="light"] .quest-panel,
+[data-theme="light"] .profile-stamp { background: rgba(247,250,252,.94); }
+[data-theme="light"] .quest-panel { box-shadow: 0 12px 30px rgba(30,65,84,.08); }
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: .42s;
+}
 
 [data-theme="light"] {
   --bg: #f1f5f9;

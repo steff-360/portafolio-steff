@@ -487,6 +487,28 @@
               z: 1.0 + k * 0.075,
               y: 0,
             });
+            const missionLinks = document.querySelectorAll(".mission-links a");
+            missionLinks.forEach((link) => {
+              const linkTarget = link.getAttribute("href");
+              link.classList.toggle("active", linkTarget === "#" + id);
+            });
+            const missionCount = document.getElementById("mission-count");
+            const missionProgress = document.getElementById("mission-progress");
+            const missionNumber = id === "about" ? 1 : id === "projects" ? 2 : id === "skills" ? 3 : id === "arcade" ? 4 : 0;
+            if (missionNumber) {
+              if (missionCount) missionCount.textContent = String(missionNumber).padStart(2, "0") + " / 04";
+              if (missionProgress) missionProgress.style.width = (missionNumber * 25) + "%";
+              missionLinks.forEach((link) => {
+                const linkNumber = parseInt(link.dataset.mission, 10);
+                const isComplete = linkNumber < missionNumber;
+                link.classList.toggle("is-complete", isComplete);
+                if (link.getAttribute("href") === "#" + id) {
+                  link.setAttribute("aria-current", "step");
+                } else {
+                  link.removeAttribute("aria-current");
+                }
+              });
+            }
           }
         } else if (r < 0.88) {
           const sk = SKILLS[Math.floor(Math.random() * SKILLS.length)];
