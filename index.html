@@ -3,20 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Steff Runner · Stefani Sánchez — Técnica en Desarrollo de Software</title>
+<title>Subway Dev · Stefani Sánchez — Técnica en Desarrollo de Software</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
 <style>
-/* Layout: pantalla completa. Canvas del juego al fondo, HUD arriba, tarjetas de parada (tickets) sobre un velo. Patio de vías que pasa de atardecer a noche y amanecer. */
+/* Estética inspirada en Subway Surfers: carteles de metro, colores vivos y tickets de portafolio */
 :root {
-  --ink: #0f1a22;
-  --ink-2: #1b2c38;
+  --ink: #0b1319;
+  --ink-2: #14232d;
   --lamp: #ffd23f;
-  --signal: #e8503a;
-  --teal: #2fb8a6;
-  --paper: #f4efe6;
-  --mute: #9fb3bf;
+  --signal: #ff3b30;
+  --teal: #00d2b4;
+  --paper: #f7f4ec;
+  --mute: #8fa5b4;
+  --subway-blue: #0077cc;
   --display: 'Bungee', 'Impact', sans-serif;
   --body: 'Barlow', system-ui, sans-serif;
   --cond: 'Barlow Condensed', 'Arial Narrow', sans-serif;
@@ -30,7 +31,7 @@ body {
   font-family: var(--body); overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none;
 }
 #game { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.vig { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 48%, transparent 52%, rgba(5, 10, 14, .6)); }
+.vig { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 48%, transparent 52%, rgba(5, 10, 14, .65)); }
 
 .hud {
   position: absolute; top: 0; left: 0; right: 0; z-index: 2; pointer-events: none;
@@ -40,26 +41,26 @@ body {
   display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 10px 16px;
 }
 .score-box { display: flex; flex-direction: column; gap: 4px; }
-.score { font-family: var(--display); font-size: clamp(28px, 7vw, 40px); line-height: 1; text-shadow: 0 3px 0 rgba(0,0,0,.4); font-variant-numeric: tabular-nums; }
-.score small { display: block; font-family: var(--cond); font-size: 13px; letter-spacing: .18em; color: var(--lamp); text-shadow: none; margin-bottom: 2px; }
-.mult { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 3px; background: var(--lamp); color: var(--ink); font-size: 16px; vertical-align: 8px; text-shadow: none; transition: transform .15s; }
+.score { font-family: var(--display); font-size: clamp(28px, 7vw, 42px); line-height: 1; text-shadow: 0 3px 0 rgba(0,0,0,.5); font-variant-numeric: tabular-nums; }
+.score small { display: block; font-family: var(--cond); font-size: 13px; letter-spacing: .2em; color: var(--lamp); text-shadow: none; margin-bottom: 2px; }
+.mult { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 4px; background: var(--lamp); color: var(--ink); font-size: 16px; vertical-align: 8px; text-shadow: none; transition: transform .15s; font-weight: 700; }
 .mult.pop { transform: scale(1.4); }
 .meta { display: flex; align-items: center; gap: 16px; font-family: var(--cond); font-weight: 700; font-size: 19px; letter-spacing: .06em; text-shadow: 0 2px 0 rgba(0,0,0,.4); }
 .coin-n { display: inline-flex; align-items: center; gap: 7px; }
-.coin-dot { width: 15px; height: 15px; border-radius: 50%; background: var(--lamp); box-shadow: inset -3px -3px 0 rgba(0,0,0,.2), 0 0 10px rgba(255,210,63,.6); }
+.coin-dot { width: 16px; height: 16px; border-radius: 50%; background: var(--lamp); box-shadow: inset -3px -3px 0 rgba(0,0,0,.25), 0 0 10px rgba(255,210,63,.7); }
 .lives { display: inline-flex; gap: 6px; }
-.lives i { width: 12px; height: 12px; border-radius: 50%; background: var(--signal); box-shadow: 0 0 8px rgba(232,80,58,.8); }
+.lives i { width: 13px; height: 13px; border-radius: 50%; background: var(--signal); box-shadow: 0 0 8px rgba(255,59,48,.8); }
 .lives i.off { background: transparent; box-shadow: none; border: 2px solid rgba(244,239,230,.35); }
 .powers { display: flex; flex-wrap: wrap; gap: 6px; min-height: 26px; }
-.pw-chip { position: relative; overflow: hidden; font-family: var(--cond); font-weight: 700; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; padding: 4px 9px 7px; border-radius: 3px; background: rgba(15,26,34,.75); border: 1px solid currentColor; }
+.pw-chip { position: relative; overflow: hidden; font-family: var(--cond); font-weight: 700; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; padding: 4px 9px 7px; border-radius: 4px; background: rgba(11,19,25,.8); border: 1px solid currentColor; }
 .pw-chip i { position: absolute; left: 0; bottom: 0; height: 3px; background: currentColor; width: 100%; }
-.pw-magnet { color: #ff7b62; } .pw-shield { color: #5fe0cd; } .pw-x2 { color: var(--lamp); }
+.pw-magnet { color: #ff6b4a; } .pw-shield { color: var(--teal); } .pw-x2 { color: var(--lamp); }
 .controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: flex-end; }
 .pip, .sbtn {
   pointer-events: auto; cursor: pointer; font-family: var(--cond); font-weight: 700; font-size: 14px; letter-spacing: .08em; text-transform: uppercase;
-  padding: 6px 10px; border-radius: 3px; color: var(--mute); background: rgba(15,26,34,.6); border: 1px dashed rgba(244,239,230,.35);
+  padding: 6px 11px; border-radius: 4px; color: var(--mute); background: rgba(11,19,25,.65); border: 1px dashed rgba(244,239,230,.35);
 }
-.pip.on { background: var(--lamp); color: var(--ink); border: 1px solid var(--lamp); }
+.pip.on { background: var(--lamp); color: var(--ink); border: 1px solid var(--lamp); font-weight: 700; }
 .sbtn { border-style: solid; color: var(--paper); }
 .pip:focus-visible, .sbtn:focus-visible, .btn:focus-visible, .skin:focus-visible { outline: 3px solid var(--lamp); outline-offset: 2px; }
 
@@ -68,27 +69,38 @@ body {
   padding-block: 24px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
-  background: rgba(8, 14, 20, .55); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+  background: rgba(6, 12, 18, .62); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
 }
 .hero { text-align: center; max-width: 580px; display: flex; flex-direction: column; align-items: center; gap: 16px; }
 .hero > * { animation: rise .6s cubic-bezier(.2,.8,.2,1) both; }
 .hero > *:nth-child(2) { animation-delay: .07s; } .hero > *:nth-child(3) { animation-delay: .14s; }
 .hero > *:nth-child(4) { animation-delay: .21s; } .hero > *:nth-child(5) { animation-delay: .28s; } .hero > *:nth-child(6) { animation-delay: .35s; }
 @keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
-.hero h1 { margin: 0; font-family: var(--display); font-weight: 400; font-size: clamp(52px, 14vw, 108px); line-height: .88; text-wrap: balance; text-shadow: 0 5px 0 var(--signal), 0 12px 28px rgba(0,0,0,.45); }
+
+/* Logo con estilo metro / subway surfers */
+.subway-sign {
+  display: inline-flex; align-items: center; gap: 8px; padding: 4px 14px; border-radius: 999px;
+  background: var(--subway-blue); color: #fff; font-family: var(--cond); font-weight: 700; font-size: 14px;
+  letter-spacing: .15em; text-transform: uppercase; box-shadow: 0 4px 14px rgba(0,119,204,.4);
+}
+.hero h1 {
+  margin: 0; font-family: var(--display); font-weight: 400; font-size: clamp(48px, 13vw, 98px); line-height: .9;
+  text-wrap: balance; color: #fff; text-shadow: 0 6px 0 var(--signal), 0 14px 30px rgba(0,0,0,.6);
+  letter-spacing: 1px;
+}
 .rails { width: min(320px, 70%); height: 14px; background:
   repeating-linear-gradient(90deg, #2a2420 0 8px, transparent 8px 22px) center / 100% 100% no-repeat,
   linear-gradient(#9aa7ae, #9aa7ae) 0 3px / 100% 2px no-repeat, linear-gradient(#9aa7ae, #9aa7ae) 0 9px / 100% 2px no-repeat; opacity: .85; }
 .hero .sub { margin: 0; font-family: var(--cond); font-weight: 700; font-size: 18px; letter-spacing: .16em; text-transform: uppercase; color: var(--lamp); }
-.hero .lead { margin: 0; font-size: 17px; line-height: 1.45; max-width: 46ch; text-wrap: balance; }
+.hero .lead { margin: 0; font-size: 17px; line-height: 1.45; max-width: 48ch; text-wrap: balance; }
 .row { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
-.btn { font-family: var(--display); font-size: 17px; cursor: pointer; padding: 13px 24px; border-radius: 4px; border: 2px solid var(--paper); background: transparent; color: var(--paper); text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
-.btn.primary { background: var(--lamp); border-color: var(--lamp); color: var(--ink); box-shadow: 0 4px 0 #b88e0a; }
-.btn.primary:active { transform: translateY(3px); box-shadow: 0 1px 0 #b88e0a; }
+.btn { font-family: var(--display); font-size: 17px; cursor: pointer; padding: 13px 26px; border-radius: 6px; border: 2px solid var(--paper); background: transparent; color: var(--paper); text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+.btn.primary { background: var(--lamp); border-color: var(--lamp); color: var(--ink); box-shadow: 0 5px 0 #b88e0a; }
+.btn.primary:active { transform: translateY(3px); box-shadow: 0 2px 0 #b88e0a; }
 .btn[disabled] { opacity: .35; cursor: default; }
 .skins { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-.skin { display: inline-flex; align-items: center; gap: 8px; padding: 6px 11px; border-radius: 4px; border: 2px solid rgba(244,239,230,.3); background: rgba(15,26,34,.55); color: var(--paper); font-family: var(--cond); font-weight: 700; font-size: 14px; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
-.skin.sel { border-color: var(--lamp); }
+.skin { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 6px; border: 2px solid rgba(244,239,230,.3); background: rgba(15,26,34,.6); color: var(--paper); font-family: var(--cond); font-weight: 700; font-size: 14px; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
+.skin.sel { border-color: var(--lamp); background: rgba(255,210,63,.15); }
 .skin[disabled] { opacity: .5; cursor: default; }
 .sw { width: 14px; height: 14px; border-radius: 50%; }
 .best { margin: 0; font-family: var(--cond); font-weight: 700; font-size: 16px; letter-spacing: .12em; text-transform: uppercase; color: var(--mute); }
@@ -97,10 +109,10 @@ body {
 .over-stats { margin: 0; font-family: var(--cond); font-weight: 600; font-size: 20px; letter-spacing: .04em; line-height: 1.5; }
 .newbest { color: var(--lamp); font-family: var(--display); font-size: 18px; margin: 0; }
 
-.ticket { position: relative; width: 100%; max-width: 520px; background: var(--paper); color: var(--ink); border-radius: 6px; overflow: hidden; box-shadow: 0 18px 50px rgba(0,0,0,.55); animation: rise .35s cubic-bezier(.2,.8,.2,1) both; }
+.ticket { position: relative; width: 100%; max-width: 520px; background: var(--paper); color: var(--ink); border-radius: 8px; overflow: hidden; box-shadow: 0 20px 55px rgba(0,0,0,.6); animation: rise .35s cubic-bezier(.2,.8,.2,1) both; }
 .ticket::after { content: attr(data-n); position: absolute; right: 14px; top: 38px; font-family: var(--display); font-size: 96px; line-height: 1; color: rgba(15,26,34,.07); pointer-events: none; }
-.t-head { display: flex; justify-content: space-between; gap: 12px; padding: 10px 20px; background: var(--ink-2); color: var(--lamp); font-family: var(--cond); font-weight: 700; font-size: 15px; letter-spacing: .14em; text-transform: uppercase; }
-.t-body { position: relative; z-index: 1; padding: 20px 22px 6px; max-height: calc(100dvh - 230px); overflow-y: auto; touch-action: pan-y; user-select: text; -webkit-user-select: text; }
+.t-head { display: flex; justify-content: space-between; gap: 12px; padding: 11px 20px; background: var(--ink-2); color: var(--lamp); font-family: var(--cond); font-weight: 700; font-size: 15px; letter-spacing: .14em; text-transform: uppercase; }
+.t-body { position: relative; z-index: 1; padding: 22px 22px 6px; max-height: calc(100dvh - 230px); overflow-y: auto; touch-action: pan-y; user-select: text; -webkit-user-select: text; }
 .t-body h2 { margin: 0 0 12px; font-family: var(--display); font-weight: 400; font-size: clamp(24px, 6vw, 30px); line-height: 1.05; text-wrap: balance; }
 .t-body p { margin: 0 0 12px; font-size: 16px; line-height: 1.5; }
 .t-foot { position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; padding: 14px 22px 20px; border-top: 2px dashed rgba(15,26,34,.25); margin-top: 8px; }
@@ -116,11 +128,10 @@ body {
 ol.list { counter-reset: s; }
 ol.list li { counter-increment: s; padding-left: 38px; position: relative; }
 ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px; width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: var(--lamp); font-family: var(--display); font-size: 13px; display: grid; place-items: center; }
-.badge { display: inline-block; margin-left: 8px; padding: 1px 7px; border-radius: 3px; font-family: var(--cond); font-weight: 700; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; vertical-align: 2px; background: var(--teal); color: var(--ink); text-decoration: none; }
-.badge.idea { background: transparent; border: 1px dashed #5b6b76; color: #5b6b76; }
+.badge { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 4px; font-family: var(--cond); font-weight: 700; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; vertical-align: 2px; background: var(--teal); color: var(--ink); text-decoration: none; }
 .badge.link { background: var(--signal); color: #fff; }
 
-.toast { position: absolute; z-index: 6; left: 50%; transform: translateX(-50%); bottom: calc(24px + env(safe-area-inset-bottom, 0px)); max-width: calc(100% - 32px); padding: 10px 16px; border-radius: 4px; background: var(--paper); color: var(--ink); font-family: var(--cond); font-weight: 700; font-size: 17px; letter-spacing: .03em; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,.45); pointer-events: none; }
+.toast { position: absolute; z-index: 6; left: 50%; transform: translateX(-50%); bottom: calc(24px + env(safe-area-inset-bottom, 0px)); max-width: calc(100% - 32px); padding: 10px 16px; border-radius: 6px; background: var(--paper); color: var(--ink); font-family: var(--cond); font-weight: 700; font-size: 17px; letter-spacing: .03em; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,.45); pointer-events: none; }
 @media (prefers-reduced-motion: reduce) { .hero > *, .ticket { animation: none; } .mult { transition: none; } }
 .pip .n { display: none; }
 @media (max-width: 480px) {
@@ -131,7 +142,7 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
 </style>
 </head>
 <body>
-<canvas id="game" role="img" aria-label="Steff Runner: corre por las vías y recoge las paradas del portafolio de Stefani Sánchez"></canvas>
+<canvas id="game" role="img" aria-label="Subway Dev: corre por las vías del metro y recoge las estaciones del portafolio de Stefani Sánchez"></canvas>
 <div class="vig"></div>
 
 <div class="hud">
@@ -144,7 +155,7 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
     </div>
     <div class="powers">
       <span class="pw-chip pw-magnet" id="pwMagnet" hidden>Imán<i></i></span>
-      <span class="pw-chip pw-shield" id="pwShield" hidden>Escudo<i></i></span>
+      <span class="pw-chip pw-shield" id="pwShield" hidden>Hoverboard<i></i></span>
       <span class="pw-chip pw-x2" id="pwX2" hidden>Monedas x2<i></i></span>
     </div>
   </div>
@@ -157,42 +168,43 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
 
 <section class="overlay" id="start">
   <div class="hero">
-    <p class="sub">Portafolio de Stefani Sánchez · Técnica en Desarrollo de Software</p>
-    <h1>STEFF<br>RUNNER</h1>
+    <div class="subway-sign">Metro Línea Dev · Stefani Sánchez</div>
+    <h1>SUBWAY<br>DEV</h1>
     <div class="rails" aria-hidden="true"></div>
-    <p class="lead">Corre por las vías del código. Cada ficha brillante desbloquea una parada que cuenta quién soy, mis proyectos y mis habilidades técnicas.</p>
+    <p class="sub">Técnica en Desarrollo de Software</p>
+    <p class="lead">Corre por las vías del metro esquivando trenes y barreras. Recoge las fichas doradas para desbloquear cada estación con mi experiencia, proyectos reales y stack técnico.</p>
     <div class="skins" id="skins" role="group" aria-label="Traje"></div>
     <div class="row">
-      <button class="btn primary" id="play" type="button">Correr</button>
+      <button class="btn primary" id="play" type="button">¡Correr Ahora!</button>
       <button class="btn" id="read" type="button">Leer sin jugar</button>
     </div>
     <p class="best" id="bestLine"></p>
     <div class="keys">
-      <span><b>← →</b> o <b>A D</b> carriles</span>
-      <span><b>↑</b> o <b>Espacio</b> salta</span>
-      <span><b>↓</b> o <b>S</b> desliza</span>
-      <span><b>P</b> pausa · en móvil, <b>desliza</b></span>
+      <span><b>← →</b> o <b>A D</b> cambiar carril</span>
+      <span><b>↑</b> o <b>Espacio</b> saltar trenes</span>
+      <span><b>↓</b> o <b>S</b> deslizar bajo barreras</span>
+      <span><b>P</b> pausa · en móvil, <b>deslizar dedo</b></span>
     </div>
   </div>
 </section>
 
 <section class="overlay" id="pause" hidden>
   <div class="hero">
-    <p class="sub">En pausa</p>
+    <div class="subway-sign">Metro Dev · En Pausa</div>
     <h1 style="font-size:clamp(44px,12vw,84px)">RESPIRA</h1>
-    <div class="row"><button class="btn primary" id="resume" type="button">Continuar</button></div>
+    <div class="row"><button class="btn primary" id="resume" type="button">Continuar Carrera</button></div>
   </div>
 </section>
 
 <section class="overlay" id="over" hidden>
   <div class="hero">
-    <p class="sub">Fin de línea</p>
-    <h1 style="font-size:clamp(40px,11vw,76px)">SE ACABÓ<br>EL TREN</h1>
-    <p class="newbest" id="newBest" hidden>Nuevo récord</p>
+    <div class="subway-sign">Fin de la Línea</div>
+    <h1 style="font-size:clamp(40px,11vw,76px)">FIN DEL<br>TREN</h1>
+    <p class="newbest" id="newBest" hidden>¡Nuevo récord!</p>
     <p class="over-stats" id="overStats"></p>
     <div class="row">
       <button class="btn primary" id="again" type="button">Correr otra vez</button>
-      <button class="btn" id="readOver" type="button">Leer portafolio</button>
+      <button class="btn" id="readOver" type="button">Ver Portafolio Completo</button>
     </div>
   </div>
 </section>
@@ -205,47 +217,47 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
 
-  /* ---------- Contenido del portafolio real de Stefani Sánchez ---------- */
+  /* ---------- Contenido del portafolio de Stefani Sánchez ---------- */
   var SECTIONS = [
     { k: 'Quién soy', title: 'Hola, soy Stefani Sánchez.',
-      html: '<p>Soy <strong>Técnica en Desarrollo de Software</strong> apasionada por crear soluciones prácticas, sólidas y eficientes, combinando lógica de programación con proyectos interactivos.</p>' +
-            '<p>Cuento con formación y experiencia práctica en desarrollo backend, gestión de bases de datos relacionales, herramientas de terminal y aplicaciones web didácticas.</p>' +
+      html: '<p>Soy <strong>Técnica en Desarrollo de Software</strong> enfocada en construir aplicaciones sólidas, escalables y con atención a la arquitectura de datos y la interactividad.</p>' +
+            '<p>Combino habilidades en lógica de programación, bases de datos relacionales y diseño de sistemas con experiencias educativas gamificadas (EdTech).</p>' +
             '<dl class="facts">' +
             '<div><dt>Nombre</dt><dd>Stefani Sánchez</dd></div>' +
             '<div><dt>Título</dt><dd>Técnica en Desarrollo de Software</dd></div>' +
             '<div><dt>Enfoque</dt><dd>Backend, APIs REST, Bases de Datos & EdTech</dd></div>' +
-            '<div><dt>Tecnologías</dt><dd>Node.js, PostgreSQL, TypeScript, Docker, Express, Git</dd></div>' +
-            '<div><dt>Ubicación</dt><dd>Disponible para trabajo remoto / presencial</dd></div></dl>' },
+            '<div><dt>Core Stack</dt><dd>Node.js, PostgreSQL, TypeScript, Docker, Express</dd></div>' +
+            '<div><dt>Disponibilidad</dt><dd>Remoto / Proyectos de impacto</dd></div></dl>' },
     { k: 'Habilidades', title: 'Arsenal técnico y herramientas',
       html: '<ul class="list">' +
-            '<li><strong>Desarrollo Backend & APIs</strong>Construcción de APIs REST modulares con Node.js y Express, tipado seguro con TypeScript, autenticación JWT y manejo estructurado de errores.</li>' +
-            '<li><strong>Bases de Datos & SQL</strong>Diseño de esquemas relacionales con PostgreSQL, consultas optimizadas, funciones almacenadas, vistas e integridad referencial.</li>' +
-            '<li><strong>DevOps & Contenedores</strong>Empaquetado de aplicaciones y servicios mediante Docker y Docker Compose para entornos reproducibles y confiables.</li>' +
-            '<li><strong>Pruebas & Control de Calidad</strong>Pruebas automatizadas unitarias y de integración con Jest para asegurar código confiable.</li>' +
-            '<li><strong>Frontend & Gamificación</strong>Desarrollo con HTML5 Canvas, CSS3 y JavaScript moderno para crear dinámicas interactivas educativas.</li>' +
-            '<li><strong>Herramientas de Trabajo</strong>Git, GitHub, Linux, desarrollo en consola (CLI) y metodologías ágiles.</li></ul>' },
-    { k: 'Proyectos', title: 'Proyectos reales destacados',
+            '<li><strong>Desarrollo Backend & APIs REST</strong>Diseño e implementación de servicios con Node.js y Express, tipado con TypeScript, autenticación segura con JWT y arquitectura modular.</li>' +
+            '<li><strong>Bases de Datos & SQL Avanzado</strong>PostgreSQL: modelado relacional, consultas optimizadas, índices para alto rendimiento, triggers y funciones almacenadas.</li>' +
+            '<li><strong>DevOps & Infraestructura</strong>Contenedores con Docker y Docker Compose para crear entornos reproducibles y aislados; integración con Supabase.</li>' +
+            '<li><strong>Testing & Calidad de Código</strong>Pruebas unitarias y de integración con Jest asegurando estabilidad en cada release.</li>' +
+            '<li><strong>Frontend & Gamificación</strong>HTML5 Canvas nativo, JavaScript moderno (ES6+) y CSS3 para crear interfaces dinámicas y juegos educativos.</li>' +
+            '<li><strong>Control de Versiones</strong>Git y GitHub para trabajo colaborativo y flujos estructurados de entrega.</li></ul>' },
+    { k: 'Proyectos', title: 'Proyectos destacados',
       html: '<ul class="list">' +
-            '<li><strong>Escape Room Programación<a class="badge link" href="https://steff-360.github.io/escape-room-programacion/" target="_blank">Demo Live ↗</a></strong>Videojuego didáctico interactivo desarrollado en Canvas y JavaScript puro para enseñar conceptos lógicos y algorítmicos.</li>' +
+            '<li><strong>Escape Room Programación<a class="badge link" href="https://steff-360.github.io/escape-room-programacion/" target="_blank">Demo Live ↗</a></strong>Videojuego educativo en HTML5 Canvas nativo y JavaScript. Puzzles de lógica y estructuras de control con mecánicas interactivas.</li>' +
             '<li><strong>Job Listings API<a class="badge link" href="https://github.com/steff-360" target="_blank">GitHub ↗</a></strong>API REST con Node.js, Express y PostgreSQL para gestión de ofertas laborales, con autenticación segura por tokens JWT.</li>' +
-            '<li><strong>TechZone PostgreSQL<a class="badge link" href="https://github.com/steff-360" target="_blank">GitHub ↗</a></strong>Diseño relacional avanzado y optimización de base de datos para una tienda tecnológica.</li>' +
-            '<li><strong>Algodones Maravilla CLI<a class="badge link" href="https://github.com/steff-360" target="_blank">GitHub ↗</a></strong>Sistema de control de inventario en consola desarrollado en TypeScript con principios de Clean Code y POO.</li>' +
-            '<li><strong>CampusLands CLI<a class="badge link" href="https://github.com/steff-360" target="_blank">GitHub ↗</a></strong>Aplicación CLI para seguimiento académico y control de asistencias de estudiantes.</li>' +
-            '<li><strong>Docker + Supabase Infra<a class="badge link" href="https://github.com/steff-360" target="_blank">GitHub ↗</a></strong>Orquestación de microservicios reproducibles en contenedores Docker Compose con persistencia.</li></ul>' },
-    { k: 'Contacto', title: 'Conectemos',
-      html: '<p>Estoy lista para incorporarme a equipos de tecnología, proyectos de desarrollo de software o iniciativas educativas.</p>' +
+            '<li><strong>TechZone PostgreSQL<a class="badge link" href="https://github.com/steff-360" target="_blank">GitHub ↗</a></strong>Diseño de base de datos relacional para e-commerce tecnológico con optimización de consultas y procedimientos almacenados.</li>' +
+            '<li><strong>Algodones Maravilla CLI<a class="badge link" href="https://github.com/steff-360" target="_blank">GitHub ↗</a></strong>Sistema de inventario en terminal desarrollado en TypeScript con principios de Clean Code y POO.</li>' +
+            '<li><strong>CampusLands CLI<a class="badge link" href="https://github.com/steff-360" target="_blank">GitHub ↗</a></strong>Herramienta en línea de comandos para control académico de notas y asistencias.</li>' +
+            '<li><strong>Docker + Supabase Infra<a class="badge link" href="https://github.com/steff-360" target="_blank">GitHub ↗</a></strong>Orquestación de microservicios reproducibles en Docker Compose con persistencia de base de datos.</li></ul>' },
+    { k: 'Contacto', title: '¿Construimos algo increíble?',
+      html: '<p>Estoy disponible para sumarme a equipos de tecnología, proyectos de desarrollo de software y retos donde el código de calidad marque la diferencia.</p>' +
             '<dl class="facts">' +
             '<div><dt>Email</dt><dd><strong>steff.18random@gmail.com</strong></dd></div>' +
             '<div><dt>LinkedIn</dt><dd><a class="badge link" href="https://www.linkedin.com/in/stefani-s%C3%A1nchez-b35b65279" target="_blank">Stefani Sánchez ↗</a></dd></div>' +
-            '<div><dt>GitHub</dt><dd><a class="badge link" href="https://github.com/steff-360" target="_blank">github.com/steff-360 ↗</a></dd></div></dl>' +
-            '<p style="margin-top:14px">¡Envíame un mensaje y conversemos sobre nuevas oportunidades!</p>' }
+            '<div><dt>GitHub</dt><dd><a class="badge link" href="https://github.com/steff-360" target="_blank">@steff-360 ↗</a></dd></div></dl>' +
+            '<p style="margin-top:14px">Escríbeme para conversar sobre colaboraciones y oportunidades técnicas.</p>' }
   ];
   var found = [false, false, false, false];
 
   var SKINS = [
-    { n: 'Turquesa', h: '#1f8a7c', b: '#2fb8a6', s: '#e8503a', need: 0 },
-    { n: 'Brasa', h: '#9c2c1a', b: '#e8503a', s: '#ffd23f', need: 2 },
-    { n: 'Neón', h: '#3a2f8f', b: '#7a63ff', s: '#5ff0d0', need: 4 }
+    { n: 'Graffiti', h: '#0077cc', b: '#00d2b4', s: '#ff3b30', need: 0 },
+    { n: 'Subway Red', h: '#9c1c1a', b: '#ff3b30', s: '#ffd23f', need: 2 },
+    { n: 'Cyber Neon', h: '#3a1f8f', b: '#7a43ff', s: '#00f0d0', need: 4 }
   ];
   var skin = 0, storedUnlock = 0;
 
@@ -260,32 +272,32 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
   var dustT = 0, wasAir = false, pu = 0;
   var pw = { magnet: 0, shield: 0, x2: 0 };
   var PWDUR = { magnet: 8, shield: 15, x2: 10 };
-  var PWNAME = { magnet: 'IMÁN', shield: 'ESCUDO', x2: 'MONEDAS x2' };
-  var PWCOL = { magnet: '#ff7b62', shield: '#5fe0cd', x2: '#ffd23f' };
+  var PWNAME = { magnet: 'IMÁN', shield: 'HOVERBOARD', x2: 'MONEDAS x2' };
+  var PWCOL = { magnet: '#ff6b4a', shield: '#00d2b4', x2: '#ffd23f' };
   var P = { lane: 0, x: 0, y: 0, vy: 0, slide: 0, run: 0, inv: 0, jumpBuf: 0 };
   var parts = [], floaters = [];
   try {
-    best = parseInt(localStorage.getItem('steffrunner-best') || '0', 10) || 0;
-    storedUnlock = parseInt(localStorage.getItem('steffrunner-unlock') || '0', 10) || 0;
-    skin = parseInt(localStorage.getItem('steffrunner-skin') || '0', 10) || 0;
+    best = parseInt(localStorage.getItem('subwaydev-best') || '0', 10) || 0;
+    storedUnlock = parseInt(localStorage.getItem('subwaydev-unlock') || '0', 10) || 0;
+    skin = parseInt(localStorage.getItem('subwaydev-skin') || '0', 10) || 0;
   } catch (e) {}
 
   var TRAINCOL = [
-    { f: '#e8503a', s: '#a6331f', t: '#ff7b62' },
-    { f: '#e0a82e', s: '#9a7314', t: '#f7c95a' },
-    { f: '#2fb8a6', s: '#1b7c6f', t: '#5fe0cd' }
+    { f: '#ff3b30', s: '#b8231a', t: '#ff6b4a' },
+    { f: '#0077cc', s: '#004f8a', t: '#38a8ff' },
+    { f: '#00d2b4', s: '#008a76', t: '#5ff0d0' }
   ];
 
-  /* ---------- Paleta día / noche ---------- */
+  /* ---------- Paleta día / noche estilo Subway Surfers ---------- */
   function hex(c) { return [parseInt(c.slice(1, 3), 16), parseInt(c.slice(3, 5), 16), parseInt(c.slice(5, 7), 16)]; }
   var PAL = [
-    { top: '#0d1923', mid: '#2a3a4d', hor: '#f08a4b', bld: '#142029', bld2: '#22323f', g0: '#5b4b46', g1: '#2e3238', lamp: 0.35, star: 0.5 },
-    { top: '#050a12', mid: '#13293a', hor: '#2f8f9a', bld: '#0a121a', bld2: '#13212c', g0: '#1f3d47', g1: '#1a2a33', lamp: 1, star: 1 },
-    { top: '#16213f', mid: '#6a5a86', hor: '#ffc27a', bld: '#171f33', bld2: '#2a3350', g0: '#6a5a58', g1: '#323640', lamp: 0.5, star: 0.6 }
+    { top: '#081420', mid: '#1a334d', hor: '#ff7a36', bld: '#0e1c26', bld2: '#1b303f', g0: '#5a463c', g1: '#262d33', lamp: 0.35, star: 0.5 },
+    { top: '#040912', mid: '#0d2235', hor: '#0090a8', bld: '#091118', bld2: '#11222e', g0: '#183842', g1: '#14252e', lamp: 1, star: 1 },
+    { top: '#141d3a', mid: '#5e487d', hor: '#ffb366', bld: '#151d30', bld2: '#27314a', g0: '#634f4d', g1: '#2d333b', lamp: 0.5, star: 0.6 }
   ];
   var PKEYS = ['top', 'mid', 'hor', 'bld', 'bld2', 'g0', 'g1'];
   PAL.forEach(function (p) { PKEYS.forEach(function (k) { p[k + '_'] = hex(p[k]); }); });
-  var pal = { lamp: 0.35, star: 0.5, hor_: [240, 138, 75] };
+  var pal = { lamp: 0.35, star: 0.5, hor_: [255, 122, 54] };
   function updatePal() {
     var ph = (dist / 450) % 3, i = Math.floor(ph), t = ph - i; t = t * t * (3 - 2 * t);
     var a = PAL[i], b = PAL[(i + 1) % 3];
@@ -308,7 +320,7 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
   var BUILD1 = makeBuild(0.02, 0.09, 0.03, 0.06), BUILD2 = makeBuild(0.04, 0.15, 0.04, 0.1), STARS = [], si;
   for (si = 0; si < 50; si++) STARS.push({ x: rnd(), y: rnd() * 0.7, s: 0.6 + rnd() * 1.2 });
   var farTrain = { x: -1, t: 6 };
-  var BOARDS = [['STEFANI SÁNCHEZ', 'Técnica en Software'], ['NODE.JS & SQL', 'Backend y Bases de Datos'], ['TYPESCRIPT', 'Código limpio y tipado'], ['DOCKER', 'Entornos reproducibles'], ['¿HABLAMOS?', 'steff.18random@gmail.com']];
+  var BOARDS = [['SUBWAY DEV', 'Stefani Sánchez'], ['METRO SURF', 'Técnica en Software'], ['NODE.JS · SQL', 'Arquitectura y APIs'], ['DOCKER INFRA', 'Microservicios estables'], ['¿HABLAMOS?', 'steff.18random@gmail.com']];
   var SLINES = [];
   for (si = 0; si < 26; si++) SLINES.push({ a: rnd() * 6.283, p: rnd() });
 
@@ -369,13 +381,13 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
       var f = floaters[i];
       ctx.globalAlpha = Math.min(1, f.l * 2);
       ctx.font = Math.max(16, unit * 0.2) + 'px Bungee, Impact, sans-serif';
-      ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(10,16,22,.8)'; ctx.strokeText(f.t, f.x, f.y);
+      ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(10,16,22,.85)'; ctx.strokeText(f.t, f.x, f.y);
       ctx.fillStyle = f.c; ctx.fillText(f.t, f.x, f.y);
     }
     ctx.globalAlpha = 1;
   }
 
-  /* ---------- Audio (efectos y música procedural) ---------- */
+  /* ---------- Audio (efectos arcade y música dinámica) ---------- */
   var ac = null, master = null, muted = false;
   function ensureAC() {
     try {
@@ -422,7 +434,7 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
   }
   $('sound').addEventListener('click', function () { setMuted(!muted); this.blur(); });
 
-  /* ---------- Generación de filas ---------- */
+  /* ---------- Generación de filas con trenes y barreras ---------- */
   function add(o) { ents.push(o); }
   function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
   function coinLine(lane, z, n, y) { for (var i = 0; i < n; i++) add({ t: 'coin', lane: lane, z: z + i * 1.4, y: y || 0.55, got: false }); }
@@ -477,7 +489,7 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
   function slide() { if (P.y > 0.001) { P.vy = -16; } else { P.slide = 0.65; sfx('slide'); } }
   function score() { return Math.floor(dist) + bonus; }
 
-  /* ---------- Flujo ---------- */
+  /* ---------- Flujo del juego ---------- */
   function reset() {
     dist = 0; coins = 0; bonus = 0; streak = 0; mult = 1; lives = 3; speed = 9; ents = []; parts = []; floaters = [];
     P.lane = 0; P.x = 0; P.y = 0; P.vy = 0; P.slide = 0; P.inv = 0; P.jumpBuf = 0;
@@ -495,23 +507,23 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
       var b = document.createElement('button'); b.type = 'button'; b.className = 'skin' + (i === skin ? ' sel' : '');
       var ok = u >= s.need; b.disabled = !ok;
       b.innerHTML = '<span class="sw" style="background:linear-gradient(135deg,' + s.b + ' 50%,' + s.s + ' 50%)"></span>' + s.n + (ok ? '' : ' · ' + s.need + ' fichas');
-      b.addEventListener('click', function () { skin = i; try { localStorage.setItem('steffrunner-skin', String(i)); } catch (e) {} renderSkins(); });
+      b.addEventListener('click', function () { skin = i; try { localStorage.setItem('subwaydev-skin', String(i)); } catch (e) {} renderSkins(); });
       box.appendChild(b);
     });
   }
   function refreshStart() { renderSkins(); $('bestLine').textContent = best ? 'Récord: ' + best + ' puntos' : ''; }
   function startGame() {
     reset(); state = 'play'; showFor('play'); blurAll(); musicStart();
-    if (firstRun) { firstRun = false; toast('Busca las fichas brillantes: cada una abre una parada de mi portafolio.', 4200); }
+    if (firstRun) { firstRun = false; toast('¡Esquiva los trenes y recoge fichas doradas para desbloquear mi portafolio!', 4200); }
   }
   function pauseGame() { if (state !== 'play') return; state = 'pause'; showFor('pause'); musicStop(); blurAll(); }
   function resumeGame() { if (state !== 'pause') return; state = 'play'; showFor('play'); musicStart(); blurAll(); }
   function gameOver() {
     state = 'over'; musicStop();
     var sc = score(), isBest = sc > best;
-    if (isBest) { best = sc; try { localStorage.setItem('steffrunner-best', String(best)); } catch (e) {} }
+    if (isBest) { best = sc; try { localStorage.setItem('subwaydev-best', String(best)); } catch (e) {} }
     var n = found.filter(Boolean).length;
-    if (n > storedUnlock) { storedUnlock = n; try { localStorage.setItem('steffrunner-unlock', String(n)); } catch (e) {} }
+    if (n > storedUnlock) { storedUnlock = n; try { localStorage.setItem('subwaydev-unlock', String(n)); } catch (e) {} }
     $('newBest').hidden = !isBest;
     $('overStats').innerHTML = sc + ' puntos<br>' + Math.floor(dist) + ' m · ' + coins + ' monedas · ' + n + '/4 paradas<br>Récord ' + best;
     showFor('over');
@@ -523,11 +535,11 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
     clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.hidden = true; }, ms || 3000);
   }
 
-  /* Tarjeta de parada */
+  /* Tarjeta de parada / Ticket */
   function finaleHtml() {
-    return '<p>¡Felicidades! Recorriste todas las paradas de mi portafolio.</p>' +
+    return '<p>¡Excelente recorrido! Desbloqueaste todas las estaciones de mi portafolio.</p>' +
       '<dl class="facts"><div><dt>Puntos</dt><dd>' + score() + '</dd></div><div><dt>Distancia</dt><dd>' + Math.floor(dist) + ' m</dd></div><div><dt>Monedas</dt><dd>' + coins + '</dd></div></dl>' +
-      '<p>Soy Stefani Sánchez, Técnica en Desarrollo de Software. Contáctame directamente a <strong>steff.18random@gmail.com</strong>.</p>';
+      '<p>Soy Stefani Sánchez, Técnica en Desarrollo de Software. Contáctame a <strong>steff.18random@gmail.com</strong> para colaborar en nuevos proyectos.</p>';
   }
   function renderCard() {
     var s = cardIdx === 4 ? { k: 'Línea completa', title: 'Portafolio Completo', html: finaleHtml() } : SECTIONS[cardIdx], foot;
@@ -539,7 +551,7 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
              '<button class="btn primary" data-act="close" type="button">Cerrar</button>';
     }
     $('card').innerHTML = '<div class="ticket" role="dialog" aria-label="' + s.k + '" data-n="' + (cardIdx === 4 ? '★' : cardIdx + 1) + '">' +
-      '<div class="t-head"><span>' + (cardIdx === 4 ? 'Fin del recorrido' : 'Parada ' + (cardIdx + 1) + ' de 4') + '</span><span>' + s.k + '</span></div>' +
+      '<div class="t-head"><span>' + (cardIdx === 4 ? 'Fin del recorrido' : 'Estación ' + (cardIdx + 1) + ' de 4') + '</span><span>' + s.k + '</span></div>' +
       '<div class="t-body"><h2>' + s.title + '</h2>' + s.html + '</div>' +
       '<div class="t-foot">' + foot + '</div></div>';
   }
@@ -563,12 +575,12 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
 
   var pipsEl = $('pips'), pipBtns = [];
   SECTIONS.forEach(function (s, i) {
-    var b = document.createElement('button'); b.type = 'button'; b.className = 'pip'; b.setAttribute('aria-label', 'Parada ' + (i + 1) + ': ' + s.k);
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'pip'; b.setAttribute('aria-label', 'Estación ' + (i + 1) + ': ' + s.k);
     b.innerHTML = '<span class="n">' + (i + 1) + '</span><span class="full">' + s.k + '</span>';
     b.addEventListener('click', function () {
       b.blur();
       if (state !== 'play') return;
-      if (found[i]) openCard(i); else toast('Aún no recoges esa parada. Sigue corriendo por las vías.', 2200);
+      if (found[i]) openCard(i); else toast('Aún no desbloqueas esta estación. ¡Sigue surfeando las vías!', 2400);
     });
     pipsEl.appendChild(b); pipBtns.push(b);
   });
@@ -617,18 +629,18 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
   cv.addEventListener('pointerup', function () { swiping = false; });
   cv.addEventListener('pointercancel', function () { swiping = false; });
 
-  /* ---------- Actualización ---------- */
+  /* ---------- Actualización física y colisiones ---------- */
   function crash(e) {
     e.ghost = true;
     var px = sx(P.x, 1), py = groundY - (P.y + 0.5) * unit;
     if (pw.shield > 0) {
-      pw.shield = 0; P.inv = 1.2; sfx('shield'); floater('¡ESCUDO!', px, py - unit * 0.6, '#5fe0cd');
-      emit(px, py, 26, { s: 260, g: 0, l: 0.5, r: 3, c: '#5fe0cd' });
+      pw.shield = 0; P.inv = 1.2; sfx('shield'); floater('¡HOVERBOARD!', px, py - unit * 0.6, '#00d2b4');
+      emit(px, py, 28, { s: 260, g: 0, l: 0.5, r: 3.5, c: '#00d2b4' });
       return;
     }
     lives--; streak = 0; mult = 1; P.inv = 1.8; sfx('crash'); freeze = 0.07; flash = 0.55;
     if (!reduce) shake = 0.4;
-    var col = e.c ? e.c.f : '#e8503a';
+    var col = e.c ? e.c.f : '#ff3b30';
     emit(px, py, 30, { s: 340, up: 150, g: 700, l: 0.7, r: 4, c: col });
     emit(px, py, 14, { s: 220, up: 100, g: 600, l: 0.6, r: 3, c: '#f4efe6' });
     if (lives <= 0) gameOver();
@@ -703,8 +715,8 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
         if (Math.abs(e.z) < 0.9 && Math.abs(e.lane - P.x) < 0.7 && Math.abs(0.95 - (P.y + 0.55)) < 1.0) {
           e.got = true; found[e.idx] = true; cpActive = false; cpDist = dist + 130; refreshPips(); sfx('token');
           storedUnlock = Math.max(storedUnlock, found.filter(Boolean).length);
-          try { localStorage.setItem('steffrunner-unlock', String(storedUnlock)); } catch (er) {}
-          var cols = ['#ffd23f', '#e8503a', '#2fb8a6', '#f4efe6'];
+          try { localStorage.setItem('subwaydev-unlock', String(storedUnlock)); } catch (er) {}
+          var cols = ['#ffd23f', '#ff3b30', '#00d2b4', '#0077cc'];
           for (var c = 0; c < 4; c++) emit(sx(e.lane, 1), groundY - 0.95 * unit, 12, { s: 300, up: 140, g: 400, l: 0.9, r: 4, c: cols[c] });
           openCard(e.idx); return;
         }
@@ -724,7 +736,7 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
     ents = ents.filter(function (e) { return !e.got && e.z + (e.len || 0.5) > -8; });
   }
 
-  /* ---------- Dibujo ---------- */
+  /* ---------- Dibujo en perspectiva 3D ---------- */
   function drawBG() {
     var g = ctx.createLinearGradient(0, 0, 0, horizon);
     g.addColorStop(0, pal.top); g.addColorStop(0.6, pal.mid); g.addColorStop(1, pal.hor);
@@ -861,7 +873,7 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
     var z = Math.max(e.z, -0.3), p = F / (F + z), y = sy(p), hh = 0.45 * unit * p;
     var x0 = sx(e.lane - 0.44, p), w = 0.88 * unit * p, n = 6, i;
     ctx.fillStyle = '#0c141a'; ctx.fillRect(x0 + w * 0.08, y - hh * 0.2, w * 0.1, hh * 0.2); ctx.fillRect(x0 + w * 0.82, y - hh * 0.2, w * 0.1, hh * 0.2);
-    for (i = 0; i < n; i++) { ctx.fillStyle = i % 2 ? '#f4efe6' : '#e8503a'; ctx.fillRect(x0 + w * i / n, y - hh, w / n + 0.5, hh * 0.8); }
+    for (i = 0; i < n; i++) { ctx.fillStyle = i % 2 ? '#f4efe6' : '#ff3b30'; ctx.fillRect(x0 + w * i / n, y - hh, w / n + 0.5, hh * 0.8); }
     ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.fillRect(x0, y - hh, w, Math.max(1, hh * 0.1));
   }
   function drawOver(e) {
@@ -897,7 +909,7 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
     var z = Math.max(e.z, -0.3), p = F / (F + z), x = sx(e.lane, p), yg = sy(p);
     var hov = 0.95 + 0.08 * Math.sin(time * 3), cy = yg - hov * unit * p, w = 0.82 * unit * p, h = 0.56 * unit * p;
     var bg = ctx.createLinearGradient(0, yg - 3.2 * unit * p, 0, yg);
-    bg.addColorStop(0, 'rgba(190,255,245,0)'); bg.addColorStop(1, 'rgba(190,255,245,.38)');
+    bg.addColorStop(0, 'rgba(0,210,180,0)'); bg.addColorStop(1, 'rgba(0,210,180,.38)');
     ctx.fillStyle = bg; ctx.fillRect(x - 0.28 * unit * p, yg - 3.2 * unit * p, 0.56 * unit * p, 3.2 * unit * p);
     var rg = ctx.createRadialGradient(x, cy, 0, x, cy, w * (1 + 0.1 * Math.sin(time * 6)));
     rg.addColorStop(0, 'rgba(255,230,140,.65)'); rg.addColorStop(1, 'rgba(255,230,140,0)');
@@ -920,6 +932,15 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
     if (P.inv > 0 && pw.shield <= 0 && Math.floor(P.inv * 16) % 2 === 0) ctx.globalAlpha = 0.35;
     ctx.save(); ctx.translate(px, py);
     ctx.rotate((P.lane - P.x) * 0.18);
+
+    // Si tiene hoverboard activo, dibujar la tabla bajo sus pies
+    if (pw.shield > 0) {
+      ctx.fillStyle = '#00d2b4';
+      rr(-0.35 * S, 0.02 * S, 0.7 * S, 0.1 * S, 0.04 * S);
+      ctx.fillStyle = '#ff3b30';
+      ctx.fillRect(-0.15 * S, 0.04 * S, 0.3 * S, 0.06 * S);
+    }
+
     if (P.slide > 0) ctx.scale(1.1, 0.58);
     var air = P.y > 0.02, t = P.run * 13, sw = Math.sin(t), aw = air ? -0.1 : sw * 0.1;
     var bob = air || state !== 'play' && state !== 'start' ? 0 : Math.abs(sw) * 0.025;
@@ -949,11 +970,11 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
     ctx.restore(); ctx.globalAlpha = 1;
     if (pw.shield > 0) {
       var cyy = groundY - (P.y + 0.55) * S;
-      ctx.strokeStyle = 'rgba(95,224,205,' + (0.55 + 0.25 * Math.sin(time * 8)) + ')'; ctx.lineWidth = Math.max(2, S * 0.04);
-      ctx.fillStyle = 'rgba(95,224,205,.12)'; ctx.beginPath(); ctx.arc(px, cyy, S * 0.72, 0, 6.283); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = 'rgba(0,210,180,' + (0.55 + 0.25 * Math.sin(time * 8)) + ')'; ctx.lineWidth = Math.max(2, S * 0.04);
+      ctx.fillStyle = 'rgba(0,210,180,.12)'; ctx.beginPath(); ctx.arc(px, cyy, S * 0.72, 0, 6.283); ctx.fill(); ctx.stroke();
     }
     if (pw.magnet > 0) {
-      ctx.strokeStyle = 'rgba(255,123,98,' + (0.3 + 0.3 * Math.sin(time * 10)) + ')'; ctx.lineWidth = 2;
+      ctx.strokeStyle = 'rgba(255,107,74,' + (0.3 + 0.3 * Math.sin(time * 10)) + ')'; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(px, groundY - (P.y + 0.55) * S, S * (0.8 + 0.15 * ((time * 2) % 1)), 0, 6.283); ctx.stroke();
     }
   }
@@ -978,7 +999,7 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
     far.forEach(drawEnt); drawPlayer(); near.forEach(drawEnt);
     drawSpeedLines(); drawFx();
     ctx.restore();
-    if (flash > 0) { ctx.fillStyle = 'rgba(232,80,58,' + flash * 0.45 + ')'; ctx.fillRect(0, 0, W, H); }
+    if (flash > 0) { ctx.fillStyle = 'rgba(255,59,48,' + flash * 0.45 + ')'; ctx.fillRect(0, 0, W, H); }
   }
 
   /* ---------- HUD y bucle ---------- */
