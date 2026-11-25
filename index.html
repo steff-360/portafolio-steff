@@ -41,13 +41,17 @@
     </div>
   </div>
   <div class="controls">
-    <span id="pips" style="display:contents"></span>
     <button class="sbtn" id="hudSkinsBtn" type="button" aria-label="Cambiar Personaje" title="Vestidor de Personajes">👤 Trajes</button>
     <button class="sbtn" id="todBtn" type="button" aria-label="Alternar Día / Noche" title="Cambiar Hora: Día, Atardecer, Noche o Automático">☀️ Día</button>
-    <button class="sbtn" id="pauseBtn" type="button" aria-label="Pausa">Pausa</button>
-    <button class="sbtn" id="sound" type="button">Sonido: sí</button>
+    <button class="sbtn" id="pauseBtn" type="button" aria-label="Pausa" title="Pausar Juego">⏸️</button>
+    <button class="sbtn" id="sound" type="button" title="Sonido">🔊</button>
   </div>
 </div>
+
+<!-- BARRA INFERIOR DE ESTACIONES DEL PORTAFOLIO (DOCK ESTILO RETRO-ARCADE) -->
+<nav class="station-dock" id="stationDock" aria-label="Estaciones del Portafolio">
+  <span id="pips" style="display:contents"></span>
+</nav>
 
 <!-- Botón rápido para activar Hoverboard -->
 <button class="hoverboard-trigger" id="boardTrigger" type="button" aria-label="Activar Hoverboard (doble tap o tecla H)" title="Activar Hoverboard (tecla H o doble click)">🛹</button>
@@ -218,22 +222,22 @@
 <div class="toast" id="toast" hidden></div>
 
   <!-- Capa de Datos / Modelos -->
-  <script src="js/data/portfolioData.js?v=metro_cam_v8"></script>
-  <script src="js/data/gameData.js?v=metro_cam_v8"></script>
+  <script src="js/data/portfolioData.js?v=metro_polish_v9"></script>
+  <script src="js/data/gameData.js?v=metro_polish_v9"></script>
 
   <!-- Capa del Núcleo / Engine, Audio & State -->
-  <script src="js/core/audio.js?v=metro_cam_v8"></script>
-  <script src="js/core/state.js?v=metro_cam_v8"></script>
-  <script src="js/core/engine.js?v=metro_cam_v8"></script>
+  <script src="js/core/audio.js?v=metro_polish_v9"></script>
+  <script src="js/core/state.js?v=metro_polish_v9"></script>
+  <script src="js/core/engine.js?v=metro_polish_v9"></script>
 
   <!-- Capa de Renderizado Gráfico 3D -->
-  <script src="js/render/trackRenderer.js?v=metro_cam_v8"></script>
-  <script src="js/render/entityRenderer.js?v=metro_cam_v8"></script>
-  <script src="js/render/playerRenderer.js?v=metro_cam_v8"></script>
-  <script src="js/render/showcaseRenderer.js?v=metro_cam_v8"></script>
+  <script src="js/render/trackRenderer.js?v=metro_polish_v9"></script>
+  <script src="js/render/entityRenderer.js?v=metro_polish_v9"></script>
+  <script src="js/render/playerRenderer.js?v=metro_polish_v9"></script>
+  <script src="js/render/showcaseRenderer.js?v=metro_polish_v9"></script>
 
   <!-- Capa de Interfaz y Controladores -->
-  <script src="js/ui/wardrobeUI.js?v=metro_cam_v8"></script>
-  <script src="js/ui/app.js?v=metro_cam_v8"></script>
+  <script src="js/ui/wardrobeUI.js?v=metro_polish_v9"></script>
+  <script src="js/ui/app.js?v=metro_polish_v9"></script>
 </body>
 </html>

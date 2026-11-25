@@ -280,20 +280,33 @@ function drawEnt(e) {
 
 function drawInspector() {
   if (!inspector.active || inspector.dist > 5.5) return;
-  var ix = sx(inspector.lane + 0.38, 1.0), iy = sy(1.0);
-  var S = unit * 0.95;
+
+  // Perspectiva y distancia dinámica
+  var pDist = Math.max(0.68, 1.0 - (inspector.dist - 0.7) * 0.12);
+  var S = unit * 0.88 * pDist;
+  var iy = sy(pDist);
+  var fade = Math.max(0, Math.min(1, (5.2 - inspector.dist) / 1.5));
+  if (fade <= 0.01) return;
+
   var runTime = time * 15;
   var legSw = Math.sin(runTime);
 
+  // Inspector corre en el flanco derecho (carril lateral derecho, nunca cubre a Stefani)
+  var ix = sx(inspector.lane + 0.72, pDist);
+  // Bulldog corre en el flanco izquierdo (carril lateral izquierdo, nunca bajo los pies)
+  var dogX = sx(inspector.lane - 0.68, pDist), dogY = iy;
+
+  ctx.save();
+  ctx.globalAlpha = fade;
+
   // Sombra del Inspector y su perro
-  ctx.fillStyle = 'rgba(0,0,0,.45)';
+  ctx.fillStyle = 'rgba(0,0,0,.4)';
   ctx.beginPath();
-  ctx.ellipse(ix, iy, 0.38 * S, 0.11 * S, 0, 0, 6.283);
+  ctx.ellipse(ix, iy, 0.34 * S, 0.09 * S, 0, 0, 6.283);
   ctx.fill();
 
-  var dogX = sx(inspector.lane - 0.44, 1.0), dogY = iy;
   ctx.beginPath();
-  ctx.ellipse(dogX, dogY, 0.24 * S, 0.08 * S, 0, 0, 6.283);
+  ctx.ellipse(dogX, dogY, 0.22 * S, 0.07 * S, 0, 0, 6.283);
   ctx.fill();
 
   // === PERRO PITBULL / BULLDOG DEL INSPECTOR (Auténtico persecutor) ===
@@ -441,6 +454,7 @@ function drawInspector() {
   ctx.ellipse(0, -1.23 * S, 0.28 * S, 0.065 * S, 0, 0, Math.PI);
   ctx.fill();
 
+  ctx.restore();
   ctx.restore();
 }
 

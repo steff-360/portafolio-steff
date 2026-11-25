@@ -142,35 +142,43 @@ function drawSkyline(arr, col, par, litK, layerIdx) {
 }
 
 function drawBoards() {
-  // Rótulos luminosos de Stefani Sánchez y proyectos a lo largo de las vías
+  // Rótulos luminosos de Stefani Sánchez y proyectos en postes laterales elegantes
   var bOff = scroll % 60;
   for (var bz = -bOff; bz < ZFAR; bz += 60) {
-    if (bz < 1.0) continue;
+    if (bz < 3.2) continue; // Desvanecer con elegancia para no obstruir la cámara cercana
     var bp = F / (F + bz);
     var by = sy(bp);
     var bu = unit * bp;
     var side = Math.sin(bz * 7) > 0 ? 1 : -1;
-    var bx = sx(side * 2.8, bp);
-    var bw = 2.4 * bu, bh = 1.2 * bu;
+    var bx = sx(side * 3.4, bp);
+    var bw = 1.35 * bu, bh = 0.58 * bu;
 
     var bIdx = Math.abs(Math.floor(bz / 60)) % CITY_DATA.length;
     var bd = CITY_DATA[bIdx];
 
+    var alpha = Math.min(1, (bz - 3.2) / 3.8);
     ctx.save();
+    ctx.globalAlpha = alpha;
     ctx.translate(bx, by - 2.8 * bu);
-    ctx.fillStyle = '#0b1319';
-    rr(-bw / 2, -bh / 2, bw, bh, bh * 0.12);
+
+    // Poste de soporte
+    ctx.fillStyle = '#334155';
+    ctx.fillRect(-bw * 0.04, 0, bw * 0.08, 2.8 * bu);
+
+    // Cartel estilizado
+    ctx.fillStyle = '#0f172a';
+    rr(-bw / 2, -bh / 2, bw, bh, bh * 0.16);
     ctx.strokeStyle = '#ffd23f';
-    ctx.lineWidth = Math.max(1, 0.04 * bu);
+    ctx.lineWidth = Math.max(1, 0.03 * bu);
     ctx.strokeRect(-bw / 2, -bh / 2, bw, bh);
 
     ctx.fillStyle = '#ffd23f';
     ctx.font = '800 ' + Math.max(7, bh * 0.32) + 'px Bungee, Impact, sans-serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(bd[0], 0, -bh * 0.18);
+    ctx.fillText(bd[0], 0, -bh * 0.2);
 
-    ctx.fillStyle = '#f8fafc';
-    ctx.font = '700 ' + Math.max(6, bh * 0.22) + 'px "Barlow Condensed", sans-serif';
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '700 ' + Math.max(6, bh * 0.24) + 'px "Barlow Condensed", sans-serif';
     ctx.fillText(bd[1], 0, bh * 0.22);
     ctx.restore();
   }
@@ -321,7 +329,7 @@ function drawTrack() {
   // Pórticos de catenaria aérea del metro
   var gOff = scroll % 22;
   for (var gz = -gOff; gz < ZFAR; gz += 22) {
-    if (gz < 0.6) continue;
+    if (gz < 2.5) continue;
     var gp = F / (F + gz), gy = sy(gp), gu = unit * gp;
     var gLeft = sx(-2.1, gp), gRight = sx(2.1, gp), gTop = gy - 3.4 * gu;
     var gThick = Math.max(2, 0.09 * gu);

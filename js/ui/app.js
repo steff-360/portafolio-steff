@@ -243,6 +243,16 @@ function initInputListeners() {
     else if (state === 'pause') resumeGame();
   });
   $('todBtn').addEventListener('click', toggleTOD);
+  if ($('sound')) {
+    $('sound').addEventListener('click', function () {
+      sfxOn = !sfxOn;
+      musicOn = sfxOn;
+      if (!musicOn) musicStop();
+      else if (state === 'play') musicStart();
+      $('sound').textContent = sfxOn ? '🔊' : '🔇';
+      toast(sfxOn ? 'Sonido activado 🔊' : 'Sonido silenciado 🔇', 1500);
+    });
+  }
   $('resume').addEventListener('click', resumeGame);
   $('boardTrigger').addEventListener('click', activateHoverboard);
 
