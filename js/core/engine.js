@@ -80,23 +80,23 @@ var P = {
 
 function jump() {
   if (state !== 'play') return;
-  var onSurface = (P.y <= 0.02) || (P.onTrain && P.y <= 1.94);
+  var onSurface = (P.y <= 0.08) || (P.onTrain && P.y <= 1.98);
   if (onSurface || P.jumpBuf > 0) {
-    var jumpPower = pw.sneakers > 0 ? 19.5 : 14.5;
+    var jumpPower = pw.sneakers > 0 ? 20.5 : 15.5;
     P.vy = jumpPower;
     P.jumpBuf = 0;
     P.slide = 0;
     sfx('jump');
     emit(sx(P.x, 1), groundY - P.y * unit, 6, { s: 80, up: 40, g: 200, l: 0.3, r: 2.5, c: '#ffd23f' });
   } else {
-    P.jumpBuf = 0.15;
+    P.jumpBuf = 0.2;
   }
 }
 
 function slide() {
   if (state !== 'play') return;
   if (P.y > (P.onTrain ? 1.95 : 0.05)) {
-    P.vy = -18;
+    P.vy = -34; // Inmersión rápida (fast-fall dive) en el aire como en Subway Surfers
   }
   P.slide = 0.75;
   sfx('slide');
@@ -292,8 +292,8 @@ function update(dt) {
     inspector.active = false;
   }
 
-  // Movimiento lateral suave
-  P.x += (P.lane - P.x) * Math.min(1, dt * 14);
+  // Movimiento lateral fluido y reactivo estilo Subway Surfers
+  P.x += (P.lane - P.x) * Math.min(1, dt * 20);
 
   // Física vertical (Jetpack vs gravedad)
   if (pw.jetpack > 0) {
