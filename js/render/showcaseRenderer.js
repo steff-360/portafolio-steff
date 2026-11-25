@@ -23,9 +23,11 @@ function drawShowcaseChar(sctx, cObj, oObj, t) {
   sctx.save();
   sctx.translate(cx, baseY);
 
-  // Respiración idle suave
+  // Respiración idle suave y cambio sutil de peso en reposo
   var breathY = Math.sin(t * 2.5) * 3;
   var headBob = Math.sin(t * 2.5 + 0.5) * 1.5;
+  var weightShift = Math.sin(t * 1.5) * 0.02;
+  sctx.rotate(weightShift);
 
   // 2. PIERNAS Y PANTALONES (Jeans marrones estilo Subway Surfers)
   var pantsCol = oObj.pants || (oObj.star ? '#854d0e' : '#1e293b');
@@ -199,34 +201,40 @@ function drawShowcaseChar(sctx, cObj, oObj, t) {
   sctx.arc(0, -1.43 * S, 0.04 * S, 0, Math.PI * 2);
   sctx.fill();
 
-  // OJOS Y EXPRESIÓN VIVA
+  // OJOS Y EXPRESIÓN VIVA (con parpadeo natural)
   var eyeY = -1.2 * S;
+  var blinkCycle = (t * 0.8) % 4.0;
+  var isBlinking = blinkCycle > 3.85;
+  var eyeH = isBlinking ? 0.015 * S : 0.08 * S;
+
   sctx.fillStyle = '#ffffff';
   sctx.beginPath();
-  sctx.ellipse(-0.09 * S, eyeY, 0.065 * S, 0.08 * S, 0, 0, Math.PI * 2);
-  sctx.ellipse(0.09 * S, eyeY, 0.065 * S, 0.08 * S, 0, 0, Math.PI * 2);
+  sctx.ellipse(-0.09 * S, eyeY, 0.065 * S, eyeH, 0, 0, Math.PI * 2);
+  sctx.ellipse(0.09 * S, eyeY, 0.065 * S, eyeH, 0, 0, Math.PI * 2);
   sctx.fill();
 
-  // Iris
-  sctx.fillStyle = oObj.id === 'cyber' ? '#00f0d0' : (oObj.id === 'terminal' ? '#10b981' : '#3d2010');
-  sctx.beginPath();
-  sctx.arc(-0.08 * S, eyeY, 0.044 * S, 0, Math.PI * 2);
-  sctx.arc(0.1 * S, eyeY, 0.044 * S, 0, Math.PI * 2);
-  sctx.fill();
+  if (!isBlinking) {
+    // Iris
+    sctx.fillStyle = oObj.id === 'cyber' ? '#00f0d0' : (oObj.id === 'terminal' ? '#10b981' : '#3d2010');
+    sctx.beginPath();
+    sctx.arc(-0.08 * S, eyeY, 0.044 * S, 0, Math.PI * 2);
+    sctx.arc(0.1 * S, eyeY, 0.044 * S, 0, Math.PI * 2);
+    sctx.fill();
 
-  // Pupilas
-  sctx.fillStyle = '#0f172a';
-  sctx.beginPath();
-  sctx.arc(-0.08 * S, eyeY, 0.028 * S, 0, Math.PI * 2);
-  sctx.arc(0.1 * S, eyeY, 0.028 * S, 0, Math.PI * 2);
-  sctx.fill();
+    // Pupilas
+    sctx.fillStyle = '#0f172a';
+    sctx.beginPath();
+    sctx.arc(-0.08 * S, eyeY, 0.028 * S, 0, Math.PI * 2);
+    sctx.arc(0.1 * S, eyeY, 0.028 * S, 0, Math.PI * 2);
+    sctx.fill();
 
-  // Brillos en los ojos
-  sctx.fillStyle = '#ffffff';
-  sctx.beginPath();
-  sctx.arc(-0.095 * S, eyeY - 0.02 * S, 0.016 * S, 0, Math.PI * 2);
-  sctx.arc(0.085 * S, eyeY - 0.02 * S, 0.016 * S, 0, Math.PI * 2);
-  sctx.fill();
+    // Brillos en los ojos
+    sctx.fillStyle = '#ffffff';
+    sctx.beginPath();
+    sctx.arc(-0.095 * S, eyeY - 0.02 * S, 0.016 * S, 0, Math.PI * 2);
+    sctx.arc(0.085 * S, eyeY - 0.02 * S, 0.016 * S, 0, Math.PI * 2);
+    sctx.fill();
+  }
 
   // Cejas expresivas
   sctx.strokeStyle = '#2c1810'; sctx.lineWidth = 3;
