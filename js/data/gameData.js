@@ -230,20 +230,40 @@ var COLLECTIONS_DATA = [
 
 var PALETTES = {
   day: {
-    name: 'Día',
-    sky0: '#38bdf8', sky1: '#bae6fd',
+    id: 'day', name: '☀️ Día',
+    sky0: '#1976d2', sky1: '#60a5fa',
     g0: '#0284c7', g1: '#0369a1',
-    sun: 1.0, lamp: 0.0,
+    sun: 1.0, lamp: 0.0, star: 0.0,
     trainCol: '#dc2626',
-    hor_: [240, 246, 252]
+    hor_: [219, 234, 254],
+    stationName: 'Central Station · Día Soleado'
+  },
+  sunset: {
+    id: 'sunset', name: '🌇 Ocaso',
+    sky0: '#311042', sky1: '#ea580c',
+    g0: '#7c2d12', g1: '#431407',
+    sun: 0.55, lamp: 0.55, star: 0.35,
+    trainCol: '#ea580c',
+    hor_: [249, 115, 22],
+    stationName: 'Shinjuku Line · Atardecer Dorado'
   },
   night: {
-    name: 'Noche',
-    sky0: '#0b1319', sky1: '#1e293b',
+    id: 'night', name: '🌙 Noche',
+    sky0: '#030712', sky1: '#1e1b4b',
     g0: '#0f172a', g1: '#090d16',
-    sun: 0.1, lamp: 1.0,
-    trainCol: '#b91c1c',
-    hor_: [15, 23, 42]
+    sun: 0.0, lamp: 1.0, star: 1.0,
+    trainCol: '#7c3aed',
+    hor_: [13, 148, 136],
+    stationName: 'Cyber Tunnel · Noche Neón'
+  },
+  dawn: {
+    id: 'dawn', name: '🌅 Alba',
+    sky0: '#1e1b4b', sky1: '#f43f5e',
+    g0: '#831843', g1: '#500724',
+    sun: 0.75, lamp: 0.25, star: 0.15,
+    trainCol: '#db2777',
+    hor_: [254, 240, 138],
+    stationName: 'Harajuku Loop · Alba Fresca'
   }
 };
 
