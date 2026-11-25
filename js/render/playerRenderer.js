@@ -280,19 +280,36 @@ function drawPlayer() {
   ctx.moveTo(0.06 * S, -0.84 * S); ctx.lineTo(0.07 * S - cordSwing, -0.68 * S);
   ctx.stroke();
 
-  // 9. CABEZA Y ROSTRO 3D
-  var skinGrad = ctx.createRadialGradient(-0.05 * S, -1.04 * S, 0.04 * S, 0, -1.0 * S, 0.22 * S);
-  skinGrad.addColorStop(0, '#fde68a');
-  skinGrad.addColorStop(0.4, '#f5cb9b');
-  skinGrad.addColorStop(1, '#e0a66d');
+  // 9. CABEZA Y ROSTRO LUMINOSO
+  // Coleta castaña de Stefani (dibujada DETRÁS de la cabeza, sobre el hombro izquierdo)
+  if (activeCharId === 'stefani') {
+    ctx.save();
+    var ponySway = Math.sin(tRun * 1.6) * 0.04 * S;
+    ctx.fillStyle = sk.hair || '#2c1810';
+    ctx.beginPath();
+    ctx.moveTo(-0.16 * S, -1.02 * S);
+    ctx.quadraticCurveTo(-0.34 * S + ponySway, -0.92 * S, -0.28 * S + ponySway, -0.70 * S);
+    ctx.quadraticCurveTo(-0.18 * S + ponySway, -0.78 * S, -0.13 * S, -0.96 * S);
+    ctx.closePath();
+    ctx.fill();
+    // Coletita roja
+    ctx.fillStyle = '#ef4444';
+    ctx.beginPath(); ctx.arc(-0.15 * S, -0.99 * S, 0.026 * S, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  // Cabeza con tez limpia y luminosa (sin manchas)
+  var skinGrad = ctx.createRadialGradient(-0.04 * S, -1.04 * S, 0.03 * S, 0, -1.0 * S, 0.22 * S);
+  skinGrad.addColorStop(0, '#fffbeb');
+  skinGrad.addColorStop(0.5, '#fde68a');
+  skinGrad.addColorStop(1, '#f5cb9b');
   ctx.fillStyle = skinGrad;
   ctx.beginPath(); ctx.arc(0, -1.0 * S, 0.22 * S, 0, Math.PI * 2); ctx.fill();
 
-  ctx.fillStyle = sk.hair || '#2c1810';
-  ctx.beginPath();
-  ctx.arc(-0.17 * S, -1.0 * S, 0.07 * S, 0, Math.PI * 2);
-  ctx.arc(0.17 * S, -1.0 * S, 0.07 * S, 0, Math.PI * 2);
-  ctx.fill();
+  // Colorete dulce en las mejillas
+  ctx.fillStyle = 'rgba(251, 113, 133, 0.35)';
+  ctx.beginPath(); ctx.arc(-0.11 * S, -0.96 * S, 0.04 * S, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(0.11 * S, -0.96 * S, 0.04 * S, 0, Math.PI * 2); ctx.fill();
 
   // 10. AURICULARES DE DJ AMARILLOS (STAR OUTFIT / FRESH)
   if (sk.headphones || sk.star) {
@@ -340,39 +357,23 @@ function drawPlayer() {
     ctx.beginPath(); ctx.ellipse(-0.25 * S, -0.92 * S + pSway, 0.06 * S, 0.14 * S, -0.3, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.ellipse(0.25 * S, -0.92 * S - pSway, 0.06 * S, 0.14 * S, 0.3, 0, Math.PI * 2); ctx.fill();
   } else {
-    // Gorra hacia atrás clásica (Stefani / Jake)
+    // Gorra clásica hacia atrás (Stefani / Jake)
     ctx.fillStyle = sk.h || '#facc15';
-    rr(-0.22 * S, -1.18 * S, 0.44 * S, 0.2 * S, 0.09 * S);
-    ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.lineWidth = Math.max(1, 0.015 * S);
+    rr(-0.23 * S, -1.22 * S, 0.46 * S, 0.22 * S, 0.09 * S);
+    ctx.strokeStyle = 'rgba(0,0,0,.2)'; ctx.lineWidth = Math.max(1, 0.015 * S);
     ctx.beginPath();
-    ctx.moveTo(0, -1.18 * S); ctx.lineTo(0, -0.99 * S);
-    ctx.moveTo(-0.13 * S, -1.17 * S); ctx.lineTo(-0.09 * S, -1.0 * S);
-    ctx.moveTo(0.13 * S, -1.17 * S); ctx.lineTo(0.09 * S, -1.0 * S);
+    ctx.moveTo(0, -1.22 * S); ctx.lineTo(0, -1.02 * S);
     ctx.stroke();
 
     ctx.fillStyle = sk.star ? '#16a34a' : '#ffd23f';
-    ctx.beginPath(); ctx.arc(0, -1.19 * S, 0.032 * S, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(0, -1.23 * S, 0.035 * S, 0, Math.PI * 2); ctx.fill();
 
-    // Visera trasera plana (verde en Star Outfit)
-    ctx.fillStyle = 'rgba(0,0,0,.3)';
-    ctx.fillRect(-0.29 * S, -1.07 * S, 0.17 * S, 0.06 * S);
+    // Visera hacia atrás en la parte superior izquierda (fuera del rostro)
     ctx.fillStyle = sk.star ? '#16a34a' : (sk.h || '#00d2b4');
-    rr(-0.31 * S, -1.1 * S, 0.17 * S, 0.05 * S, 0.02 * S);
-
-    // Coleta castaña de Stefani
-    if (activeCharId === 'stefani') {
-      var ponySway = Math.sin(tRun * 1.6) * 0.04 * S;
-      ctx.fillStyle = sk.hair || '#2c1810';
-      ctx.beginPath();
-      ctx.moveTo(-0.04 * S, -0.98 * S);
-      ctx.quadraticCurveTo(-0.25 * S + ponySway, -0.92 * S, -0.22 * S + ponySway, -0.78 * S);
-      ctx.quadraticCurveTo(-0.14 * S + ponySway, -0.86 * S, -0.04 * S, -0.94 * S);
-      ctx.closePath();
-      ctx.fill();
-    }
+    rr(-0.34 * S, -1.18 * S, 0.16 * S, 0.05 * S, 0.02 * S);
   }
 
-  // 12. OJOS Y ROSTRO
+  // 12. OJOS Y ROSTRO LINDOS (Sin ninguna mancha oscura)
   if (sk.visor) {
     ctx.fillStyle = sk.visor;
     rr(-0.16 * S, -1.06 * S, 0.32 * S, 0.08 * S, 0.03 * S);
@@ -393,19 +394,23 @@ function drawPlayer() {
     ctx.beginPath(); ctx.arc(-0.075 * S, eyeY, 0.024 * S, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.arc(0.085 * S, eyeY, 0.024 * S, 0, Math.PI * 2); ctx.fill();
 
+    // Brillos de luz en los ojos
     ctx.fillStyle = '#ffffff';
     ctx.beginPath(); ctx.arc(-0.085 * S, eyeY - 0.016 * S, 0.014 * S, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.arc(0.075 * S, eyeY - 0.016 * S, 0.014 * S, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-0.065 * S, eyeY + 0.012 * S, 0.007 * S, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(0.095 * S, eyeY + 0.012 * S, 0.007 * S, 0, Math.PI * 2); ctx.fill();
 
-    ctx.strokeStyle = sk.hair || '#2c1810'; ctx.lineWidth = Math.max(1.5, 0.022 * S);
+    ctx.strokeStyle = '#2c1810'; ctx.lineWidth = Math.max(1.5, 0.022 * S);
     ctx.beginPath();
     ctx.moveTo(-0.13 * S, eyeY - 0.07 * S); ctx.lineTo(-0.04 * S, eyeY - 0.075 * S);
     ctx.moveTo(0.04 * S, eyeY - 0.075 * S); ctx.lineTo(0.13 * S, eyeY - 0.07 * S);
     ctx.stroke();
 
-    ctx.strokeStyle = '#991b1b'; ctx.lineWidth = Math.max(1.5, 0.022 * S);
+    // Sonrisa dulce
+    ctx.strokeStyle = '#dc2626'; ctx.lineWidth = Math.max(1.5, 0.022 * S);
     ctx.beginPath();
-    ctx.arc(0, -0.94 * S, 0.065 * S, 0.2 * Math.PI, 0.8 * Math.PI);
+    ctx.arc(0, -0.94 * S, 0.065 * S, 0.18 * Math.PI, 0.82 * Math.PI);
     ctx.stroke();
   }
 

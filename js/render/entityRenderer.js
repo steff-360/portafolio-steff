@@ -280,10 +280,8 @@ function drawEnt(e) {
 
 function drawInspector() {
   if (!inspector.active || inspector.dist > 5.5) return;
-  var z = -inspector.dist;
-  var p = F / (F + z);
-  var ix = sx(inspector.lane + 0.38, p), iy = sy(p);
-  var S = unit * p;
+  var ix = sx(inspector.lane + 0.38, 1.0), iy = sy(1.0);
+  var S = unit * 0.95;
   var runTime = time * 15;
   var legSw = Math.sin(runTime);
 
@@ -293,7 +291,7 @@ function drawInspector() {
   ctx.ellipse(ix, iy, 0.38 * S, 0.11 * S, 0, 0, 6.283);
   ctx.fill();
 
-  var dogX = sx(inspector.lane - 0.44, p), dogY = iy;
+  var dogX = sx(inspector.lane - 0.44, 1.0), dogY = iy;
   ctx.beginPath();
   ctx.ellipse(dogX, dogY, 0.24 * S, 0.08 * S, 0, 0, 6.283);
   ctx.fill();
