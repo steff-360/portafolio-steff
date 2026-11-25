@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
 <style>
-/* Estética inspirada en Subway Surfers: carteles de metro, colores vivos y tickets de portafolio */
+/* Estética inspirada fielmente en Subway Surfers: trenes escalables, power-ups, misiones de letras, hoverboards por doble tap */
 :root {
   --ink: #0b1319;
   --ink-2: #14232d;
@@ -18,6 +18,8 @@
   --paper: #f7f4ec;
   --mute: #8fa5b4;
   --subway-blue: #0077cc;
+  --jetpack-purple: #9d4edd;
+  --shoes-orange: #ff9100;
   --display: 'Bungee', 'Impact', sans-serif;
   --body: 'Barlow', system-ui, sans-serif;
   --cond: 'Barlow Condensed', 'Arial Narrow', sans-serif;
@@ -35,26 +37,33 @@ body {
 
 .hud {
   position: absolute; top: 0; left: 0; right: 0; z-index: 2; pointer-events: none;
-  padding-block: 12px;
+  padding-block: 10px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 10px 16px;
 }
-.score-box { display: flex; flex-direction: column; gap: 4px; }
-.score { font-family: var(--display); font-size: clamp(28px, 7vw, 42px); line-height: 1; text-shadow: 0 3px 0 rgba(0,0,0,.5); font-variant-numeric: tabular-nums; }
+.score-box { display: flex; flex-direction: column; gap: 3px; }
+.score { font-family: var(--display); font-size: clamp(26px, 6.5vw, 40px); line-height: 1; text-shadow: 0 3px 0 rgba(0,0,0,.5); font-variant-numeric: tabular-nums; }
 .score small { display: block; font-family: var(--cond); font-size: 13px; letter-spacing: .2em; color: var(--lamp); text-shadow: none; margin-bottom: 2px; }
-.mult { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 4px; background: var(--lamp); color: var(--ink); font-size: 16px; vertical-align: 8px; text-shadow: none; transition: transform .15s; font-weight: 700; }
+.mult { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 4px; background: var(--lamp); color: var(--ink); font-size: 15px; vertical-align: 6px; text-shadow: none; transition: transform .15s; font-weight: 700; }
 .mult.pop { transform: scale(1.4); }
-.meta { display: flex; align-items: center; gap: 16px; font-family: var(--cond); font-weight: 700; font-size: 19px; letter-spacing: .06em; text-shadow: 0 2px 0 rgba(0,0,0,.4); }
+.meta { display: flex; align-items: center; gap: 14px; font-family: var(--cond); font-weight: 700; font-size: 18px; letter-spacing: .06em; text-shadow: 0 2px 0 rgba(0,0,0,.4); }
 .coin-n { display: inline-flex; align-items: center; gap: 7px; }
 .coin-dot { width: 16px; height: 16px; border-radius: 50%; background: var(--lamp); box-shadow: inset -3px -3px 0 rgba(0,0,0,.25), 0 0 10px rgba(255,210,63,.7); }
 .lives { display: inline-flex; gap: 6px; }
 .lives i { width: 13px; height: 13px; border-radius: 50%; background: var(--signal); box-shadow: 0 0 8px rgba(255,59,48,.8); }
 .lives i.off { background: transparent; box-shadow: none; border: 2px solid rgba(244,239,230,.35); }
+
+/* Misión de letras S-T-E-F-F */
+.word-hunt { display: inline-flex; gap: 4px; margin-top: 3px; }
+.letter-box { width: 18px; height: 20px; border-radius: 3px; background: rgba(15,26,34,.6); border: 1px solid rgba(244,239,230,.3); display: grid; place-items: center; font-family: var(--display); font-size: 12px; color: rgba(244,239,230,.4); }
+.letter-box.got { background: var(--lamp); border-color: var(--lamp); color: var(--ink); font-weight: 700; box-shadow: 0 0 8px rgba(255,210,63,.8); }
+
 .powers { display: flex; flex-wrap: wrap; gap: 6px; min-height: 26px; }
-.pw-chip { position: relative; overflow: hidden; font-family: var(--cond); font-weight: 700; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; padding: 4px 9px 7px; border-radius: 4px; background: rgba(11,19,25,.8); border: 1px solid currentColor; }
+.pw-chip { position: relative; overflow: hidden; font-family: var(--cond); font-weight: 700; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; padding: 4px 8px 6px; border-radius: 4px; background: rgba(11,19,25,.85); border: 1px solid currentColor; }
 .pw-chip i { position: absolute; left: 0; bottom: 0; height: 3px; background: currentColor; width: 100%; }
-.pw-magnet { color: #ff6b4a; } .pw-shield { color: var(--teal); } .pw-x2 { color: var(--lamp); }
+.pw-magnet { color: #ff6b4a; } .pw-shield { color: var(--teal); } .pw-x2 { color: var(--lamp); } .pw-jetpack { color: var(--jetpack-purple); } .pw-sneakers { color: var(--shoes-orange); }
+
 .controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: flex-end; }
 .pip, .sbtn {
   pointer-events: auto; cursor: pointer; font-family: var(--cond); font-weight: 700; font-size: 14px; letter-spacing: .08em; text-transform: uppercase;
@@ -64,6 +73,15 @@ body {
 .sbtn { border-style: solid; color: var(--paper); }
 .pip:focus-visible, .sbtn:focus-visible, .btn:focus-visible, .skin:focus-visible { outline: 3px solid var(--lamp); outline-offset: 2px; }
 
+/* Botón flotante para invocar Hoverboard en móvil / táctil */
+.hoverboard-trigger {
+  position: absolute; bottom: 20px; right: 20px; z-index: 4;
+  width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--teal), var(--subway-blue));
+  border: 2px solid #fff; box-shadow: 0 4px 18px rgba(0,210,180,.6); display: grid; place-items: center; font-size: 24px; cursor: pointer;
+  transition: transform .12s, box-shadow .12s;
+}
+.hoverboard-trigger:active { transform: scale(0.92); }
+
 .overlay {
   position: absolute; inset: 0; z-index: 5; display: grid; place-items: center; overflow-y: auto;
   padding-block: 24px;
@@ -71,13 +89,12 @@ body {
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   background: rgba(6, 12, 18, .62); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
 }
-.hero { text-align: center; max-width: 580px; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.hero { text-align: center; max-width: 580px; display: flex; flex-direction: column; align-items: center; gap: 15px; }
 .hero > * { animation: rise .6s cubic-bezier(.2,.8,.2,1) both; }
 .hero > *:nth-child(2) { animation-delay: .07s; } .hero > *:nth-child(3) { animation-delay: .14s; }
 .hero > *:nth-child(4) { animation-delay: .21s; } .hero > *:nth-child(5) { animation-delay: .28s; } .hero > *:nth-child(6) { animation-delay: .35s; }
 @keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
 
-/* Logo con estilo metro / subway surfers */
 .subway-sign {
   display: inline-flex; align-items: center; gap: 8px; padding: 4px 14px; border-radius: 999px;
   background: var(--subway-blue); color: #fff; font-family: var(--cond); font-weight: 700; font-size: 14px;
@@ -153,9 +170,19 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
       <span class="coin-n"><span class="coin-dot"></span><span id="coins">0</span></span>
       <span class="lives" id="lives" aria-label="Vidas"><i></i><i></i><i></i></span>
     </div>
+    <!-- Cazador de letras: S - T - E - F - F -->
+    <div class="word-hunt" title="Caza de palabras: recoge las letras S-T-E-F-F en las vías">
+      <span class="letter-box" id="let-0">S</span>
+      <span class="letter-box" id="let-1">T</span>
+      <span class="letter-box" id="let-2">E</span>
+      <span class="letter-box" id="let-3">F</span>
+      <span class="letter-box" id="let-4">F</span>
+    </div>
     <div class="powers">
       <span class="pw-chip pw-magnet" id="pwMagnet" hidden>Imán<i></i></span>
       <span class="pw-chip pw-shield" id="pwShield" hidden>Hoverboard<i></i></span>
+      <span class="pw-chip pw-jetpack" id="pwJetpack" hidden>Jetpack<i></i></span>
+      <span class="pw-chip pw-sneakers" id="pwSneakers" hidden>Super Sneakers<i></i></span>
       <span class="pw-chip pw-x2" id="pwX2" hidden>Monedas x2<i></i></span>
     </div>
   </div>
@@ -166,13 +193,16 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
   </div>
 </div>
 
+<!-- Botón rápido para activar Hoverboard -->
+<button class="hoverboard-trigger" id="boardTrigger" type="button" aria-label="Activar Hoverboard (doble tap o tecla H)" title="Activar Hoverboard (tecla H o doble click)">🛹</button>
+
 <section class="overlay" id="start">
   <div class="hero">
     <div class="subway-sign">Metro Línea Dev · Stefani Sánchez</div>
     <h1>SUBWAY<br>DEV</h1>
     <div class="rails" aria-hidden="true"></div>
     <p class="sub">Técnica en Desarrollo de Software</p>
-    <p class="lead">Corre por las vías del metro esquivando trenes y barreras. Recoge las fichas doradas para desbloquear cada estación con mi experiencia, proyectos reales y stack técnico.</p>
+    <p class="lead">Corre por las vías del metro con todas las mecánicas reales de Subway Surfers: <strong>el Inspector y su perro persiguiéndote</strong> con silbato, <strong>sube a los techos de los trenes</strong> por rampas, vuela con el <strong>Jetpack</strong> recogiendo monedas en el cielo, salta trenes con las <strong>Super Sneakers</strong>, activa el <strong>Hoverboard</strong> con doble tap o tecla H, recoge <strong>Cajas Misteriosas</strong> y completa la palabra <strong>STEFF</strong>.</p>
     <div class="skins" id="skins" role="group" aria-label="Traje"></div>
     <div class="row">
       <button class="btn primary" id="play" type="button">¡Correr Ahora!</button>
@@ -183,7 +213,7 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
       <span><b>← →</b> o <b>A D</b> cambiar carril</span>
       <span><b>↑</b> o <b>Espacio</b> saltar trenes</span>
       <span><b>↓</b> o <b>S</b> deslizar bajo barreras</span>
-      <span><b>P</b> pausa · en móvil, <b>deslizar dedo</b></span>
+      <span><b>H</b> o <b>Doble Tap</b> Hoverboard</span>
     </div>
   </div>
 </section>
@@ -198,8 +228,9 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
 
 <section class="overlay" id="over" hidden>
   <div class="hero">
-    <div class="subway-sign">Fin de la Línea</div>
-    <h1 style="font-size:clamp(40px,11vw,76px)">FIN DEL<br>TREN</h1>
+    <div class="subway-sign">Metro Dev · Fin del Recorrido</div>
+    <h1 style="font-size:clamp(40px,11vw,76px)">¡ATRAPADO!</h1>
+    <p class="sub" style="color:var(--signal);margin:0">El Inspector del Metro te alcanzó</p>
     <p class="newbest" id="newBest" hidden>¡Nuevo récord!</p>
     <p class="over-stats" id="overStats"></p>
     <div class="row">
@@ -261,6 +292,10 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
   ];
   var skin = 0, storedUnlock = 0;
 
+  // Caza de letras de Subway Surfers: S-T-E-F-F
+  var WORD_LETTERS = ['S', 'T', 'E', 'F', 'F'];
+  var lettersCollected = [false, false, false, false, false];
+
   /* ---------- Estado ---------- */
   var cv = $('game'), ctx = cv.getContext('2d');
   var W = 0, H = 0, DPR = 1, horizon = 0, groundY = 0, cx = 0, unit = 100, camX = 0;
@@ -270,11 +305,17 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
   var dist = 0, scroll = 0, coins = 0, bonus = 0, streak = 0, mult = 1, lives = 3, speed = 14, ents = [], spawnAcc = 0;
   var cpDist = 40, cpActive = false, cpSpawn = false, shake = 0, flash = 0, freeze = 0, time = 0, best = 0, celebrated = false, firstRun = true;
   var dustT = 0, wasAir = false, pu = 0;
-  var pw = { magnet: 0, shield: 0, x2: 0 };
-  var PWDUR = { magnet: 8, shield: 15, x2: 10 };
-  var PWNAME = { magnet: 'IMÁN', shield: 'HOVERBOARD', x2: 'MONEDAS x2' };
-  var PWCOL = { magnet: '#ff6b4a', shield: '#00d2b4', x2: '#ffd23f' };
-  var P = { lane: 0, x: 0, y: 0, vy: 0, slide: 0, run: 0, inv: 0, jumpBuf: 0 };
+
+  // Power-ups ampliados estilo Subway Surfers
+  var pw = { magnet: 0, shield: 0, x2: 0, jetpack: 0, sneakers: 0 };
+  var PWDUR = { magnet: 8, shield: 18, x2: 10, jetpack: 6.5, sneakers: 10 };
+  var PWNAME = { magnet: 'IMÁN', shield: 'HOVERBOARD', x2: 'MONEDAS x2', jetpack: 'JETPACK', sneakers: 'SUPER SNEAKERS' };
+  var PWCOL = { magnet: '#ff6b4a', shield: '#00d2b4', x2: '#ffd23f', jetpack: '#9d4edd', sneakers: '#ff9100' };
+
+  // Inspector de seguridad del metro y su perro perseguidor
+  var inspector = { active: true, dist: 0.9, lane: 0, timer: 5.0 };
+
+  var P = { lane: 0, x: 0, y: 0, vy: 0, slide: 0, run: 0, inv: 0, jumpBuf: 0, onTrain: false };
   var parts = [], floaters = [];
   try {
     best = parseInt(localStorage.getItem('subwaydev-best') || '0', 10) || 0;
@@ -320,7 +361,7 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
   var BUILD1 = makeBuild(0.02, 0.09, 0.03, 0.06), BUILD2 = makeBuild(0.04, 0.15, 0.04, 0.1), STARS = [], si;
   for (si = 0; si < 50; si++) STARS.push({ x: rnd(), y: rnd() * 0.7, s: 0.6 + rnd() * 1.2 });
   var farTrain = { x: -1, t: 6 };
-  var BOARDS = [['SUBWAY DEV', 'Stefani Sánchez'], ['METRO SURF', 'Técnica en Software'], ['NODE.JS · SQL', 'Arquitectura y APIs'], ['DOCKER INFRA', 'Microservicios estables'], ['¿HABLAMOS?', 'steff.18random@gmail.com']];
+  var BOARDS = [['SUBWAY DEV', 'Stefani Sánchez'], ['METRO SURF', 'Técnica en Software'], ['HOVERBOARD', 'Doble Tap o Tecla H'], ['JETPACK FLY', 'Vuela sobre la vía'], ['¿HABLAMOS?', 'steff.18random@gmail.com']];
   var SLINES = [];
   for (si = 0; si < 26; si++) SLINES.push({ a: rnd() * 6.283, p: rnd() });
 
@@ -408,11 +449,25 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
     if (muted) return;
     if (n === 'coin') nt(880 * (1 + (k % 8) * 0.07), 1400 * (1 + (k % 8) * 0.07), 0.09, 'square', 0.05);
     else if (n === 'jump') nt(300, 560, 0.14, 'triangle', 0.12);
+    else if (n === 'superjump') { nt(240, 920, 0.28, 'sine', 0.18); nt(480, 1400, 0.22, 'triangle', 0.12); }
     else if (n === 'slide') nt(420, 160, 0.16, 'triangle', 0.1);
     else if (n === 'crash') { nt(200, 45, 0.35, 'sawtooth', 0.16); nt(90, 40, 0.3, 'square', 0.1); }
     else if (n === 'shield') { nt(500, 1000, 0.18, 'sine', 0.14); }
     else if (n === 'power') { nt(440, 880, 0.12, 'square', 0.06); nt(660, 1320, 0.2, 'square', 0.06, ac.currentTime + 0.08); }
     else if (n === 'token') { nt(520, 780, 0.14, 'square', 0.07); nt(780, 1170, 0.18, 'square', 0.07, ac.currentTime + 0.11); nt(1040, 1560, 0.3, 'square', 0.07, ac.currentTime + 0.24); }
+    else if (n === 'boardon') { nt(350, 700, 0.15, 'triangle', 0.12); nt(600, 1200, 0.18, 'sine', 0.1, ac.currentTime + 0.05); }
+    else if (n === 'letter') { nt(660, 990, 0.14, 'square', 0.08); }
+    else if (n === 'whistle') {
+      nt(2400, 2450, 0.12, 'square', 0.16);
+      nt(2600, 2650, 0.14, 'square', 0.14, ac.currentTime + 0.02);
+      nt(2400, 2450, 0.20, 'square', 0.16, ac.currentTime + 0.16);
+    }
+    else if (n === 'box') {
+      nt(440, 554, 0.09, 'sine', 0.12);
+      nt(554, 659, 0.09, 'sine', 0.12, ac.currentTime + 0.07);
+      nt(659, 880, 0.12, 'sine', 0.14, ac.currentTime + 0.14);
+      nt(880, 1320, 0.22, 'square', 0.08, ac.currentTime + 0.22);
+    }
   }
   var mus = { on: false, timer: 0, step: 0, next: 0 };
   var ROOTS = [110, 110, 87.31, 98], ARP = [0, 3, 7, 12, 7, 3, 10, 7];
@@ -434,20 +489,28 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
   }
   $('sound').addEventListener('click', function () { setMuted(!muted); this.blur(); });
 
-  /* ---------- Generación de filas con trenes y barreras ---------- */
+  /* ---------- Generación de filas con trenes, techos y power-ups ---------- */
   function add(o) { ents.push(o); }
   function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
   function coinLine(lane, z, n, y) { for (var i = 0; i < n; i++) add({ t: 'coin', lane: lane, z: z + i * 1.4, y: y || 0.55, got: false }); }
   function nextIdx() { return found.indexOf(false); }
-  var PWKINDS = ['magnet', 'shield', 'x2'];
+  function nextUncollectedLetter() {
+    for (var i = 0; i < WORD_LETTERS.length; i++) { if (!lettersCollected[i]) return i; }
+    return -1;
+  }
+  var PWKINDS = ['magnet', 'shield', 'x2', 'jetpack', 'sneakers'];
 
   function spawnRow(z, safe) {
     var L = shuffle([-1, 0, 1]), r = Math.random(), len, n, i;
     if (safe) {
       if (r < 0.5) {
-        var l = Math.random() < 0.5 ? -1 : 1; len = 5 + Math.random() * 4;
+        var l = Math.random() < 0.5 ? -1 : 1; len = 6 + Math.random() * 4;
         add({ t: 'train', lane: l, z: z, len: len, c: TRAINCOL[Math.floor(Math.random() * 3)] });
-        coinLine(0, z, Math.floor(len / 1.4)); return len;
+        // Rampa de salto para subir al tren
+        add({ t: 'ramp', lane: l, z: z - 1.2 });
+        // Monedas encima del techo del tren
+        coinLine(l, z, Math.floor(len / 1.4), 2.3);
+        return len;
       }
       coinLine(Math.random() < 0.6 ? 0 : (Math.random() < 0.5 ? -1 : 1), z, 7); return 10;
     }
@@ -456,45 +519,99 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
       add({ t: 'token', lane: L[0], z: z + 3, idx: nextIdx(), got: false });
       coinLine(L[1], z, 6); coinLine(L[2], z, 6); return 9;
     }
-    if (r < 0.32) {
+    // Ocasionalmente spawnear una letra de S-T-E-F-F
+    var letterIdx = nextUncollectedLetter();
+    if (letterIdx >= 0 && Math.random() < 0.16) {
+      add({ t: 'letter', char: WORD_LETTERS[letterIdx], lidx: letterIdx, lane: L[0], z: z + 2, y: 1.4, got: false });
+      coinLine(L[1], z, 6); return 8;
+    }
+
+    // Cajas Misteriosas con premios sorpresa estilo Subway Surfers
+    if (Math.random() < 0.13) {
+      add({ t: 'box', lane: L[0], z: z + 2, got: false });
+      coinLine(L[1], z, 6); return 8;
+    }
+
+    if (r < 0.35) {
       n = Math.random() < 0.4 ? 2 : 1; len = 0;
       for (i = 0; i < n; i++) {
-        var tl = 5 + Math.random() * 4; len = Math.max(len, tl);
+        var tl = 6 + Math.random() * 4; len = Math.max(len, tl);
         add({ t: 'train', lane: L[i], z: z, len: tl, c: TRAINCOL[Math.floor(Math.random() * 3)] });
+        // Si hay un solo tren, ponerle rampa de subida
+        if (n === 1 || i === 0) {
+          add({ t: 'ramp', lane: L[i], z: z - 1.2 });
+          coinLine(L[i], z, Math.floor(tl / 1.4), 2.3);
+        }
       }
       coinLine(n === 1 ? L[1] : L[2], z, Math.floor(len / 1.4));
       return len;
     }
-    if (r < 0.58) {
+    if (r < 0.60) {
       n = Math.random() < 0.5 ? 2 : 1;
       for (i = 0; i < n; i++) { add({ t: 'bar', lane: L[i], z: z }); add({ t: 'coin', lane: L[i], z: z, y: 1.35, got: false }); }
       coinLine(L[n], z - 2, 5);
       return 3;
     }
-    if (r < 0.76) {
+    if (r < 0.78) {
       n = Math.random() < 0.5 ? 2 : 1;
       for (i = 0; i < n; i++) { add({ t: 'over', lane: L[i], z: z }); coinLine(L[i], z - 1.4, 4, 0.35); }
       return 3;
     }
     coinLine(L[0], z, 8);
-    if (Math.random() < 0.22) add({ t: 'pw', k: PWKINDS[Math.floor(Math.random() * 3)], lane: L[0], z: z + 2.8, got: false });
+    if (Math.random() < 0.28) add({ t: 'pw', k: PWKINDS[Math.floor(Math.random() * PWKINDS.length)], lane: L[0], z: z + 2.8, got: false });
     else if (Math.random() < 0.45) add({ t: 'bar', lane: L[0], z: z + 8 * 1.4 + 1 });
     return 14;
   }
 
   /* ---------- Acciones del jugador ---------- */
   function moveLane(d) { P.lane = Math.max(-1, Math.min(1, P.lane + d)); }
-  function doJump() { P.vy = 8.6; P.slide = 0; sfx('jump'); emit(sx(P.x, 1), groundY, 6, { s: 70, up: 20, g: 200, l: 0.35, r: 2.5, c: 'rgba(225,205,180,.8)' }); }
-  function jump() { if (P.y <= 0.001) doJump(); else P.jumpBuf = 0.14; }
-  function slide() { if (P.y > 0.001) { P.vy = -16; } else { P.slide = 0.65; sfx('slide'); } }
+  function doJump() {
+    var isSneakers = pw.sneakers > 0;
+    P.vy = isSneakers ? 13.5 : 8.8;
+    P.slide = 0;
+    if (isSneakers) sfx('superjump'); else sfx('jump');
+    emit(sx(P.x, 1), groundY - P.y * unit, 8, { s: 90, up: 30, g: 200, l: 0.35, r: 2.8, c: isSneakers ? '#ff9100' : 'rgba(225,205,180,.8)' });
+  }
+  function jump() {
+    var floorY = P.onTrain ? 1.9 : 0;
+    if (Math.abs(P.y - floorY) <= 0.05) doJump(); else P.jumpBuf = 0.14;
+  }
+  function slide() {
+    var floorY = P.onTrain ? 1.9 : 0;
+    if (P.y > floorY + 0.05) {
+      P.vy = -34;
+      P.slide = 0.7;
+      sfx('slide');
+    } else {
+      P.slide = 0.65;
+      sfx('slide');
+    }
+  }
+  function activateHoverboard() {
+    if (state !== 'play') return;
+    pw.shield = PWDUR.shield;
+    sfx('boardon');
+    floater('¡HOVERBOARD!', sx(P.x, 1), groundY - unit * 1.6, '#00d2b4');
+    emit(sx(P.x, 1), groundY - unit * 0.2, 20, { s: 200, g: 0, l: 0.5, r: 3, c: '#00d2b4' });
+    toast('Hoverboard activado: ¡protección contra 1 choque!', 2500);
+  }
   function score() { return Math.floor(dist) + bonus; }
 
   /* ---------- Flujo del juego ---------- */
   function reset() {
     dist = 0; coins = 0; bonus = 0; streak = 0; mult = 1; lives = 3; speed = 9; ents = []; parts = []; floaters = [];
-    P.lane = 0; P.x = 0; P.y = 0; P.vy = 0; P.slide = 0; P.inv = 0; P.jumpBuf = 0;
-    pw.magnet = 0; pw.shield = 0; pw.x2 = 0; flash = 0; freeze = 0; shake = 0;
+    P.lane = 0; P.x = 0; P.y = 0; P.vy = 0; P.slide = 0; P.inv = 0; P.jumpBuf = 0; P.onTrain = false;
+    pw.magnet = 0; pw.shield = 0; pw.x2 = 0; pw.jetpack = 0; pw.sneakers = 0;
+    inspector.active = true; inspector.dist = 0.9; inspector.lane = 0; inspector.timer = 5.0;
+    lettersCollected = [false, false, false, false, false]; updateLetterBoxes();
+    flash = 0; freeze = 0; shake = 0;
     spawnAcc = -(ZFAR - 26); cpDist = 40; cpActive = false; cpSpawn = false;
+  }
+  function updateLetterBoxes() {
+    for (var i = 0; i < 5; i++) {
+      var el = $('let-' + i);
+      if (el) el.classList.toggle('got', lettersCollected[i]);
+    }
   }
   function showFor(st) {
     $('start').hidden = st !== 'start'; $('over').hidden = st !== 'over'; $('card').hidden = st !== 'card'; $('pause').hidden = st !== 'pause';
@@ -514,12 +631,13 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
   function refreshStart() { renderSkins(); $('bestLine').textContent = best ? 'Récord: ' + best + ' puntos' : ''; }
   function startGame() {
     reset(); state = 'play'; showFor('play'); blurAll(); musicStart();
-    if (firstRun) { firstRun = false; toast('¡Esquiva los trenes y recoge fichas doradas para desbloquear mi portafolio!', 4200); }
+    sfx('whistle');
+    if (firstRun) { firstRun = false; toast('¡Cuidado con el Inspector! Sube a los trenes, vuela con el Jetpack y usa la patineta con Doble Tap o tecla H.', 4500); }
   }
   function pauseGame() { if (state !== 'play') return; state = 'pause'; showFor('pause'); musicStop(); blurAll(); }
   function resumeGame() { if (state !== 'pause') return; state = 'play'; showFor('play'); musicStart(); blurAll(); }
   function gameOver() {
-    state = 'over'; musicStop();
+    state = 'over'; musicStop(); sfx('whistle');
     var sc = score(), isBest = sc > best;
     if (isBest) { best = sc; try { localStorage.setItem('subwaydev-best', String(best)); } catch (e) {} }
     var n = found.filter(Boolean).length;
@@ -593,9 +711,11 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
   $('readOver').addEventListener('click', function () { openCard(0); });
   $('pauseBtn').addEventListener('click', function () { if (state === 'play') pauseGame(); else if (state === 'pause') resumeGame(); });
   $('resume').addEventListener('click', resumeGame);
+  $('boardTrigger').addEventListener('click', activateHoverboard);
   document.addEventListener('visibilitychange', function () { if (document.hidden) pauseGame(); });
 
   /* ---------- Entrada ---------- */
+  var lastTapTime = 0;
   window.addEventListener('keydown', function (e) {
     var k = e.key;
     if (e.target && e.target.closest && e.target.closest('button') && (k === 'Enter' || k === ' ')) return;
@@ -604,6 +724,7 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
       else if (k === 'ArrowRight' || k === 'd' || k === 'D') moveLane(1);
       else if (k === 'ArrowUp' || k === 'w' || k === 'W' || k === ' ') jump();
       else if (k === 'ArrowDown' || k === 's' || k === 'S') slide();
+      else if (k === 'h' || k === 'H') activateHoverboard();
       else if (k === 'p' || k === 'P' || k === 'Escape') pauseGame();
       else return;
       e.preventDefault();
@@ -617,8 +738,15 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
       else if (cardMode === 'read' && k === 'ArrowLeft') step(-1);
     }
   });
+
   var x0 = 0, y0 = 0, swiping = false;
-  cv.addEventListener('pointerdown', function (e) { x0 = e.clientX; y0 = e.clientY; swiping = true; try { cv.setPointerCapture(e.pointerId); } catch (er) {} });
+  cv.addEventListener('pointerdown', function (e) {
+    x0 = e.clientX; y0 = e.clientY; swiping = true;
+    var now = performance.now();
+    if (now - lastTapTime < 280) { activateHoverboard(); }
+    lastTapTime = now;
+    try { cv.setPointerCapture(e.pointerId); } catch (er) {}
+  });
   cv.addEventListener('pointermove', function (e) {
     if (!swiping || state !== 'play') return;
     var dx = e.clientX - x0, dy = e.clientY - y0;
@@ -634,11 +762,15 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
     e.ghost = true;
     var px = sx(P.x, 1), py = groundY - (P.y + 0.5) * unit;
     if (pw.shield > 0) {
-      pw.shield = 0; P.inv = 1.2; sfx('shield'); floater('¡HOVERBOARD!', px, py - unit * 0.6, '#00d2b4');
+      pw.shield = 0; P.inv = 1.3; sfx('shield'); floater('¡HOVERBOARD ROTO!', px, py - unit * 0.6, '#00d2b4');
       emit(px, py, 28, { s: 260, g: 0, l: 0.5, r: 3.5, c: '#00d2b4' });
       return;
     }
     lives--; streak = 0; mult = 1; P.inv = 1.8; sfx('crash'); freeze = 0.07; flash = 0.55;
+    inspector.timer = 5.0;
+    inspector.dist = 0.72;
+    sfx('whistle');
+    floater('¡EL INSPECTOR SE ACERCA!', px, py - unit * 1.6, '#ff3b30');
     if (!reduce) shake = 0.4;
     var col = e.c ? e.c.f : '#ff3b30';
     emit(px, py, 30, { s: 340, up: 150, g: 700, l: 0.7, r: 4, c: col });
@@ -677,15 +809,63 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
     dist += speed * dt;
     P.inv = Math.max(0, P.inv - dt); P.slide = Math.max(0, P.slide - dt); P.jumpBuf = Math.max(0, P.jumpBuf - dt);
     pw.magnet = Math.max(0, pw.magnet - dt); pw.x2 = Math.max(0, pw.x2 - dt); pw.shield = Math.max(0, pw.shield - dt);
+    pw.jetpack = Math.max(0, pw.jetpack - dt); pw.sneakers = Math.max(0, pw.sneakers - dt);
+
+    // Persecución del Inspector del metro y su perro
+    if (inspector.timer > 0) {
+      inspector.timer -= dt;
+      inspector.lane += (P.x - inspector.lane) * Math.min(1, dt * 8);
+      var targetDist = 0.75 + (5.0 - inspector.timer) * 0.16;
+      inspector.dist += (targetDist - inspector.dist) * Math.min(1, dt * 6);
+      inspector.active = true;
+    } else {
+      inspector.dist += dt * 3.5;
+      if (inspector.dist > 5.5) inspector.active = false;
+    }
+
     P.x += (P.lane - P.x) * Math.min(1, dt * 14);
-    P.vy -= 30 * dt; P.y += P.vy * dt;
-    if (P.y <= 0) {
-      if (wasAir) emit(sx(P.x, 1), groundY, 8, { s: 90, up: 30, g: 200, l: 0.4, r: 3, c: 'rgba(225,205,180,.8)' });
-      P.y = 0; P.vy = 0; wasAir = false;
-      if (P.jumpBuf > 0) { P.jumpBuf = 0; doJump(); }
-    } else if (P.y > 0.05) wasAir = true;
+
+    // Jetpack activo: volar alto en el cielo
+    if (pw.jetpack > 0) {
+      P.y += (3.5 - P.y) * Math.min(1, dt * 6);
+      P.vy = 0;
+      P.onTrain = false;
+      // Emisión de partículas de fuego del jetpack
+      emit(sx(P.x - 0.12, 1), groundY - P.y * unit + 10, 2, { s: 90, g: 0, l: 0.25, r: 3, c: '#ff9100' });
+      emit(sx(P.x + 0.12, 1), groundY - P.y * unit + 10, 2, { s: 90, g: 0, l: 0.25, r: 3, c: '#ff9100' });
+    } else {
+      P.vy -= 30 * dt;
+      P.y += P.vy * dt;
+
+      // Detectar si el jugador está sobre el techo de un tren
+      var targetFloor = 0;
+      P.onTrain = false;
+      for (var ti = 0; ti < ents.length; ti++) {
+        var te = ents[ti];
+        if (te.t === 'train' && Math.abs(te.lane - P.x) < 0.45) {
+          if (te.z <= 0.4 && (te.z + te.len) >= -0.4) {
+            if (P.y >= 1.7) {
+              targetFloor = 1.9;
+              P.onTrain = true;
+              break;
+            }
+          }
+        }
+      }
+
+      if (P.y <= targetFloor) {
+        if (wasAir) emit(sx(P.x, 1), groundY - targetFloor * unit, 8, { s: 90, up: 30, g: 200, l: 0.4, r: 3, c: 'rgba(225,205,180,.8)' });
+        P.y = targetFloor;
+        P.vy = 0;
+        wasAir = false;
+        if (P.jumpBuf > 0) { P.jumpBuf = 0; doJump(); }
+      } else if (P.y > targetFloor + 0.05) wasAir = true;
+    }
+
     dustT -= dt;
-    if (dustT <= 0 && P.y <= 0.001) { dustT = 0.06; emit(sx(P.x, 1) + (Math.random() - 0.5) * unit * 0.2, groundY, 1, { s: 45, up: 25, g: 160, l: 0.35, r: 2.4, c: 'rgba(225,205,180,.7)' }); }
+    if (dustT <= 0 && P.y <= (P.onTrain ? 1.91 : 0.001) && pw.jetpack <= 0) {
+      dustT = 0.06; emit(sx(P.x, 1) + (Math.random() - 0.5) * unit * 0.2, groundY - P.y * unit, 1, { s: 45, up: 25, g: 160, l: 0.35, r: 2.4, c: 'rgba(225,205,180,.7)' });
+    }
     if (!cpActive && !cpSpawn && nextIdx() >= 0 && dist >= cpDist) cpSpawn = true;
     world(dt, speed, false);
 
@@ -693,6 +873,18 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
     for (var i = 0; i < ents.length; i++) {
       var e = ents[i];
       if (e.got || e.ghost) continue;
+
+      // Rampas para saltar suavemente sobre los techos de trenes
+      if (e.t === 'ramp') {
+        if (Math.abs(e.z) < 0.7 && Math.abs(e.lane - P.x) < 0.55 && P.y < 1.8) {
+          P.y = 1.9;
+          P.vy = 2;
+          P.onTrain = true;
+          sfx('jump');
+        }
+        continue;
+      }
+
       if (e.t === 'coin') {
         if (pw.magnet > 0 && e.z < 12 && e.z > -1) {
           e.lane += (P.x - e.lane) * Math.min(1, dt * 7); e.y += (P.y + 0.55 - e.y) * Math.min(1, dt * 7); e.z -= speed * dt * 0.6;
@@ -705,11 +897,53 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
           sfx('coin', streak);
           emit(sx(e.lane, 1), groundY - e.y * unit, 7, { s: 150, up: 40, g: 300, l: 0.4, r: 2.6, c: '#ffe98a' });
         }
+      } else if (e.t === 'letter') {
+        if (Math.abs(e.z) < 0.8 && Math.abs(e.lane - P.x) < 0.65 && Math.abs(e.y - (P.y + 0.55)) < 0.95) {
+          e.got = true;
+          lettersCollected[e.lidx] = true;
+          updateLetterBoxes();
+          sfx('letter');
+          floater('LETRA ' + e.char + '!', px, groundY - unit * 1.5, '#ffd23f');
+          emit(px, groundY - e.y * unit, 16, { s: 200, g: 100, l: 0.6, r: 3.5, c: '#ffd23f' });
+          if (lettersCollected.every(Boolean)) {
+            bonus += 500;
+            floater('¡PALABRA STEFF! +500', px, groundY - unit * 1.8, '#00d2b4');
+            sfx('power');
+          }
+        }
       } else if (e.t === 'pw') {
         if (Math.abs(e.z) < 0.8 && Math.abs(e.lane - P.x) < 0.7) {
           e.got = true; pw[e.k] = PWDUR[e.k]; sfx('power');
+          if (e.k === 'jetpack') {
+            for (var sky = 0; sky < 20; sky++) {
+              var sLane = (sky % 6 < 2) ? -1 : ((sky % 6 < 4) ? 0 : 1);
+              add({ t: 'coin', lane: sLane, z: 6 + sky * 1.9, y: 3.5, got: false });
+            }
+          }
           floater(PWNAME[e.k], px, groundY - unit * 1.5, PWCOL[e.k]);
           emit(px, groundY - unit * 0.7, 22, { s: 220, g: 100, l: 0.55, r: 3, c: PWCOL[e.k] });
+        }
+      } else if (e.t === 'box') {
+        if (Math.abs(e.z) < 0.8 && Math.abs(e.lane - P.x) < 0.7) {
+          e.got = true; sfx('box');
+          var bRnd = Math.random();
+          if (bRnd < 0.5) {
+            var nCoins = 50 + Math.floor(Math.random() * 6) * 20;
+            coins += nCoins; bonus += nCoins * 10;
+            floater('¡CAJA MISTERIOSA! +' + nCoins + ' MONEDAS', px, groundY - unit * 1.5, '#ffd23f');
+          } else if (bRnd < 0.8) {
+            if (lives < 3) {
+              lives++;
+              floater('¡CAJA MISTERIOSA! +1 VIDA ❤️', px, groundY - unit * 1.5, '#ff3b30');
+            } else {
+              coins += 150; bonus += 1500;
+              floater('¡CAJA MISTERIOSA! +150 MONEDAS', px, groundY - unit * 1.5, '#ffd23f');
+            }
+          } else {
+            pw.shield = PWDUR.shield;
+            floater('¡CAJA MISTERIOSA! HOVERBOARD 🛹', px, groundY - unit * 1.5, '#00d2b4');
+          }
+          emit(px, groundY - unit * 0.8, 30, { s: 280, g: 140, l: 0.7, r: 4, c: '#ffd23f' });
         }
       } else if (e.t === 'token') {
         if (Math.abs(e.z) < 0.9 && Math.abs(e.lane - P.x) < 0.7 && Math.abs(0.95 - (P.y + 0.55)) < 1.0) {
@@ -722,10 +956,16 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
         }
         if (e.z < -4) { e.got = true; cpActive = false; cpDist = dist + 60; }
       } else {
+        // Colisiones con obstáculos terrestres
+        if (pw.jetpack > 0) continue; // Volando con Jetpack no chocas
+
         var front = e.z, back = e.z + (e.len || 0.5);
         if (front < 0.35 && back > -0.35 && Math.abs(e.lane - P.x) < 0.6) {
           var hit = false;
-          if (e.t === 'train') hit = true;
+          if (e.t === 'train') {
+            // Si está sobre el techo, no choca de frente
+            if (P.y < 1.7) hit = true;
+          }
           else if (e.t === 'bar') hit = P.y < 0.45;
           else if (e.t === 'over') { var top = P.y + (P.slide > 0 ? 0.5 : 1.1); hit = top > 0.8 && P.y < 1.15; }
           if (hit && P.inv <= 0) { crash(e); if (state !== 'play') return; }
@@ -869,6 +1109,22 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
       ctx.fillStyle = gl; ctx.fillRect(x1l - w * 0.4, y1 - h * 0.9, w * 1.8, h);
     }
   }
+  function drawRamp(e) {
+    var z = Math.max(e.z, -0.3), p = F / (F + z), y = sy(p), u = unit * p;
+    var x = sx(e.lane, p), w = 0.8 * u;
+    ctx.fillStyle = '#ffd23f';
+    ctx.beginPath();
+    ctx.moveTo(x - w / 2, y);
+    ctx.lineTo(x + w / 2, y);
+    ctx.lineTo(x + w * 0.35, y - 1.8 * u);
+    ctx.lineTo(x - w * 0.35, y - 1.8 * u);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#ff3b30';
+    for (var k = 0; k < 3; k++) {
+      ctx.fillRect(x - w * 0.25, y - (0.4 + k * 0.5) * u, w * 0.5, 0.12 * u);
+    }
+  }
   function drawBar(e) {
     var z = Math.max(e.z, -0.3), p = F / (F + z), y = sy(p), hh = 0.45 * unit * p;
     var x0 = sx(e.lane - 0.44, p), w = 0.88 * unit * p, n = 6, i;
@@ -892,6 +1148,18 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
     ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.ellipse(x, y, w, r, 0, 0, 6.283); ctx.fill();
     ctx.fillStyle = '#ffe98a'; ctx.beginPath(); ctx.ellipse(x, y, w * 0.55, r * 0.6, 0, 0, 6.283); ctx.fill();
   }
+  function drawLetter(e) {
+    var z = Math.max(e.z, -0.3), p = F / (F + z), x = sx(e.lane, p), y = sy(p) - e.y * unit * p, u = unit * p;
+    ctx.fillStyle = '#ffd23f';
+    ctx.beginPath();
+    ctx.arc(x, y, 0.35 * u, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#0b1319';
+    ctx.font = '800 ' + (0.42 * u) + 'px Bungee, Impact, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(e.char, x, y + 2);
+  }
   function drawPw(e) {
     var z = Math.max(e.z, -0.3), p = F / (F + z), x = sx(e.lane, p), yg = sy(p), u = unit * p, col = PWCOL[e.k];
     var cy = yg - (0.85 + 0.08 * Math.sin(time * 4)) * u, r = 0.3 * u;
@@ -903,6 +1171,8 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
     ctx.fillStyle = col; ctx.strokeStyle = col; ctx.lineWidth = Math.max(1.5, r * 0.2);
     if (e.k === 'x2') { ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = (r * 0.95) + 'px Bungee, Impact, sans-serif'; ctx.fillText('x2', x, cy + r * 0.05); }
     else if (e.k === 'magnet') { ctx.beginPath(); ctx.arc(x, cy + r * 0.05, r * 0.42, Math.PI, 0); ctx.lineTo(x + r * 0.42, cy + r * 0.45); ctx.moveTo(x - r * 0.42, cy + r * 0.05); ctx.lineTo(x - r * 0.42, cy + r * 0.45); ctx.stroke(); }
+    else if (e.k === 'jetpack') { ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = (r * 0.95) + 'px sans-serif'; ctx.fillText('🚀', x, cy); }
+    else if (e.k === 'sneakers') { ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = (r * 0.95) + 'px sans-serif'; ctx.fillText('👟', x, cy); }
     else { ctx.beginPath(); ctx.moveTo(x, cy - r * 0.5); ctx.lineTo(x + r * 0.42, cy - r * 0.3); ctx.lineTo(x + r * 0.34, cy + r * 0.15); ctx.lineTo(x, cy + r * 0.52); ctx.lineTo(x - r * 0.34, cy + r * 0.15); ctx.lineTo(x - r * 0.42, cy - r * 0.3); ctx.closePath(); ctx.fill(); }
   }
   function drawToken(e) {
@@ -919,47 +1189,107 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
     ctx.fillStyle = '#0f1a22'; ctx.font = Math.max(8, h * 0.62) + 'px Bungee, Impact, sans-serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(String(e.idx + 1), x + w * 0.06, cy + h * 0.04);
   }
+  function drawBox(e) {
+    var z = Math.max(e.z, -0.3), p = F / (F + z), x = sx(e.lane, p), yg = sy(p), u = unit * p;
+    var bob = 0.85 + 0.08 * Math.sin(time * 4 + e.z);
+    var cy = yg - bob * u, s = 0.58 * u;
+    var rg = ctx.createRadialGradient(x, cy, 0, x, cy, s * 1.8);
+    rg.addColorStop(0, 'rgba(255,210,63,.45)');
+    rg.addColorStop(1, 'rgba(255,210,63,0)');
+    ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(x, cy, s * 1.8, 0, 6.283); ctx.fill();
+    ctx.fillStyle = '#b87333';
+    rr(x - s / 2, cy - s / 2, s, s, s * 0.12);
+    ctx.strokeStyle = '#ffd23f';
+    ctx.lineWidth = Math.max(2, s * 0.1);
+    ctx.strokeRect(x - s / 2 + 2, cy - s / 2 + 2, s - 4, s - 4);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '800 ' + Math.max(12, s * 0.65) + 'px Bungee, Impact, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('?', x, cy + 2);
+  }
   function drawEnt(e) {
     ctx.globalAlpha = Math.max(0, Math.min(1, (ZFAR - e.z) / 16)) * (e.ghost ? 0.35 : 1);
-    if (e.t === 'train') drawTrain(e); else if (e.t === 'bar') drawBar(e); else if (e.t === 'over') drawOver(e);
-    else if (e.t === 'coin') drawCoin(e); else if (e.t === 'token') drawToken(e); else if (e.t === 'pw') drawPw(e);
+    if (e.t === 'train') drawTrain(e); else if (e.t === 'ramp') drawRamp(e); else if (e.t === 'bar') drawBar(e); else if (e.t === 'over') drawOver(e);
+    else if (e.t === 'coin') drawCoin(e); else if (e.t === 'letter') drawLetter(e); else if (e.t === 'box') drawBox(e); else if (e.t === 'token') drawToken(e); else if (e.t === 'pw') drawPw(e);
     ctx.globalAlpha = 1;
   }
   function drawPlayer() {
     var S = unit, px = sx(P.x, 1), py = groundY - P.y * S, sk = SKINS[skin] || SKINS[0];
     ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath();
-    ctx.ellipse(px, groundY, 0.3 * S * (1 - Math.min(P.y, 1.2) * 0.2), 0.07 * S, 0, 0, 6.283); ctx.fill();
+    ctx.ellipse(px, groundY - (P.onTrain ? 1.9 * S : 0), 0.3 * S * (1 - Math.min(P.y - (P.onTrain ? 1.9 : 0), 1.2) * 0.2), 0.07 * S, 0, 0, 6.283); ctx.fill();
     if (P.inv > 0 && pw.shield <= 0 && Math.floor(P.inv * 16) % 2 === 0) ctx.globalAlpha = 0.35;
     ctx.save(); ctx.translate(px, py);
     ctx.rotate((P.lane - P.x) * 0.18);
 
-    // Si tiene hoverboard activo, dibujar la tabla bajo sus pies
+    // Hoverboard activa
     if (pw.shield > 0) {
       ctx.fillStyle = '#00d2b4';
-      rr(-0.35 * S, 0.02 * S, 0.7 * S, 0.1 * S, 0.04 * S);
+      rr(-0.38 * S, 0.02 * S, 0.76 * S, 0.1 * S, 0.04 * S);
       ctx.fillStyle = '#ff3b30';
-      ctx.fillRect(-0.15 * S, 0.04 * S, 0.3 * S, 0.06 * S);
+      ctx.fillRect(-0.16 * S, 0.04 * S, 0.32 * S, 0.06 * S);
+      ctx.fillStyle = '#ffd23f';
+      ctx.beginPath();
+      ctx.arc(-0.25 * S, 0.12 * S, 0.04 * S, 0, Math.PI * 2);
+      ctx.arc(0.25 * S, 0.12 * S, 0.04 * S, 0, Math.PI * 2);
+      ctx.fill();
     }
 
-    if (P.slide > 0) ctx.scale(1.1, 0.58);
-    var air = P.y > 0.02, t = P.run * 13, sw = Math.sin(t), aw = air ? -0.1 : sw * 0.1;
+    // Jetpack en la espalda del personaje
+    if (pw.jetpack > 0) {
+      ctx.fillStyle = '#9d4edd';
+      rr(-0.22 * S, -0.85 * S, 0.44 * S, 0.38 * S, 0.06 * S);
+      ctx.fillStyle = '#c77dff';
+      ctx.fillRect(-0.16 * S, -0.75 * S, 0.32 * S, 0.08 * S);
+    } else {
+      // Mochila técnica con laptop y símbolo </>
+      ctx.fillStyle = '#0f1a24';
+      rr(-0.18 * S, -0.82 * S, 0.36 * S, 0.32 * S, 0.06 * S);
+      ctx.fillStyle = '#00d2b4';
+      ctx.font = '700 ' + Math.max(9, 0.12 * S) + 'px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('</>', 0, -0.66 * S);
+    }
+
+    if (P.slide > 0) {
+      ctx.scale(1.1, 0.58);
+      emit(px + (Math.random() - 0.5) * 16, groundY - (P.onTrain ? 1.9 : 0) * S, 1, { s: 50, up: 10, g: 120, l: 0.25, r: 2.2, c: '#ffd23f' });
+    }
+    var air = P.y > (P.onTrain ? 1.92 : 0.02), t = P.run * 13, sw = Math.sin(t), aw = air ? -0.1 : sw * 0.1;
     var bob = air || state !== 'play' && state !== 'start' ? 0 : Math.abs(sw) * 0.025;
     ctx.translate(0, -bob * S);
     var l1 = air ? 0.14 : Math.max(0, sw) * 0.14, l2 = air ? 0.14 : Math.max(0, -sw) * 0.14;
+
+    // Super sneakers: zapatillas gigantes naranjas
+    var shoeCol = pw.sneakers > 0 ? '#ff9100' : '#ffd23f';
+    var shoeScale = pw.sneakers > 0 ? 1.4 : 1.0;
+
     ctx.fillStyle = sk.h;
     rr(-0.34 * S, (-0.8 + aw) * S, 0.1 * S, 0.3 * S, 0.05 * S);
     rr(0.24 * S, (-0.8 - aw) * S, 0.1 * S, 0.3 * S, 0.05 * S);
     ctx.fillStyle = '#14232d';
     ctx.fillRect(-0.16 * S, -0.44 * S, 0.13 * S, (0.44 - l1) * S);
     ctx.fillRect(0.03 * S, -0.44 * S, 0.13 * S, (0.44 - l2) * S);
-    ctx.fillStyle = '#ffd23f';
-    ctx.fillRect(-0.18 * S, -(0.07 + l1) * S, 0.17 * S, 0.07 * S);
-    ctx.fillRect(0.01 * S, -(0.07 + l2) * S, 0.17 * S, 0.07 * S);
+
+    ctx.fillStyle = shoeCol;
+    ctx.fillRect(-0.18 * S * shoeScale, -(0.07 + l1) * S, 0.17 * S * shoeScale, 0.07 * S * shoeScale);
+    ctx.fillRect(0.01 * S, -(0.07 + l2) * S, 0.17 * S * shoeScale, 0.07 * S * shoeScale);
+
     ctx.fillStyle = sk.b; rr(-0.24 * S, -0.86 * S, 0.48 * S, 0.46 * S, 0.1 * S);
     ctx.fillStyle = 'rgba(0,0,0,.16)'; ctx.fillRect(-0.24 * S, -0.52 * S, 0.48 * S, 0.12 * S);
     ctx.fillStyle = '#e0a82e'; rr(-0.17 * S, -0.82 * S, 0.34 * S, 0.34 * S, 0.06 * S);
     ctx.fillStyle = '#9a7314'; ctx.fillRect(-0.17 * S, -0.66 * S, 0.34 * S, 0.035 * S);
     ctx.fillStyle = 'rgba(244,239,230,.7)'; ctx.fillRect(-0.12 * S, -0.78 * S, 0.24 * S, 0.02 * S);
+
+    // Gorra hacia atrás y coleta
+    ctx.fillStyle = sk.h;
+    rr(-0.2 * S, -1.12 * S, 0.4 * S, 0.16 * S, 0.06 * S);
+    ctx.fillRect(-0.26 * S, -1.04 * S, 0.12 * S, 0.04 * S);
+    ctx.fillStyle = '#3a2312';
+    ctx.beginPath();
+    ctx.arc(-0.22 * S, -0.96 * S, 0.07 * S, 0, 6.283);
+    ctx.fill();
+
     ctx.fillStyle = sk.h; ctx.beginPath(); ctx.arc(0, -0.97 * S, 0.2 * S, 0, 6.283); ctx.fill();
     ctx.strokeStyle = '#ffd23f'; ctx.lineWidth = Math.max(1, 0.025 * S);
     ctx.beginPath(); ctx.arc(0, -0.97 * S, 0.13 * S, Math.PI * 0.15, Math.PI * 0.85); ctx.stroke();
@@ -968,6 +1298,7 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
     ctx.moveTo(0.12 * S, -0.8 * S); ctx.lineTo((0.6 + wv) * S, (-0.84 - wv) * S);
     ctx.lineTo((0.62 + wv) * S, (-0.76 - wv) * S); ctx.lineTo(0.14 * S, -0.72 * S); ctx.closePath(); ctx.fill();
     ctx.restore(); ctx.globalAlpha = 1;
+
     if (pw.shield > 0) {
       var cyy = groundY - (P.y + 0.55) * S;
       ctx.strokeStyle = 'rgba(0,210,180,' + (0.55 + 0.25 * Math.sin(time * 8)) + ')'; ctx.lineWidth = Math.max(2, S * 0.04);
@@ -977,6 +1308,126 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
       ctx.strokeStyle = 'rgba(255,107,74,' + (0.3 + 0.3 * Math.sin(time * 10)) + ')'; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(px, groundY - (P.y + 0.55) * S, S * (0.8 + 0.15 * ((time * 2) % 1)), 0, 6.283); ctx.stroke();
     }
+  }
+  function drawInspector() {
+    if (!inspector.active || inspector.dist > 5.0) return;
+    var z = -inspector.dist;
+    var p = F / (F + z);
+    var ix = sx(inspector.lane, p), iy = sy(p);
+    var S = unit * p;
+    var runTime = time * 15;
+    var legSw = Math.sin(runTime);
+
+    // Sombra del Inspector y su perro
+    ctx.fillStyle = 'rgba(0,0,0,.45)';
+    ctx.beginPath();
+    ctx.ellipse(ix, iy, 0.36 * S, 0.1 * S, 0, 0, 6.283);
+    ctx.fill();
+
+    var dogX = sx(inspector.lane - 0.42, p), dogY = iy;
+    ctx.beginPath();
+    ctx.ellipse(dogX, dogY, 0.22 * S, 0.07 * S, 0, 0, 6.283);
+    ctx.fill();
+
+    // === PERRO PITBULL ===
+    ctx.save();
+    ctx.translate(dogX, dogY);
+    var dLeg = Math.sin(runTime * 1.3) * 0.08 * S;
+    ctx.fillStyle = '#6e431f';
+    ctx.fillRect(-0.12 * S, -0.12 * S + dLeg, 0.05 * S, 0.12 * S - dLeg);
+    ctx.fillRect(0.08 * S, -0.12 * S - dLeg, 0.05 * S, 0.12 * S + dLeg);
+    ctx.fillRect(-0.06 * S, -0.12 * S - dLeg, 0.05 * S, 0.12 * S + dLeg);
+    ctx.fillRect(0.02 * S, -0.12 * S + dLeg, 0.05 * S, 0.12 * S - dLeg);
+    ctx.fillStyle = '#8b572a';
+    rr(-0.14 * S, -0.24 * S, 0.28 * S, 0.16 * S, 0.06 * S);
+    ctx.fillStyle = '#ff3b30';
+    ctx.fillRect(-0.13 * S, -0.26 * S, 0.08 * S, 0.05 * S);
+    ctx.fillStyle = '#ffd23f';
+    ctx.beginPath(); ctx.arc(-0.09 * S, -0.21 * S, 0.025 * S, 0, 6.283); ctx.fill();
+    ctx.fillStyle = '#8b572a';
+    rr(-0.24 * S, -0.32 * S, 0.16 * S, 0.16 * S, 0.05 * S);
+    ctx.fillStyle = '#4a2c11';
+    ctx.fillRect(-0.16 * S, -0.35 * S, 0.06 * S, 0.1 * S);
+    ctx.fillStyle = '#221105';
+    ctx.beginPath(); ctx.arc(-0.23 * S, -0.26 * S, 0.02 * S, 0, 6.283); ctx.fill();
+    ctx.fillStyle = '#ff6b81';
+    ctx.beginPath(); ctx.ellipse(-0.25 * S, -0.22 * S, 0.025 * S, 0.04 * S, 0.3, 0, 6.283); ctx.fill();
+    var tailAngle = Math.sin(runTime * 2) * 0.4;
+    ctx.strokeStyle = '#8b572a';
+    ctx.lineWidth = 0.04 * S;
+    ctx.beginPath();
+    ctx.moveTo(0.12 * S, -0.2 * S);
+    ctx.lineTo(0.2 * S, -0.32 * S + tailAngle * 0.08 * S);
+    ctx.stroke();
+    ctx.restore();
+
+    // === INSPECTOR GRUÑÓN ===
+    ctx.save();
+    ctx.translate(ix, iy);
+    var il1 = Math.max(0, legSw) * 0.18 * S, il2 = Math.max(0, -legSw) * 0.18 * S;
+    ctx.fillStyle = '#142033';
+    ctx.fillRect(-0.2 * S, -0.5 * S, 0.16 * S, 0.5 * S - il1);
+    ctx.fillRect(0.04 * S, -0.5 * S, 0.16 * S, 0.5 * S - il2);
+    ctx.fillStyle = '#0a0d14';
+    ctx.fillRect(-0.22 * S, -0.1 * S - il1, 0.19 * S, 0.1 * S);
+    ctx.fillRect(0.03 * S, -0.1 * S - il2, 0.19 * S, 0.1 * S);
+
+    ctx.fillStyle = '#1e3863';
+    rr(-0.3 * S, -1.02 * S, 0.6 * S, 0.56 * S, 0.12 * S);
+    ctx.fillStyle = '#0a0d14';
+    ctx.fillRect(-0.3 * S, -0.58 * S, 0.6 * S, 0.08 * S);
+    ctx.fillStyle = '#ffd23f';
+    ctx.fillRect(-0.06 * S, -0.59 * S, 0.12 * S, 0.1 * S);
+
+    ctx.fillStyle = '#ffd23f';
+    for (var btnY = -0.92; btnY < -0.62; btnY += 0.09) {
+      ctx.beginPath(); ctx.arc(-0.08 * S, btnY * S, 0.02 * S, 0, 6.283); ctx.fill();
+      ctx.beginPath(); ctx.arc(0.08 * S, btnY * S, 0.02 * S, 0, 6.283); ctx.fill();
+    }
+    ctx.beginPath();
+    ctx.moveTo(0.14 * S, -0.88 * S);
+    ctx.lineTo(0.22 * S, -0.88 * S);
+    ctx.lineTo(0.18 * S, -0.78 * S);
+    ctx.closePath();
+    ctx.fill();
+
+    var armSw = Math.cos(runTime) * 0.15 * S;
+    ctx.fillStyle = '#1e3863';
+    rr(-0.38 * S, -0.96 * S + armSw, 0.14 * S, 0.38 * S, 0.06 * S);
+    rr(0.24 * S, -0.96 * S - armSw, 0.14 * S, 0.38 * S, 0.06 * S);
+
+    ctx.fillStyle = '#f0c896';
+    ctx.beginPath(); ctx.arc(-0.31 * S, -0.56 * S + armSw, 0.06 * S, 0, 6.283); ctx.fill();
+    ctx.beginPath(); ctx.arc(0.31 * S, -0.56 * S - armSw, 0.06 * S, 0, 6.283); ctx.fill();
+
+    ctx.fillStyle = '#f0c896';
+    ctx.beginPath(); ctx.arc(0, -1.14 * S, 0.22 * S, 0, 6.283); ctx.fill();
+
+    ctx.fillStyle = '#2b1a0a';
+    ctx.beginPath();
+    ctx.ellipse(0, -1.08 * S, 0.15 * S, 0.06 * S, 0, 0, 6.283);
+    ctx.fill();
+
+    ctx.fillStyle = '#dcdde1';
+    ctx.fillRect(-0.04 * S, -1.04 * S, 0.08 * S, 0.05 * S);
+
+    ctx.fillStyle = '#0b1319';
+    ctx.fillRect(-0.1 * S, -1.18 * S, 0.05 * S, 0.04 * S);
+    ctx.fillRect(0.05 * S, -1.18 * S, 0.05 * S, 0.04 * S);
+    ctx.fillStyle = '#2b1a0a';
+    ctx.fillRect(-0.12 * S, -1.22 * S, 0.08 * S, 0.03 * S);
+    ctx.fillRect(0.04 * S, -1.22 * S, 0.08 * S, 0.03 * S);
+
+    ctx.fillStyle = '#102444';
+    rr(-0.25 * S, -1.34 * S, 0.5 * S, 0.18 * S, 0.06 * S);
+    ctx.fillStyle = '#0a0d14';
+    ctx.fillRect(-0.27 * S, -1.22 * S, 0.54 * S, 0.06 * S);
+    ctx.fillStyle = '#ffd23f';
+    ctx.beginPath();
+    ctx.arc(0, -1.28 * S, 0.045 * S, 0, 6.283);
+    ctx.fill();
+
+    ctx.restore();
   }
   function drawSpeedLines() {
     if (state !== 'play' || speed < 17) return;
@@ -996,7 +1447,10 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
     drawBG(); drawTrack();
     var far = ents.filter(function (e) { return e.z >= 0; }).sort(function (a, b) { return b.z - a.z; });
     var near = ents.filter(function (e) { return e.z < 0; }).sort(function (a, b) { return b.z - a.z; });
-    far.forEach(drawEnt); drawPlayer(); near.forEach(drawEnt);
+    far.forEach(drawEnt);
+    drawPlayer();
+    drawInspector();
+    near.forEach(drawEnt);
     drawSpeedLines(); drawFx();
     ctx.restore();
     if (flash > 0) { ctx.fillStyle = 'rgba(255,59,48,' + flash * 0.45 + ')'; ctx.fillRect(0, 0, W, H); }
@@ -1017,7 +1471,11 @@ ol.list li::before { content: counter(s); position: absolute; left: 0; top: 7px;
     if (lives !== hs.l) { hs.l = lives; for (var i = 0; i < livesEl.children.length; i++) livesEl.children[i].classList.toggle('off', i >= lives); }
     if (mult !== hs.m) { hs.m = mult; $('mult').hidden = mult < 2; $('mult').textContent = 'x' + mult; }
     $('mult').classList.toggle('pop', pu > 0);
-    chip('pwMagnet', pw.magnet, 'magnet'); chip('pwShield', pw.shield, 'shield'); chip('pwX2', pw.x2, 'x2');
+    chip('pwMagnet', pw.magnet, 'magnet');
+    chip('pwShield', pw.shield, 'shield');
+    chip('pwX2', pw.x2, 'x2');
+    chip('pwJetpack', pw.jetpack, 'jetpack');
+    chip('pwSneakers', pw.sneakers, 'sneakers');
   }
   var last = 0;
   function frame(ts) {
