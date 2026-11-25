@@ -74,22 +74,92 @@ function refreshPWDUR() {
 }
 refreshPWDUR();
 
-// Paleta de iluminación día/noche
-var dayNight = 'day';
-var pal = PALETTES.day;
+// Paleta de iluminación y ciclo continuo de escenarios (Día / Ocaso / Noche / Alba)
+var todList = ['day', 'sunset', 'night', 'dawn'];
+var todMode = 'auto';
+var todPh = 0;
+var lastStationIdx = -1;
+
+function hexToRgb(h) {
+  var n = parseInt(h.replace('#', ''), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+var pal = {
+  sky0: PALETTES.day.sky0, sky1: PALETTES.day.sky1,
+  g0: PALETTES.day.g0, g1: PALETTES.day.g1,
+  sun: 1.0, lamp: 0.0, star: 0.0,
+  trainCol: PALETTES.day.trainCol,
+  hor_: PALETTES.day.hor_
+};
+
+function updatePal(dt) {
+  var targetPh;
+  if (todMode === 'auto') {
+    targetPh = (dist / 280) % 4;
+  } else if (todMode === 'day') targetPh = 0;
+  else if (todMode === 'sunset') targetPh = 1;
+  else if (todMode === 'night') targetPh = 2;
+  else targetPh = 3;
+
+  var diff = targetPh - todPh;
+  while (diff > 2) diff -= 4;
+  while (diff < -2) diff += 4;
+  todPh = (todPh + diff * Math.min(1, (dt || 0.016) * 3) + 4) % 4;
+
+  var curI = Math.floor(todPh) % 4;
+  var nextI = (curI + 1) % 4;
+  var t = todPh - Math.floor(todPh);
+  t = t * t * (3 - 2 * t);
+
+  var a = PALETTES[todList[curI]];
+  var b = PALETTES[todList[nextI]];
+
+  if (state === 'play' && curI !== lastStationIdx) {
+    lastStationIdx = curI;
+    toast('📍 ' + a.stationName, 2200);
+  }
+
+  ['sky0', 'sky1', 'g0', 'g1', 'trainCol'].forEach(function (k) {
+    var cA = hexToRgb(a[k]), cB = hexToRgb(b[k]);
+    var r = Math.round(cA[0] + (cB[0] - cA[0]) * t);
+    var g = Math.round(cA[1] + (cB[1] - cA[1]) * t);
+    var bl = Math.round(cA[2] + (cB[2] - cA[2]) * t);
+    pal[k] = 'rgb(' + r + ',' + g + ',' + bl + ')';
+  });
+
+  pal.sun = a.sun + (b.sun - a.sun) * t;
+  pal.lamp = a.lamp + (b.lamp - a.lamp) * t;
+  pal.star = (a.star || 0) + ((b.star || 0) - (a.star || 0)) * t;
+
+  var hrA = a.hor_, hrB = b.hor_;
+  pal.hor_ = [
+    Math.round(hrA[0] + (hrB[0] - hrA[0]) * t),
+    Math.round(hrA[1] + (hrB[1] - hrA[1]) * t),
+    Math.round(hrA[2] + (hrB[2] - hrA[2]) * t)
+  ];
+
+  updateTODButton();
+}
 
 function updateTODButton() {
   var btn = $('todBtn');
   if (!btn) return;
-  btn.textContent = dayNight === 'day' ? '☀️ Día' : '🌙 Noche';
-  btn.setAttribute('aria-label', 'Modo de iluminación: ' + (dayNight === 'day' ? 'Día' : 'Noche'));
+  var curI = Math.floor(todPh) % 4;
+  var a = PALETTES[todList[curI]];
+  btn.textContent = (todMode === 'auto' ? '🔄 ' : '') + a.name;
+  btn.setAttribute('aria-label', 'Escenario actual: ' + a.stationName);
 }
 
 function toggleTOD() {
-  dayNight = dayNight === 'day' ? 'night' : 'day';
-  pal = PALETTES[dayNight];
-  updateTODButton();
-  toast('Iluminación cambiada a ' + (dayNight === 'day' ? '☀️ Día soleado' : '🌙 Noche neón'), 1800);
+  if (todMode === 'auto') todMode = 'sunset';
+  else if (todMode === 'sunset') todMode = 'night';
+  else if (todMode === 'night') todMode = 'dawn';
+  else if (todMode === 'dawn') todMode = 'day';
+  else todMode = 'auto';
+  updatePal(0.1);
+  var names = { auto: '🔄 Ciclo Dinámico Continuo', day: '☀️ Día Soleado', sunset: '🌇 Ocaso de Tokio', night: '🌙 Noche Neón', dawn: '🌅 Alba' };
+  toast('Escenario: ' + names[todMode], 2000);
 }
 
 // Variables de partida en carrera

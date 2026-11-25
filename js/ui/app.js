@@ -322,6 +322,7 @@ function loop(ts) {
   time += dt;
 
   update(dt);
+  updatePal(dt);
   draw();
   if (state === 'play') updateHUD();
 

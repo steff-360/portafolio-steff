@@ -10,28 +10,61 @@ function drawBG() {
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, W, horizon);
 
-  // Sol / Luna en el horizonte
-  var sunR = Math.min(W, H) * 0.08;
-  var sunX = W * 0.5 - camX * 20;
-  var sunY = horizon * 0.55;
-  var sg = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR * 1.8);
-  if (dayNight === 'day') {
-    sg.addColorStop(0, 'rgba(255, 240, 180, 0.9)');
-    sg.addColorStop(0.4, 'rgba(255, 210, 100, 0.4)');
-    sg.addColorStop(1, 'rgba(255, 210, 100, 0)');
-  } else {
-    sg.addColorStop(0, 'rgba(224, 242, 254, 0.85)');
-    sg.addColorStop(0.4, 'rgba(186, 230, 253, 0.25)');
-    sg.addColorStop(1, 'rgba(186, 230, 253, 0)');
+  // 1. SOL RADIANTE (Día y Atardecer)
+  if (pal.sun > 0.08) {
+    var sunR = Math.min(W, H) * 0.085;
+    var sunX = W * 0.5 - camX * 20;
+    var sunY = horizon * 0.52;
+    var sg = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR * 2.2);
+    sg.addColorStop(0, 'rgba(255, 240, 180, ' + (0.95 * pal.sun) + ')');
+    sg.addColorStop(0.35, 'rgba(255, 180, 70, ' + (0.5 * pal.sun) + ')');
+    sg.addColorStop(1, 'rgba(255, 140, 40, 0)');
+    ctx.fillStyle = sg;
+    ctx.beginPath();
+    ctx.arc(sunX, sunY, sunR * 2.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(255, 255, 235, ' + (0.95 * pal.sun) + ')';
+    ctx.beginPath();
+    ctx.arc(sunX, sunY, sunR * 0.9, 0, Math.PI * 2);
+    ctx.fill();
   }
-  ctx.fillStyle = sg;
-  ctx.beginPath();
-  ctx.arc(sunX, sunY, sunR * 1.8, 0, Math.PI * 2);
-  ctx.fill();
+
+  // 2. ESTRELLAS TITILANTES Y LUNA CRECIENTE (Noche y Ocaso)
+  if (pal.star > 0.08) {
+    var moonX = W * 0.22 - camX * 18, moonY = horizon * 0.35, mr = Math.max(14, W * 0.035);
+    var mg = ctx.createRadialGradient(moonX, moonY, mr * 0.3, moonX, moonY, mr * 2.8);
+    mg.addColorStop(0, 'rgba(224, 242, 254, ' + (0.45 * pal.star) + ')');
+    mg.addColorStop(1, 'rgba(224, 242, 254, 0)');
+    ctx.fillStyle = mg;
+    ctx.beginPath();
+    ctx.arc(moonX, moonY, mr * 2.8, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(240, 249, 255, ' + (0.9 * pal.star) + ')';
+    ctx.beginPath();
+    ctx.arc(moonX, moonY, mr, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = pal.sky0;
+    ctx.beginPath();
+    ctx.arc(moonX + mr * 0.45, moonY - mr * 0.15, mr * 0.85, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Estrellas titilando en la noche
+    ctx.fillStyle = '#ffffff';
+    for (var s = 0; s < 35; s++) {
+      var stX = ((s * 97 + time * 0.5) % 100) * 0.01 * W - camX * 8;
+      var stY = ((s * 53) % 100) * 0.007 * horizon + 8;
+      var tw = 0.3 + 0.7 * Math.sin(time * 2.5 + s * 1.8);
+      ctx.globalAlpha = tw * pal.star * 0.85;
+      ctx.fillRect((stX + W) % W, stY, 2, 2);
+    }
+    ctx.globalAlpha = 1;
+  }
 
   // Skyline urbano estilo Subway Surfers
-  drawSkyline([18, 32, 24, 45, 28, 52, 22, 38, 48, 20, 36, 42, 30], pal.sun > 0.5 ? '#7dd3fc' : '#1e293b', 0.15, false);
-  drawSkyline([28, 48, 36, 62, 42, 70, 34, 55, 68, 30, 52, 60, 44], pal.sun > 0.5 ? '#38bdf8' : '#0f172a', 0.35, true);
+  drawSkyline([18, 32, 24, 45, 28, 52, 22, 38, 48, 20, 36, 42, 30], pal.sun > 0.4 ? '#60a5fa' : '#1e1b4b', 0.15, false);
+  drawSkyline([28, 48, 36, 62, 42, 70, 34, 55, 68, 30, 52, 60, 44], pal.sun > 0.4 ? '#3b82f6' : '#0f172a', 0.35, true);
 }
 
 function drawSkyline(arr, col, par, litK) {
