@@ -281,7 +281,7 @@ function update(dt) {
   pw.jetpack = Math.max(0, pw.jetpack - dt);
   pw.sneakers = Math.max(0, pw.sneakers - dt);
 
-  // Persecución del Inspector
+  // Persecución del Inspector y su perro policía (al iniciar la carrera o tras tropezar)
   if (inspector.timer > 0) {
     inspector.timer -= dt;
     inspector.lane += (P.x - inspector.lane) * Math.min(1, dt * 8);
@@ -289,7 +289,8 @@ function update(dt) {
     inspector.dist += (targetDist - inspector.dist) * Math.min(1, dt * 6);
     inspector.active = true;
   } else {
-    inspector.active = false;
+    inspector.dist += dt * 3.5;
+    if (inspector.dist > 5.5) inspector.active = false;
   }
 
   // Movimiento lateral fluido y reactivo estilo Subway Surfers
@@ -432,7 +433,7 @@ function reset() {
   P.lane = 0; P.x = 0; P.y = 0; P.vy = 0; P.slide = 0; P.inv = 0; P.jumpBuf = 0; P.onTrain = false; P.run = 0;
   dist = 0; speed = 14; coins = 0; mult = 1; streak = 0; lives = 1;
   pw.magnet = 0; pw.x2 = 0; pw.shield = 0; pw.jetpack = 0; pw.sneakers = 0;
-  inspector.active = false; inspector.timer = 0;
+  inspector.active = true; inspector.dist = 0.9; inspector.lane = 0; inspector.timer = 5.0;
   ents = []; spawnAcc = 0; particles = []; floaters = [];
   collectedLetters = [false, false, false, false, false];
   updateLetterBoxes();

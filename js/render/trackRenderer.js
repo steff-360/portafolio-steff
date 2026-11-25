@@ -136,6 +136,21 @@ function drawTrack() {
     }
   }
 
+  // Destellos y fijaciones metálicas móviles en los rieles que acentúan la velocidad hacia adelante
+  var railDashOff = scroll % 3.5;
+  for (var rz = -railDashOff; rz < ZFAR; rz += 3.5) {
+    if (rz < 0.2) continue;
+    var rp = F / (F + rz), ry = sy(rp), ru = unit * rp;
+    for (var rl = -1; rl <= 1; rl++) {
+      for (var ro = -1; ro <= 1; ro += 2) {
+        var rrx = rl + ro * 0.26;
+        var rfx = sx(rrx, rp);
+        ctx.fillStyle = pal.sun > 0.3 ? '#ffffff' : '#38bdf8';
+        ctx.fillRect(rfx - Math.max(1, 0.02 * ru), ry - Math.max(1.5, 0.05 * ru), Math.max(2, 0.04 * ru), Math.max(1.5, 0.05 * ru));
+      }
+    }
+  }
+
   // Catenarias aéreas de alta tensión sobre cada carril (estilo Subway Surfers)
   for (var gc = -1; gc <= 1; gc++) {
     var wireNearX = sx(gc, PN), wireNearY = sy(PN) - 3.2 * unit * PN;

@@ -280,37 +280,172 @@ function drawEnt(e) {
 
 function drawInspector() {
   if (!inspector.active) return;
-  var z = inspector.dist;
+  if (state !== 'over' && inspector.dist > 3.6) return;
+  var z = -inspector.dist;
   var p = F / (F + z);
-  var ix = sx(inspector.lane, p);
-  var iy = sy(p);
-  var su = unit * p;
+  var ix = sx(inspector.lane, p), iy = sy(p);
+  var S = unit * p;
+  if (state !== 'over' && (iy - 1.4 * S) > H) return;
+  var runTime = time * 15;
+  var legSw = Math.sin(runTime);
 
-  // Sombra del Inspector
+  // Sombra del Inspector y su perro
   ctx.fillStyle = 'rgba(0,0,0,.45)';
   ctx.beginPath();
-  ctx.ellipse(ix, iy, 0.45 * su, 0.12 * su, 0, 0, 6.283);
+  ctx.ellipse(ix, iy, 0.38 * S, 0.11 * S, 0, 0, 6.283);
   ctx.fill();
 
-  // Cuerpo y uniforme azul oscuro del inspector
-  ctx.fillStyle = '#1e3a8a';
-  rr(ix - 0.28 * su, iy - 1.4 * su, 0.56 * su, 0.8 * su, 0.08 * su);
+  var dogX = sx(inspector.lane - 0.44, p), dogY = iy;
+  ctx.beginPath();
+  ctx.ellipse(dogX, dogY, 0.24 * S, 0.08 * S, 0, 0, 6.283);
+  ctx.fill();
 
-  // Cabeza y gorra de oficial de metro
-  ctx.fillStyle = '#f5cb9b';
-  ctx.beginPath(); ctx.arc(ix, iy - 1.55 * su, 0.18 * su, 0, 6.283); ctx.fill();
-  ctx.fillStyle = '#1e3a8a';
-  ctx.fillRect(ix - 0.24 * su, iy - 1.75 * su, 0.48 * su, 0.14 * su);
+  // === PERRO PITBULL / BULLDOG DEL INSPECTOR (Auténtico Subway Surfers) ===
+  ctx.save();
+  ctx.translate(dogX, dogY);
+  var dLeg = Math.sin(runTime * 1.3) * 0.09 * S;
+
+  ctx.fillStyle = '#5c3517';
+  ctx.fillRect(-0.13 * S, -0.14 * S + dLeg, 0.06 * S, 0.14 * S - dLeg);
+  ctx.fillRect(0.08 * S, -0.14 * S - dLeg, 0.06 * S, 0.14 * S + dLeg);
+  ctx.fillRect(-0.06 * S, -0.14 * S - dLeg, 0.06 * S, 0.14 * S + dLeg);
+  ctx.fillRect(0.02 * S, -0.14 * S + dLeg, 0.06 * S, 0.14 * S - dLeg);
+
+  ctx.fillStyle = '#854d1d';
+  rr(-0.15 * S, -0.26 * S, 0.3 * S, 0.18 * S, 0.07 * S);
+
+  ctx.fillStyle = '#dc2626';
+  ctx.fillRect(-0.14 * S, -0.28 * S, 0.09 * S, 0.06 * S);
+  ctx.fillStyle = '#f8fafc';
+  ctx.fillRect(-0.13 * S, -0.29 * S, 0.02 * S, 0.02 * S);
+  ctx.fillRect(-0.08 * S, -0.29 * S, 0.02 * S, 0.02 * S);
   ctx.fillStyle = '#ffd23f';
-  ctx.fillRect(ix - 0.08 * su, iy - 1.7 * su, 0.16 * su, 0.08 * su);
+  ctx.beginPath(); ctx.arc(-0.09 * S, -0.22 * S, 0.025 * S, 0, 6.283); ctx.fill();
 
-  // Perro pitbull guardián corriendo al lado
-  var dogX = ix + 0.42 * su;
-  ctx.fillStyle = '#78350f';
-  rr(dogX - 0.18 * su, iy - 0.5 * su, 0.36 * su, 0.28 * su, 0.06 * su);
-  ctx.beginPath(); ctx.arc(dogX + 0.16 * su, iy - 0.52 * su, 0.12 * su, 0, 6.283); ctx.fill();
-  ctx.fillStyle = '#ef4444';
-  ctx.fillRect(dogX + 0.06 * su, iy - 0.46 * su, 0.08 * su, 0.14 * su);
+  ctx.fillStyle = '#854d1d';
+  rr(-0.25 * S, -0.34 * S, 0.18 * S, 0.18 * S, 0.06 * S);
+  ctx.fillStyle = '#45260e';
+  rr(-0.27 * S, -0.27 * S, 0.12 * S, 0.1 * S, 0.03 * S);
+  ctx.fillStyle = '#0a0502';
+  ctx.beginPath(); ctx.arc(-0.25 * S, -0.25 * S, 0.022 * S, 0, 6.283); ctx.fill();
+
+  var tongueBob = Math.sin(runTime * 2) * 0.015 * S;
+  ctx.fillStyle = '#ff6b81';
+  ctx.beginPath(); ctx.ellipse(-0.26 * S, -0.19 * S + tongueBob, 0.028 * S, 0.045 * S, 0.25, 0, 6.283); ctx.fill();
+
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath(); ctx.arc(-0.18 * S, -0.29 * S, 0.03 * S, 0, 6.283); ctx.fill();
+  ctx.fillStyle = '#000000';
+  ctx.beginPath(); ctx.arc(-0.19 * S, -0.29 * S, 0.018 * S, 0, 6.283); ctx.fill();
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath(); ctx.arc(-0.20 * S, -0.30 * S, 0.008 * S, 0, 6.283); ctx.fill();
+
+  ctx.fillStyle = '#45260e';
+  ctx.beginPath();
+  ctx.ellipse(-0.14 * S, -0.32 * S, 0.035 * S, 0.06 * S, 0.4, 0, 6.283);
+  ctx.fill();
+
+  var tailAngle = Math.sin(runTime * 2.2) * 0.45;
+  ctx.strokeStyle = '#854d1d'; ctx.lineWidth = 0.045 * S;
+  ctx.beginPath();
+  ctx.moveTo(0.14 * S, -0.2 * S);
+  ctx.lineTo(0.22 * S, -0.34 * S + tailAngle * 0.09 * S);
+  ctx.stroke();
+  ctx.restore();
+
+  // === INSPECTOR GRUÑÓN DEL METRO (Auténtico Subway Surfers) ===
+  ctx.save();
+  ctx.translate(ix, iy);
+  var il1 = Math.max(0, legSw) * 0.2 * S, il2 = Math.max(0, -legSw) * 0.2 * S;
+
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(-0.22 * S, -0.52 * S, 0.17 * S, 0.52 * S - il1);
+  ctx.fillRect(0.05 * S, -0.52 * S, 0.17 * S, 0.52 * S - il2);
+
+  ctx.fillStyle = '#020617';
+  ctx.fillRect(-0.24 * S, -0.1 * S - il1, 0.2 * S, 0.1 * S);
+  ctx.fillRect(0.04 * S, -0.1 * S - il2, 0.2 * S, 0.1 * S);
+
+  ctx.fillStyle = '#1e3a5f';
+  rr(-0.32 * S, -1.05 * S, 0.64 * S, 0.58 * S, 0.13 * S);
+
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(-0.32 * S, -0.6 * S, 0.64 * S, 0.09 * S);
+  ctx.fillStyle = '#ffd23f';
+  ctx.fillRect(-0.07 * S, -0.61 * S, 0.14 * S, 0.11 * S);
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(-0.04 * S, -0.58 * S, 0.08 * S, 0.05 * S);
+
+  ctx.fillStyle = '#ffd23f';
+  for (var btnY = -0.96; btnY < -0.65; btnY += 0.1) {
+    ctx.beginPath(); ctx.arc(-0.09 * S, btnY * S, 0.024 * S, 0, 6.283); ctx.fill();
+    ctx.beginPath(); ctx.arc(0.09 * S, btnY * S, 0.024 * S, 0, 6.283); ctx.fill();
+  }
+
+  ctx.beginPath();
+  ctx.moveTo(0.15 * S, -0.92 * S);
+  ctx.lineTo(0.24 * S, -0.92 * S);
+  ctx.lineTo(0.2 * S, -0.8 * S);
+  ctx.closePath();
+  ctx.fill();
+
+  var armSw = Math.cos(runTime) * 0.18 * S;
+  ctx.fillStyle = '#1e3a5f';
+  rr(-0.4 * S, -0.98 * S + armSw, 0.15 * S, 0.4 * S, 0.07 * S);
+  rr(0.25 * S, -0.98 * S - armSw, 0.15 * S, 0.4 * S, 0.07 * S);
+
+  ctx.fillStyle = '#f5cb9b';
+  ctx.beginPath(); ctx.arc(-0.32 * S, -0.56 * S + armSw, 0.065 * S, 0, 6.283); ctx.fill();
+  ctx.beginPath(); ctx.arc(0.32 * S, -0.56 * S - armSw, 0.065 * S, 0, 6.283); ctx.fill();
+
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.moveTo(-0.08 * S, -1.04 * S); ctx.lineTo(0, -0.96 * S); ctx.lineTo(0.08 * S, -1.04 * S);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#dc2626';
+  ctx.beginPath();
+  ctx.moveTo(-0.03 * S, -0.98 * S); ctx.lineTo(0.03 * S, -0.98 * S);
+  ctx.lineTo(0.04 * S, -0.82 * S); ctx.lineTo(0, -0.76 * S); ctx.lineTo(-0.04 * S, -0.82 * S);
+  ctx.closePath(); ctx.fill();
+
+  ctx.fillStyle = '#f5cb9b';
+  ctx.beginPath(); ctx.arc(0, -1.16 * S, 0.23 * S, 0, 6.283); ctx.fill();
+  ctx.fillStyle = 'rgba(239,68,68,.35)';
+  ctx.beginPath(); ctx.arc(-0.11 * S, -1.12 * S, 0.06 * S, 0, 6.283); ctx.fill();
+  ctx.beginPath(); ctx.arc(0.11 * S, -1.12 * S, 0.06 * S, 0, 6.283); ctx.fill();
+
+  ctx.fillStyle = '#334155';
+  ctx.beginPath();
+  ctx.ellipse(0, -1.1 * S, 0.16 * S, 0.07 * S, 0, 0, 6.283);
+  ctx.fill();
+
+  ctx.fillStyle = '#e29e68';
+  ctx.beginPath(); ctx.arc(0, -1.15 * S, 0.05 * S, 0, 6.283); ctx.fill();
+
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath(); ctx.arc(-0.08 * S, -1.21 * S, 0.035 * S, 0, 6.283); ctx.fill();
+  ctx.beginPath(); ctx.arc(0.08 * S, -1.21 * S, 0.035 * S, 0, 6.283); ctx.fill();
+  ctx.fillStyle = '#0f172a';
+  ctx.beginPath(); ctx.arc(-0.07 * S, -1.2 * S, 0.02 * S, 0, 6.283); ctx.fill();
+  ctx.beginPath(); ctx.arc(0.07 * S, -1.2 * S, 0.02 * S, 0, 6.283); ctx.fill();
+
+  ctx.strokeStyle = '#1e293b'; ctx.lineWidth = Math.max(1.5, 0.028 * S);
+  ctx.beginPath();
+  ctx.moveTo(-0.13 * S, -1.24 * S); ctx.lineTo(-0.03 * S, -1.22 * S);
+  ctx.moveTo(0.03 * S, -1.22 * S); ctx.lineTo(0.13 * S, -1.24 * S);
+  ctx.stroke();
+
+  ctx.fillStyle = '#102444';
+  rr(-0.26 * S, -1.37 * S, 0.52 * S, 0.19 * S, 0.07 * S);
+  ctx.fillStyle = '#ffd23f';
+  ctx.fillRect(-0.27 * S, -1.26 * S, 0.54 * S, 0.035 * S);
+  ctx.beginPath(); ctx.arc(0, -1.3 * S, 0.048 * S, 0, 6.283); ctx.fill();
+  ctx.fillStyle = '#020617';
+  ctx.beginPath();
+  ctx.ellipse(0, -1.23 * S, 0.28 * S, 0.065 * S, 0, 0, Math.PI);
+  ctx.fill();
+
+  ctx.restore();
 }
 
 function drawSpeedLines() {
