@@ -231,39 +231,39 @@ var COLLECTIONS_DATA = [
 var PALETTES = {
   day: {
     id: 'day', name: '☀️ Día',
-    sky0: '#1976d2', sky1: '#60a5fa',
+    sky0: '#38bdf8', sky1: '#bae6fd',
     g0: '#0284c7', g1: '#0369a1',
     sun: 1.0, lamp: 0.0, star: 0.0,
-    trainCol: '#dc2626',
+    trainCol: '#ef4444',
     hor_: [219, 234, 254],
-    stationName: 'Central Station · Día Soleado'
+    stationName: 'Central Tech · Día Soleado'
   },
   sunset: {
     id: 'sunset', name: '🌇 Ocaso',
-    sky0: '#311042', sky1: '#ea580c',
-    g0: '#7c2d12', g1: '#431407',
-    sun: 0.55, lamp: 0.55, star: 0.35,
+    sky0: '#4c1d95', sky1: '#ea580c',
+    g0: '#9a3412', g1: '#431407',
+    sun: 0.65, lamp: 0.55, star: 0.25,
     trainCol: '#ea580c',
     hor_: [249, 115, 22],
-    stationName: 'Shinjuku Line · Atardecer Dorado'
+    stationName: 'Sunset Valley · Atardecer Dorado'
   },
   night: {
     id: 'night', name: '🌙 Noche',
-    sky0: '#030712', sky1: '#1e1b4b',
+    sky0: '#070b19', sky1: '#1e1b4b',
     g0: '#0f172a', g1: '#090d16',
     sun: 0.0, lamp: 1.0, star: 1.0,
-    trainCol: '#7c3aed',
+    trainCol: '#8b5cf6',
     hor_: [13, 148, 136],
-    stationName: 'Cyber Tunnel · Noche Neón'
+    stationName: 'Cyber Track · Noche Neón'
   },
   dawn: {
     id: 'dawn', name: '🌅 Alba',
-    sky0: '#1e1b4b', sky1: '#f43f5e',
-    g0: '#831843', g1: '#500724',
+    sky0: '#312e81', sky1: '#fb7185',
+    g0: '#9f1239', g1: '#4c0519',
     sun: 0.75, lamp: 0.25, star: 0.15,
-    trainCol: '#db2777',
+    trainCol: '#ec4899',
     hor_: [254, 240, 138],
-    stationName: 'Harajuku Loop · Alba Fresca'
+    stationName: 'Dawn Horizon · Alba Fresca'
   }
 };
 

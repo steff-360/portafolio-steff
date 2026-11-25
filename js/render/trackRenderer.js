@@ -3,6 +3,31 @@
    Renderizado de vías en perspectiva 3D, catenarias y semáforos
    ============================================================ */
 
+// Nubes esponjosas y amigables flotando en el cielo
+function drawClouds() {
+  ctx.save();
+  var cList = [
+    { x: 0.15, y: 0.22, s: 1.1, spd: 0.03 },
+    { x: 0.48, y: 0.15, s: 0.85, spd: 0.02 },
+    { x: 0.78, y: 0.28, s: 1.25, spd: 0.035 },
+    { x: 0.95, y: 0.18, s: 0.7, spd: 0.025 }
+  ];
+  for (var i = 0; i < cList.length; i++) {
+    var c = cList[i];
+    var cxPos = ((c.x * W + time * 12 * c.spd + scroll * 0.02) % (W + 240)) - 120 - camX * 15;
+    var cyPos = horizon * c.y;
+    var baseR = Math.max(16, W * 0.035 * c.s);
+    ctx.fillStyle = pal.sun > 0.4 ? 'rgba(255, 255, 255, 0.78)' : 'rgba(254, 215, 170, 0.55)';
+    ctx.beginPath();
+    ctx.arc(cxPos, cyPos, baseR, 0, Math.PI * 2);
+    ctx.arc(cxPos + baseR * 0.9, cyPos - baseR * 0.2, baseR * 0.75, 0, Math.PI * 2);
+    ctx.arc(cxPos - baseR * 0.8, cyPos + baseR * 0.1, baseR * 0.65, 0, Math.PI * 2);
+    ctx.arc(cxPos + baseR * 1.6, cyPos + baseR * 0.15, baseR * 0.55, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
 function drawBG() {
   var g = ctx.createLinearGradient(0, 0, 0, horizon);
   g.addColorStop(0, pal.sky0);
@@ -10,38 +35,41 @@ function drawBG() {
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, W, horizon);
 
-  // 1. SOL RADIANTE (Día y Atardecer)
+  // 1. SOL RADIANTE Y CÁLIDO (Día y Atardecer)
   if (pal.sun > 0.08) {
-    var sunR = Math.min(W, H) * 0.085;
-    var sunX = W * 0.5 - camX * 20;
-    var sunY = horizon * 0.52;
-    var sg = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR * 2.2);
-    sg.addColorStop(0, 'rgba(255, 240, 180, ' + (0.95 * pal.sun) + ')');
-    sg.addColorStop(0.35, 'rgba(255, 180, 70, ' + (0.5 * pal.sun) + ')');
+    var sunR = Math.min(W, H) * 0.082;
+    var sunX = W * 0.5 - camX * 16;
+    var sunY = horizon * 0.5;
+    var sg = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR * 2.5);
+    sg.addColorStop(0, 'rgba(255, 248, 200, ' + (0.95 * pal.sun) + ')');
+    sg.addColorStop(0.3, 'rgba(255, 200, 90, ' + (0.55 * pal.sun) + ')');
+    sg.addColorStop(0.7, 'rgba(255, 140, 40, ' + (0.2 * pal.sun) + ')');
     sg.addColorStop(1, 'rgba(255, 140, 40, 0)');
     ctx.fillStyle = sg;
     ctx.beginPath();
-    ctx.arc(sunX, sunY, sunR * 2.2, 0, Math.PI * 2);
+    ctx.arc(sunX, sunY, sunR * 2.5, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.fillStyle = 'rgba(255, 255, 235, ' + (0.95 * pal.sun) + ')';
+    ctx.fillStyle = 'rgba(255, 255, 245, ' + (0.98 * pal.sun) + ')';
     ctx.beginPath();
     ctx.arc(sunX, sunY, sunR * 0.9, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  // 2. ESTRELLAS TITILANTES Y LUNA CRECIENTE (Noche y Ocaso)
+  // 2. ESTRELLAS SUAVES Y LUNA AMIGABLE (Noche y Ocaso - Cero estática/ruido)
   if (pal.star > 0.08) {
-    var moonX = W * 0.22 - camX * 18, moonY = horizon * 0.35, mr = Math.max(14, W * 0.035);
-    var mg = ctx.createRadialGradient(moonX, moonY, mr * 0.3, moonX, moonY, mr * 2.8);
-    mg.addColorStop(0, 'rgba(224, 242, 254, ' + (0.45 * pal.star) + ')');
+    var moonX = W * 0.22 - camX * 14, moonY = horizon * 0.32, mr = Math.max(16, W * 0.038);
+    var mg = ctx.createRadialGradient(moonX, moonY, mr * 0.3, moonX, moonY, mr * 3.0);
+    mg.addColorStop(0, 'rgba(224, 242, 254, ' + (0.5 * pal.star) + ')');
+    mg.addColorStop(0.6, 'rgba(186, 230, 253, ' + (0.2 * pal.star) + ')');
     mg.addColorStop(1, 'rgba(224, 242, 254, 0)');
     ctx.fillStyle = mg;
     ctx.beginPath();
-    ctx.arc(moonX, moonY, mr * 2.8, 0, Math.PI * 2);
+    ctx.arc(moonX, moonY, mr * 3.0, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.fillStyle = 'rgba(240, 249, 255, ' + (0.9 * pal.star) + ')';
+    // Luna creciente suave
+    ctx.fillStyle = 'rgba(240, 249, 255, ' + (0.95 * pal.star) + ')';
     ctx.beginPath();
     ctx.arc(moonX, moonY, mr, 0, Math.PI * 2);
     ctx.fill();
@@ -50,39 +78,61 @@ function drawBG() {
     ctx.arc(moonX + mr * 0.45, moonY - mr * 0.15, mr * 0.85, 0, Math.PI * 2);
     ctx.fill();
 
-    // Estrellas titilando en la noche
+    // Estrellas atmosféricas con brillo armónico determinista (sin parpadeo brusco)
     ctx.fillStyle = '#ffffff';
-    for (var s = 0; s < 35; s++) {
-      var stX = ((s * 97 + time * 0.5) % 100) * 0.01 * W - camX * 8;
-      var stY = ((s * 53) % 100) * 0.007 * horizon + 8;
-      var tw = 0.3 + 0.7 * Math.sin(time * 2.5 + s * 1.8);
+    for (var s = 0; s < 32; s++) {
+      var stX = (((s * 137.5) % 100) * 0.01 * W - camX * 6 + W) % W;
+      var stY = ((s * 59.3) % 100) * 0.007 * horizon + 8;
+      var tw = 0.4 + 0.6 * (0.5 + 0.5 * Math.sin(time * 1.8 + s * 1.3));
       ctx.globalAlpha = tw * pal.star * 0.85;
-      ctx.fillRect((stX + W) % W, stY, 2, 2);
+      ctx.beginPath();
+      ctx.arc(stX, stY, s % 3 === 0 ? 1.8 : 1.2, 0, Math.PI * 2);
+      ctx.fill();
     }
     ctx.globalAlpha = 1;
   }
 
-  // Skyline urbano dinámico
-  drawSkyline([18, 32, 24, 45, 28, 52, 22, 38, 48, 20, 36, 42, 30], pal.sun > 0.4 ? '#60a5fa' : '#1e1b4b', 0.15, false);
-  drawSkyline([28, 48, 36, 62, 42, 70, 34, 55, 68, 30, 52, 60, 44], pal.sun > 0.4 ? '#3b82f6' : '#0f172a', 0.35, true);
+  // Nubes suaves cuando hay luz solar
+  if (pal.sun > 0.15) {
+    drawClouds();
+  }
+
+  // Skyline urbano con perspectiva suave y libre de ruido estático
+  drawSkyline([18, 32, 24, 45, 28, 52, 22, 38, 48, 20, 36, 42, 30], pal.sun > 0.4 ? '#60a5fa' : '#1e1b4b', 0.12, false, 0);
+  drawSkyline([28, 48, 36, 62, 42, 70, 34, 55, 68, 30, 52, 60, 44], pal.sun > 0.4 ? '#3b82f6' : '#0f172a', 0.28, true, 1);
 }
 
-function drawSkyline(arr, col, par, litK) {
+// Renderizado de edificios determinista y limpio (SIN RUIDO / ESTÁTICA)
+function drawSkyline(arr, col, par, litK, layerIdx) {
   var bW = W / (arr.length - 1);
-  var off = (camX * 60 * par) % bW;
+  var off = ((camX * 40 * par) + (scroll * 1.5 * par)) % bW;
   ctx.fillStyle = col;
   for (var i = -1; i <= arr.length; i++) {
-    var h = arr[((i % arr.length) + arr.length) % arr.length] * (H * 0.0035);
+    var arrIdx = ((i % arr.length) + arr.length) % arr.length;
+    var h = arr[arrIdx] * (H * 0.0035);
     var bx = i * bW - off;
     ctx.fillRect(bx, horizon - h, bW + 1, h);
 
-    // Ventanas iluminadas en los edificios
-    if (litK && pal.lamp > 0.3) {
-      ctx.fillStyle = (i % 3 === 0) ? '#fef08a' : (i % 2 === 0 ? '#38bdf8' : '#fda4af');
-      for (var wy = horizon - h + 12; wy < horizon - 8; wy += 14) {
-        for (var wx = bx + 6; wx < bx + bW - 6; wx += 10) {
-          if (Math.sin(wx * 11 + wy * 17) > 0.1) {
-            ctx.fillRect(wx, wy, 4, 6);
+    // Borde superior / cornisa sutil
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+    ctx.fillRect(bx, horizon - h, bW + 1, 3);
+    ctx.fillStyle = col;
+
+    // Ventanas limpias, fijas y armoniosas basadas en coordenadas relativas del edificio
+    if (litK && pal.lamp > 0.25) {
+      var bSeed = (arrIdx * 31 + layerIdx * 17) % 100;
+      var colCount = Math.max(1, Math.floor((bW - 14) / 11));
+      var rowCount = Math.max(1, Math.floor((h - 22) / 15));
+
+      for (var r = 0; r < rowCount; r++) {
+        var wy = horizon - h + 14 + r * 15;
+        for (var c = 0; c < colCount; c++) {
+          var isLit = ((c * 7 + r * 13 + bSeed) % 10) >= 3;
+          if (isLit) {
+            var wx = bx + 7 + c * 11;
+            var wColor = ((c + r + bSeed) % 3 === 0) ? '#fef08a' : (((c + r) % 2 === 0) ? '#38bdf8' : '#fda4af');
+            ctx.fillStyle = wColor;
+            ctx.fillRect(wx, wy, 4, 7);
           }
         }
       }
@@ -170,18 +220,26 @@ function drawTrack() {
     }
   }
 
-  // Destellos y fijaciones metálicas móviles en los rieles que acentúan la velocidad hacia adelante
-  var railDashOff = scroll % 3.5;
-  for (var rz = -railDashOff; rz < ZFAR; rz += 3.5) {
-    if (rz < 0.2) continue;
-    var rp = F / (F + rz), ry = sy(rp), ru = unit * rp;
-    for (var rl = -1; rl <= 1; rl++) {
-      for (var ro = -1; ro <= 1; ro += 2) {
-        var rrx = rl + ro * 0.26;
-        var rfx = sx(rrx, rp);
-        ctx.fillStyle = pal.sun > 0.3 ? '#ffffff' : '#38bdf8';
-        ctx.fillRect(rfx - Math.max(1, 0.02 * ru), ry - Math.max(1.5, 0.05 * ru), Math.max(2, 0.04 * ru), Math.max(1.5, 0.05 * ru));
-      }
+  // Vegetación y árboles estilizados amigables en los márgenes de las vías (perspectiva 3D suave)
+  var treeOff = scroll % 15;
+  for (var tz = -treeOff; tz < ZFAR; tz += 15) {
+    if (tz < 1.2) continue;
+    var tp = F / (F + tz), ty = sy(tp), tu = unit * tp;
+    for (var ts = -1; ts <= 1; ts += 2) {
+      var tx = sx(ts * 3.4, tp);
+      var tRad = 0.58 * tu;
+      // Tronco
+      ctx.fillStyle = '#451a03';
+      ctx.fillRect(tx - 0.05 * tu, ty - 0.5 * tu, 0.1 * tu, 0.5 * tu);
+      // Follaje esponjoso y amigable
+      ctx.fillStyle = pal.sun > 0.35 ? '#15803d' : '#064e3b';
+      ctx.beginPath();
+      ctx.arc(tx, ty - tRad * 1.3, tRad, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = pal.sun > 0.35 ? '#22c55e' : '#047857';
+      ctx.beginPath();
+      ctx.arc(tx - tRad * 0.25, ty - tRad * 1.5, tRad * 0.65, 0, Math.PI * 2);
+      ctx.fill();
     }
   }
 
