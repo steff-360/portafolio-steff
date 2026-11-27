@@ -164,7 +164,7 @@ function drawBoards() {
     var by = sy(bp);
     var bu = unit * bp;
     var side = Math.sin(bz * 7) > 0 ? 1 : -1;
-    var bx = sx(side * 3.4, bp);
+    var bx = sx(side * 3.8, bp);
     var bw = 1.35 * bu, bh = 0.58 * bu;
 
     var bIdx = Math.abs(Math.floor(bz / 60)) % CITY_DATA.length;
@@ -208,24 +208,36 @@ function drawTrack() {
   ctx.fillStyle = g;
   ctx.fillRect(0, horizon, W, H - horizon);
 
-  // 2. CAMA DE BALASTO CENTRAL (Gravilla y piedra de las vías del tren)
+  // 2. TALUD / TERRAPLÉN DE LA VÍA FÉRREA (Embankment 3D)
+  var eGradL = ctx.createLinearGradient(0, horizon, 0, H);
+  eGradL.addColorStop(0, '#2d1b10'); eGradL.addColorStop(1, '#1b1008');
+  poly([[cx, horizon], [sx(-1.5, PN), yN], [sx(-1.95, PN), yN]], eGradL);
+  poly([[cx, horizon], [sx(1.95, PN), yN], [sx(1.5, PN), yN]], eGradL);
+
+  // 3. CAMA DE BALASTO CONTINUA (Gravilla de vía de tren AAA)
   var bgG = ctx.createLinearGradient(0, horizon, 0, H);
   bgG.addColorStop(0, pal.ballast0 || '#a8896c');
-  bgG.addColorStop(1, pal.ballast1 || '#785c40');
-  poly([[cx, horizon], [sx(1.65, PN), yN], [sx(-1.65, PN), yN]], bgG);
+  bgG.addColorStop(0.6, pal.ballast1 || '#785c40');
+  bgG.addColorStop(1, '#3e2723');
+  poly([[cx, horizon], [sx(1.5, PN), yN], [sx(-1.5, PN), yN]], bgG);
 
   // Franjas de seguridad amarillas a los lados del balasto
   for (var si = -1; si <= 1; si += 2) {
-    poly([[cx, horizon], [sx(si * 1.65, PN), yN], [sx(si * 1.76, PN), yN]], '#f59e0b');
+    poly([[cx, horizon], [sx(si * 1.5, PN), yN], [sx(si * 1.58, PN), yN]], '#f59e0b');
   }
 
-  // 3. TRAVIESAS DE MADERA 3D (Sleepers con fijaciones)
+  // 4. TRAVIESAS DE MADERA 3D (Sleepers con margen limpio y difuminado en la distancia)
   var off = scroll % 1.5;
   for (var z = -off; z < ZFAR; z += 1.5) {
     if (z < -0.8) continue;
     var p = F / (F + z), y = sy(p);
     if (y > H + 5) continue;
-    var slW = 3.2 * unit * p, slH = Math.max(2, 0.12 * unit * p), slX = sx(-1.6, p);
+    var slW = 2.82 * unit * p, slH = Math.max(1.8, 0.08 * unit * p), slX = sx(-1.41, p);
+    var tieAlpha = Math.min(1, (ZFAR - z) / 12);
+    if (tieAlpha <= 0) continue;
+
+    ctx.save();
+    ctx.globalAlpha = tieAlpha;
 
     // Cuerpo de madera de la traviesa
     ctx.fillStyle = '#2e1c14';
@@ -240,23 +252,24 @@ function drawTrack() {
       for (var plO = -1; plO <= 1; plO += 2) {
         var plx = sx(plLane + plO * 0.26, p);
         ctx.fillStyle = '#475569';
-        ctx.fillRect(plx - 0.045 * unit * p, y - slH, 0.09 * unit * p, slH);
+        ctx.fillRect(plx - 0.04 * unit * p, y - slH, 0.08 * unit * p, slH);
       }
     }
+    ctx.restore();
   }
 
-  // 4. RIELES METÁLICOS DE ACERO 3D (3 vías: -1, 0, +1)
+  // 5. RIELES METÁLICOS DE ACERO 3D (3 vías: -1, 0, +1)
   for (var l = -1; l <= 1; l++) {
     for (var o = -1; o <= 1; o += 2) {
       var rx = l + o * 0.26;
       // Alma de acero del riel
-      poly([[cx, horizon], [sx(rx - 0.038, PN), yN], [sx(rx + 0.038, PN), yN]], '#334155');
+      poly([[cx, horizon], [sx(rx - 0.035, PN), yN], [sx(rx + 0.035, PN), yN]], '#334155');
       // Cabeza del riel con reflejo cromado superior
-      poly([[cx, horizon], [sx(rx - 0.015, PN), yN], [sx(rx + 0.015, PN), yN]], pal.sun > 0.3 ? '#ffffff' : '#38bdf8');
+      poly([[cx, horizon], [sx(rx - 0.014, PN), yN], [sx(rx + 0.014, PN), yN]], pal.sun > 0.3 ? '#ffffff' : '#38bdf8');
     }
   }
 
-  // 5. VEGETACIÓN Y ÁRBOLES ESTILIZADOS EN LOS LATERALES (Subway Surfers signature style)
+  // 6. VEGETACIÓN Y ÁRBOLES ESTILIZADOS EN LOS LATERALES (Subway Surfers signature style)
   var treeOff = scroll % 16;
   for (var tz = -treeOff; tz < ZFAR; tz += 16) {
     if (tz < 1.2) continue;
@@ -302,13 +315,13 @@ function drawTrack() {
     }
   }
 
-  // 6. FAROLAS LATERALES ELEGANTES CON HALO CÁLIDO
+  // 7. FAROLAS LATERALES ELEGANTES CON HALO CÁLIDO
   var off2 = scroll % 24, la = 0.15 + pal.lamp * 0.6;
   for (var lz = -off2; lz < ZFAR; lz += 24) {
     if (lz < 1.0) continue;
     var lp = F / (F + lz), ly = sy(lp);
     for (var ls = -1; ls <= 1; ls += 2) {
-      var lpx = sx(ls * 2.15, lp), top = ly - 2.5 * unit * lp, pw2 = Math.max(1, 0.05 * unit * lp);
+      var lpx = sx(ls * 2.25, lp), top = ly - 2.5 * unit * lp, pw2 = Math.max(1, 0.05 * unit * lp);
       ctx.fillStyle = '#1e293b'; ctx.fillRect(lpx - pw2 / 2, top, pw2, ly - top);
       var ax = lpx - ls * 0.35 * unit * lp;
       ctx.fillRect(Math.min(lpx, ax), top, Math.abs(ax - lpx), pw2);
@@ -324,11 +337,10 @@ function drawTrack() {
 
   drawBoards();
 
-  // 7. NIEBLA ATMOSFÉRICA PROFUNDA EN EL HORIZONTE
-  var hz = ctx.createLinearGradient(0, horizon - H * 0.02, 0, horizon + H * 0.08), hr2 = pal.hor_;
-  hz.addColorStop(0, 'rgba(' + hr2[0] + ',' + hr2[1] + ',' + hr2[2] + ',.5)');
-  hz.addColorStop(0.5, 'rgba(' + hr2[0] + ',' + hr2[1] + ',' + hr2[2] + ',.3)');
+  // 8. NIEBLA ATMOSFÉRICA SUAVE EN EL HORIZONTE
+  var hz = ctx.createLinearGradient(0, horizon - H * 0.01, 0, horizon + H * 0.05), hr2 = pal.hor_;
+  hz.addColorStop(0, 'rgba(' + hr2[0] + ',' + hr2[1] + ',' + hr2[2] + ',.4)');
   hz.addColorStop(1, 'rgba(' + hr2[0] + ',' + hr2[1] + ',' + hr2[2] + ',0)');
   ctx.fillStyle = hz;
-  ctx.fillRect(0, horizon - H * 0.02, W, H * 0.1);
+  ctx.fillRect(0, horizon - H * 0.01, W, H * 0.06);
 }

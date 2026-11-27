@@ -136,12 +136,27 @@ function drawTrain(e) {
 
   // A) Cúpula superior arqueada (Navy Blue en clásico / Gris plateado en bullet)
   var domeH = h1 * 0.28;
-  ctx.fillStyle = isBullet ? '#94a3b8' : '#1e3a8a';
+  var dGrad = ctx.createLinearGradient(x1l, y1t, x1l, y1t + domeH);
+  dGrad.addColorStop(0, isBullet ? '#cbd5e1' : '#1e3a8a');
+  dGrad.addColorStop(1, isBullet ? '#94a3b8' : '#172554');
+  ctx.fillStyle = dGrad;
   rr(x1l, y1t, w1, domeH + 4, cabCorner);
 
-  // B) Cuerpo inferior de la cabina (Naranja cálido en clásico / Blanco en bullet)
+  // B) Cuerpo inferior de la cabina con sombreado cilíndrico curvo 3D
   var lowerH = h1 - domeH;
-  ctx.fillStyle = isBullet ? '#f8fafc' : '#ea580c';
+  var sideShade = ctx.createLinearGradient(x1l, 0, x1r, 0);
+  if (isBullet) {
+    sideShade.addColorStop(0, '#cbd5e1');
+    sideShade.addColorStop(0.18, '#f8fafc');
+    sideShade.addColorStop(0.82, '#f8fafc');
+    sideShade.addColorStop(1, '#cbd5e1');
+  } else {
+    sideShade.addColorStop(0, '#c2410c');
+    sideShade.addColorStop(0.18, '#ea580c');
+    sideShade.addColorStop(0.82, '#ea580c');
+    sideShade.addColorStop(1, '#c2410c');
+  }
+  ctx.fillStyle = sideShade;
   rr(x1l, y1t + domeH, w1, lowerH, cabCorner);
 
   // C) Columna vertical central blanca (rasgo distintivo de Subway Surfers - Imagen 1)
@@ -151,26 +166,26 @@ function drawTrain(e) {
     ctx.fillRect(x1l + (w1 - colW) * 0.5, y1t + domeH * 0.65, colW, h1 * 0.55);
   }
 
-  // D) Parabrisas aerodinámico triple con cristales tintados y reflejo
+  // D) Parabrisas aerodinámico triple con cristales tintados oceánicos y reflejo
   var winY = y1t + h1 * 0.16, winH = h1 * 0.32;
   var winCenterW = w1 * 0.46, winSideW = w1 * 0.16;
   var gap = w1 * 0.04;
   var winStartX = x1l + (w1 - (winCenterW + winSideW * 2 + gap * 2)) * 0.5;
 
   // Panel izquierdo
-  ctx.fillStyle = '#0f172a';
+  ctx.fillStyle = '#090d16';
   rr(winStartX, winY, winSideW, winH, 3);
-  ctx.fillStyle = 'rgba(56, 189, 248, 0.75)';
+  ctx.fillStyle = 'rgba(2, 132, 199, 0.82)';
   rr(winStartX + 1, winY + 1, winSideW - 2, winH - 2, 2);
 
   // Panel central panorámico
   var winCenterX = winStartX + winSideW + gap;
-  ctx.fillStyle = '#0f172a';
+  ctx.fillStyle = '#090d16';
   rr(winCenterX, winY, winCenterW, winH, 3);
-  ctx.fillStyle = 'rgba(56, 189, 248, 0.75)';
+  ctx.fillStyle = 'rgba(2, 132, 199, 0.82)';
   rr(winCenterX + 1, winY + 1, winCenterW - 2, winH - 2, 2);
   // Reflejo diagonal de luz
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
   ctx.beginPath();
   ctx.moveTo(winCenterX + winCenterW * 0.22, winY + 2);
   ctx.lineTo(winCenterX + winCenterW * 0.46, winY + 2);
@@ -180,17 +195,25 @@ function drawTrain(e) {
 
   // Panel derecho
   var winRightX = winCenterX + winCenterW + gap;
-  ctx.fillStyle = '#0f172a';
+  ctx.fillStyle = '#090d16';
   rr(winRightX, winY, winSideW, winH, 3);
-  ctx.fillStyle = 'rgba(56, 189, 248, 0.75)';
+  ctx.fillStyle = 'rgba(2, 132, 199, 0.82)';
   rr(winRightX + 1, winY + 1, winSideW - 2, winH - 2, 2);
 
-  // E) Emblema / Faro central circular plateado (como en la Imagen 1)
-  var emblemY = y1t + h1 * 0.58, emblemR = Math.max(3, w1 * 0.07);
-  ctx.fillStyle = '#ffffff';
-  ctx.beginPath(); ctx.arc(x1l + w1 * 0.5, emblemY, emblemR, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = '#1e293b';
-  ctx.beginPath(); ctx.arc(x1l + w1 * 0.5, emblemY, emblemR * 0.58, 0, Math.PI * 2); ctx.fill();
+  // E) Emblema heráldico de la línea del metro (rombo dorado elegante)
+  var emblemY = y1t + h1 * 0.58, emblemS = Math.max(3, w1 * 0.06);
+  ctx.fillStyle = '#ffd23f';
+  ctx.beginPath();
+  ctx.moveTo(x1l + w1 * 0.5, emblemY - emblemS);
+  ctx.lineTo(x1l + w1 * 0.5 + emblemS, emblemY);
+  ctx.lineTo(x1l + w1 * 0.5, emblemY + emblemS);
+  ctx.lineTo(x1l + w1 * 0.5 - emblemS, emblemY);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = '#b45309';
+  ctx.beginPath();
+  ctx.arc(x1l + w1 * 0.5, emblemY, emblemS * 0.35, 0, Math.PI * 2);
+  ctx.fill();
 
   // F) Faros frontales duales con halos cálidos luminosos
   var lampY = y1 - h1 * 0.24, lRad = Math.max(3, w1 * 0.08);
