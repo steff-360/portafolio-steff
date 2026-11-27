@@ -6,78 +6,233 @@
 
 function drawTrain(e) {
   var zf = Math.max(e.z, -0.3), zb = Math.max(e.z + e.len, -0.3);
-  var p1 = F / (F + zf), p2 = F / (F + zb), c = e.c, TH = 1.9;
-  var xl = e.lane - 0.44, xr = e.lane + 0.44;
-  var y1 = sy(p1), y1t = y1 - TH * unit * p1, y2 = sy(p2), y2t = y2 - TH * unit * p2;
-  var x1l = sx(xl, p1), x1r = sx(xr, p1), x2l = sx(xl, p2), x2r = sx(xr, p2);
-  var w = x1r - x1l, h = y1 - y1t;
+  var p1 = F / (F + zf), p2 = F / (F + zb);
+  var TH = 1.4; // Proporción áurea de altura real de tren (3D accesible y visible)
+  var halfW = 0.46; // Ancho del vagón
+  var xl = e.lane - halfW, xr = e.lane + halfW;
 
-  // Haz de luz frontal de los faros del tren proyectado sobre los rieles
-  if (e.z > -0.2 && e.z < 26) {
-    var lightLen = Math.min(8, 3.5 + (26 - e.z) * 0.2);
+  var y1 = sy(p1), y1t = y1 - TH * unit * p1;
+  var y2 = sy(p2), y2t = y2 - TH * unit * p2;
+  var x1l = sx(xl, p1), x1r = sx(xr, p1);
+  var x2l = sx(xl, p2), x2r = sx(xr, p2);
+  var w1 = x1r - x1l, h1 = y1 - y1t;
+  var w2 = x2r - x2l, h2 = y2 - y2t;
+
+  // 1. SOMBRA DE CONTACTO Y BOGIES/RUEDAS BAJO EL TREN (Undercarriage 3D)
+  var shadowGrad = ctx.createLinearGradient(0, y2, 0, y1);
+  shadowGrad.addColorStop(0, 'rgba(0,0,0,0.25)');
+  shadowGrad.addColorStop(1, 'rgba(0,0,0,0.55)');
+  poly([[x1l - 0.05 * w1, y1 + 2], [x1r + 0.05 * w1, y1 + 2], [x2r + 0.05 * w2, y2 + 1], [x2l - 0.05 * w2, y2 + 1]], shadowGrad);
+
+  // Ruedas y bogies negros bajo el tren
+  var bogieW = w1 * 0.18, bogieH = h1 * 0.1;
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(x1l + w1 * 0.12, y1 - bogieH * 0.8, bogieW, bogieH);
+  ctx.fillRect(x1r - w1 * 0.3, y1 - bogieH * 0.8, bogieW, bogieH);
+
+  // 2. HAZ DE LUZ DE LOS FAROS DEL TREN (Headlight Beams en el suelo)
+  if (e.z > -0.4 && e.z < 28) {
+    var lightLen = Math.min(9, 4.0 + (28 - e.z) * 0.22);
     var plF = F / (F + Math.max(0, e.z - lightLen));
     var lyG = sy(plF);
-    var lxL = sx(e.lane - 0.72, plF), lxR = sx(e.lane + 0.72, plF);
-    var bGrad = ctx.createLinearGradient(x1l + w / 2, y1, x1l + w / 2, lyG);
-    var beamAlpha = 0.22 + pal.lamp * 0.35;
-    bGrad.addColorStop(0, 'rgba(255, 235, 170, ' + beamAlpha + ')');
-    bGrad.addColorStop(0.7, 'rgba(255, 220, 130, ' + (beamAlpha * 0.4) + ')');
+    var lxL = sx(e.lane - 0.75, plF), lxR = sx(e.lane + 0.75, plF);
+    var bGrad = ctx.createLinearGradient(x1l + w1 / 2, y1, x1l + w1 / 2, lyG);
+    var beamAlpha = 0.28 + pal.lamp * 0.35;
+    bGrad.addColorStop(0, 'rgba(255, 240, 180, ' + beamAlpha + ')');
+    bGrad.addColorStop(0.65, 'rgba(255, 220, 130, ' + (beamAlpha * 0.35) + ')');
     bGrad.addColorStop(1, 'rgba(255, 220, 130, 0)');
     poly([[x1l, y1], [x1r, y1], [lxR, lyG], [lxL, lyG]], bGrad);
   }
 
-  // Lado del tren
-  if (e.lane > P.x + 0.1) {
-    poly([[x1l, y1t], [x2l, y2t], [x2l, y2], [x1l, y1]], c.s);
-  } else if (e.lane < P.x - 0.1) {
-    poly([[x1r, y1t], [x2r, y2t], [x2r, y2], [x1r, y1]], c.s);
+  // 3. FLANCO LATERAL 3D CON VENTANAS DE PASAJEROS (Side Body & Passenger Windows)
+  var showLeft = (e.lane > P.x + 0.05);
+  var showRight = (e.lane < P.x - 0.05);
+  var sideCol = e.c && e.c.s ? e.c.s : '#1e293b';
+  var bodyCol = e.c && e.c.f ? e.c.f : pal.trainCol;
+
+  if (showLeft) {
+    // Pared lateral izquierda del vagón
+    var sGrad = ctx.createLinearGradient(x2l, y2t, x1l, y1);
+    sGrad.addColorStop(0, '#0f172a');
+    sGrad.addColorStop(1, sideCol);
+    poly([[x1l, y1t], [x2l, y2t], [x2l, y2], [x1l, y1]], sGrad);
+
+    // Franja de color del vagón en el lateral
+    var b1yTop = y1t + h1 * 0.35, b1yBot = y1t + h1 * 0.85;
+    var b2yTop = y2t + h2 * 0.35, b2yBot = y2t + h2 * 0.85;
+    poly([[x1l, b1yTop], [x2l, b2yTop], [x2l, b2yBot], [x1l, b1yBot]], bodyCol);
+
+    // Ventanas de pasajeros tintadas en perspectiva
+    var nWins = Math.max(2, Math.floor(e.len * 1.1));
+    for (var wi = 0; wi < nWins; wi++) {
+      var wz1 = e.z + (wi + 0.15) * (e.len / nWins);
+      var wz2 = e.z + (wi + 0.75) * (e.len / nWins);
+      if (wz1 > ZFAR || wz2 < -0.3) continue;
+      var wp1 = F / (F + Math.max(wz1, -0.3)), wp2 = F / (F + Math.max(wz2, -0.3));
+      var wx1 = sx(xl, wp1), wy1T = sy(wp1) - TH * unit * wp1 + (TH * unit * wp1 * 0.4), wy1B = wy1T + (TH * unit * wp1 * 0.28);
+      var wx2 = sx(xl, wp2), wy2T = sy(wp2) - TH * unit * wp2 + (TH * unit * wp2 * 0.4), wy2B = wy2T + (TH * unit * wp2 * 0.28);
+      poly([[wx1, wy1T], [wx2, wy2T], [wx2, wy2B], [wx1, wy1B]], '#0f172a');
+      poly([[wx1 + 1, wy1T + 1], [wx2 - 1, wy2T + 1], [wx2 - 1, wy2B - 1], [wx1 + 1, wy1B - 1]], 'rgba(56, 189, 248, 0.45)');
+    }
+  } else if (showRight) {
+    // Pared lateral derecha del vagón
+    var sGrad = ctx.createLinearGradient(x2r, y2t, x1r, y1);
+    sGrad.addColorStop(0, '#0f172a');
+    sGrad.addColorStop(1, sideCol);
+    poly([[x1r, y1t], [x2r, y2t], [x2r, y2], [x1r, y1]], sGrad);
+
+    // Franja de color del vagón en el lateral
+    var b1yTop = y1t + h1 * 0.35, b1yBot = y1t + h1 * 0.85;
+    var b2yTop = y2t + h2 * 0.35, b2yBot = y2t + h2 * 0.85;
+    poly([[x1r, b1yTop], [x2r, b2yTop], [x2r, b2yBot], [x1r, b1yBot]], bodyCol);
+
+    // Ventanas de pasajeros tintadas
+    var nWins = Math.max(2, Math.floor(e.len * 1.1));
+    for (var wi = 0; wi < nWins; wi++) {
+      var wz1 = e.z + (wi + 0.15) * (e.len / nWins);
+      var wz2 = e.z + (wi + 0.75) * (e.len / nWins);
+      if (wz1 > ZFAR || wz2 < -0.3) continue;
+      var wp1 = F / (F + Math.max(wz1, -0.3)), wp2 = F / (F + Math.max(wz2, -0.3));
+      var wx1 = sx(xr, wp1), wy1T = sy(wp1) - TH * unit * wp1 + (TH * unit * wp1 * 0.4), wy1B = wy1T + (TH * unit * wp1 * 0.28);
+      var wx2 = sx(xr, wp2), wy2T = sy(wp2) - TH * unit * wp2 + (TH * unit * wp2 * 0.4), wy2B = wy2T + (TH * unit * wp2 * 0.28);
+      poly([[wx1, wy1T], [wx2, wy2T], [wx2, wy2B], [wx1, wy1B]], '#0f172a');
+      poly([[wx1 - 1, wy1T + 1], [wx2 + 1, wy2T + 1], [wx2 + 1, wy2B - 1], [wx1 - 1, wy1B - 1]], 'rgba(56, 189, 248, 0.45)');
+    }
   }
 
-  // Techo del tren con hendiduras metálicas
-  poly([[x1l, y1t], [x1r, y1t], [x2r, y2t], [x2l, y2t]], '#334155');
-  var nRibs = Math.floor(e.len * 1.4);
+  // 4. TECHO 3D CURVADO Y PISABLE (Metallic Silver Roof con nervaduras y pista roja)
+  var roofGrad = ctx.createLinearGradient(0, y2t, 0, y1t);
+  roofGrad.addColorStop(0, '#94a3b8');
+  roofGrad.addColorStop(0.5, '#cbd5e1');
+  roofGrad.addColorStop(1, '#e2e8f0');
+  poly([[x1l, y1t], [x1r, y1t], [x2r, y2t], [x2l, y2t]], roofGrad);
+
+  // Pista central antideslizante roja en el techo (para correr como en la Imagen 2)
+  var rWalkW = 0.52;
+  var rxl1 = sx(e.lane - halfW * rWalkW, p1), rxr1 = sx(e.lane + halfW * rWalkW, p1);
+  var rxl2 = sx(e.lane - halfW * rWalkW, p2), rxr2 = sx(e.lane + halfW * rWalkW, p2);
+  poly([[rxl1, y1t], [rxr1, y1t], [rxr2, y2t], [rxl2, y2t]], '#b91c1c');
+
+  // Nervaduras y respiraderos metálicos del techo
+  var nRibs = Math.floor(e.len * 1.6);
   for (var r = 0; r < nRibs; r++) {
     var rz = e.z + (r + 0.5) * (e.len / nRibs);
     if (rz < -0.2 || rz > ZFAR) continue;
     var rp = F / (F + rz), ry = sy(rp) - TH * unit * rp;
     var rxl = sx(xl, rp), rxr = sx(xr, rp);
-    ctx.strokeStyle = '#1e293b';
-    ctx.lineWidth = Math.max(1, 0.04 * unit * rp);
+    ctx.strokeStyle = '#64748b';
+    ctx.lineWidth = Math.max(1, 0.035 * unit * rp);
     ctx.beginPath(); ctx.moveTo(rxl, ry); ctx.lineTo(rxr, ry); ctx.stroke();
+
+    // Venteadores de aire acondicionado en el techo
+    if (r % 3 === 0 && unit * rp > 12) {
+      var acW = (rxr - rxl) * 0.45, acH = Math.max(2, 0.08 * unit * rp);
+      var acX = (rxl + rxr) * 0.5 - acW * 0.5;
+      ctx.fillStyle = '#475569';
+      rr(acX, ry - acH, acW, acH, 2);
+    }
   }
 
-  // Frente del vagón
-  poly([[x1l, y1t], [x1r, y1t], [x1r, y1], [x1l, y1]], c.f);
+  // 5. FRONTAL AERODINÁMICO DEL TREN (Cabina Frontal 3D)
+  var cabCorner = Math.max(4, 0.12 * w1);
+  ctx.save();
+  ctx.fillStyle = bodyCol;
+  rr(x1l, y1t, w1, h1, cabCorner);
 
-  // Parabrisas frontal
-  var winH = h * 0.35, winW = w * 0.8, winY = y1t + h * 0.12, winX = x1l + w * 0.1;
+  // Brillo especular superior en la cúpula frontal
+  var domeGrad = ctx.createLinearGradient(x1l, y1t, x1l, y1t + h1 * 0.25);
+  domeGrad.addColorStop(0, 'rgba(255, 255, 255, 0.5)');
+  domeGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  ctx.fillStyle = domeGrad;
+  rr(x1l, y1t, w1, h1 * 0.25, cabCorner);
+
+  // Parabrisas de 3 paneles (Izquierdo, Central Panorámico, Derecho - Imagen 3)
+  var winY = y1t + h1 * 0.16, winH = h1 * 0.32;
+  var winCenterW = w1 * 0.5, winSideW = w1 * 0.16;
+  var gap = w1 * 0.04;
+  var winStartX = x1l + (w1 - (winCenterW + winSideW * 2 + gap * 2)) * 0.5;
+
+  // Panel izquierdo
   ctx.fillStyle = '#0f172a';
-  rr(winX, winY, winW, winH, Math.max(2, 0.05 * w));
-  ctx.fillStyle = 'rgba(255,255,255,.25)';
-  ctx.fillRect(winX + winW * 0.15, winY + 2, winW * 0.35, winH * 0.4);
+  rr(winStartX, winY, winSideW, winH, 3);
+  ctx.fillStyle = 'rgba(56, 189, 248, 0.65)';
+  rr(winStartX + 1, winY + 1, winSideW - 2, winH - 2, 2);
 
-  // Faros luminosos delanteros
-  var lampY = y1 - h * 0.22, lRad = Math.max(2, w * 0.08);
-  ctx.fillStyle = '#ffd23f';
+  // Panel central panorámico
+  var winCenterX = winStartX + winSideW + gap;
+  ctx.fillStyle = '#0f172a';
+  rr(winCenterX, winY, winCenterW, winH, 3);
+  ctx.fillStyle = 'rgba(56, 189, 248, 0.65)';
+  rr(winCenterX + 1, winY + 1, winCenterW - 2, winH - 2, 2);
+  // Reflejo diagonal de luz en el cristal central
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
   ctx.beginPath();
-  ctx.arc(x1l + w * 0.2, lampY, lRad, 0, 6.283);
-  ctx.arc(x1r - w * 0.2, lampY, lRad, 0, 6.283);
+  ctx.moveTo(winCenterX + winCenterW * 0.2, winY + 2);
+  ctx.lineTo(winCenterX + winCenterW * 0.45, winY + 2);
+  ctx.lineTo(winCenterX + winCenterW * 0.3, winY + winH - 2);
+  ctx.lineTo(winCenterX + winCenterW * 0.05, winY + winH - 2);
   ctx.fill();
 
-  // Franja de advertencia en el parachoques
-  ctx.fillStyle = '#f8fafc';
-  ctx.fillRect(x1l, y1 - h * 0.08, w, h * 0.08);
-  ctx.fillStyle = '#ef4444';
-  for (var st = 0; st < 5; st++) {
-    ctx.fillRect(x1l + st * (w / 5), y1 - h * 0.08, w / 10, h * 0.08);
+  // Panel derecho
+  var winRightX = winCenterX + winCenterW + gap;
+  ctx.fillStyle = '#0f172a';
+  rr(winRightX, winY, winSideW, winH, 3);
+  ctx.fillStyle = 'rgba(56, 189, 248, 0.65)';
+  rr(winRightX + 1, winY + 1, winSideW - 2, winH - 2, 2);
+
+  // Emblema / Logotipo del metro en el centro del morro
+  var logoY = y1t + h1 * 0.56, logoR = Math.max(3, w1 * 0.075);
+  ctx.fillStyle = '#ffd23f';
+  ctx.beginPath();
+  ctx.arc(x1l + w1 * 0.5, logoY, logoR, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#0f172a';
+  ctx.beginPath();
+  ctx.arc(x1l + w1 * 0.5, logoY, logoR * 0.55, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Faros luminosos duales delanteros con halo
+  var lampY = y1 - h1 * 0.26, lRad = Math.max(3, w1 * 0.08);
+  var lampLeftX = x1l + w1 * 0.22, lampRightX = x1r - w1 * 0.22;
+  [lampLeftX, lampRightX].forEach(function (lx) {
+    var lGlow = ctx.createRadialGradient(lx, lampY, lRad * 0.4, lx, lampY, lRad * 2.2);
+    lGlow.addColorStop(0, 'rgba(255, 240, 150, 0.95)');
+    lGlow.addColorStop(0.5, 'rgba(255, 210, 80, 0.45)');
+    lGlow.addColorStop(1, 'rgba(255, 210, 80, 0)');
+    ctx.fillStyle = lGlow;
+    ctx.beginPath(); ctx.arc(lx, lampY, lRad * 2.2, 0, Math.PI * 2); ctx.fill();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(lx, lampY, lRad, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1.5; ctx.stroke();
+  });
+
+  // Parachoques inferior (Cowcatcher) con franjas chevron (Imagen 2)
+  var bumpH = h1 * 0.14, bumpY = y1 - bumpH;
+  ctx.fillStyle = '#0f172a';
+  rr(x1l - 2, bumpY, w1 + 4, bumpH, 2);
+
+  var nStripes = 6, sStep = w1 / nStripes;
+  for (var si = 0; si < nStripes; si++) {
+    var sx1 = x1l + si * sStep;
+    ctx.fillStyle = (si % 2 === 0) ? '#f8fafc' : '#ef4444';
+    ctx.beginPath();
+    ctx.moveTo(sx1, bumpY + bumpH);
+    ctx.lineTo(sx1 + sStep * 0.5, bumpY);
+    ctx.lineTo(sx1 + sStep, bumpY);
+    ctx.lineTo(sx1 + sStep * 0.5, bumpY + bumpH);
+    ctx.closePath();
+    ctx.fill();
   }
+
+  ctx.restore();
 }
 
 function drawRamp(e) {
   var zf = Math.max(e.z, -0.3), zb = Math.max(e.z + 2.5, -0.3);
   var p1 = F / (F + zf), p2 = F / (F + zb);
   var xl = e.lane - 0.4, xr = e.lane + 0.4;
-  var y1 = sy(p1), y2 = sy(p2) - 1.9 * unit * p2;
+  var y1 = sy(p1), y2 = sy(p2) - 1.4 * unit * p2;
   var x1l = sx(xl, p1), x1r = sx(xr, p1), x2l = sx(xl, p2), x2r = sx(xr, p2);
 
   // Superficie de la rampa metálica
