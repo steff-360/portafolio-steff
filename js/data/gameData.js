@@ -231,38 +231,38 @@ var COLLECTIONS_DATA = [
 var PALETTES = {
   day: {
     id: 'day', name: '☀️ Día',
-    sky0: '#38bdf8', sky1: '#bae6fd',
-    g0: '#0284c7', g1: '#0369a1',
+    sky0: '#1d4ed8', sky1: '#93c5fd',
+    g0: '#1e293b', g1: '#0f172a',
     sun: 1.0, lamp: 0.0, star: 0.0,
     trainCol: '#ef4444',
-    hor_: [219, 234, 254],
+    hor_: [186, 230, 253],
     stationName: 'Central Tech · Día Soleado'
   },
   sunset: {
     id: 'sunset', name: '🌇 Ocaso',
-    sky0: '#4c1d95', sky1: '#ea580c',
-    g0: '#9a3412', g1: '#431407',
+    sky0: '#311042', sky1: '#ea580c',
+    g0: '#26131d', g1: '#120710',
     sun: 0.65, lamp: 0.55, star: 0.25,
     trainCol: '#ea580c',
-    hor_: [249, 115, 22],
+    hor_: [253, 186, 116],
     stationName: 'Sunset Valley · Atardecer Dorado'
   },
   night: {
     id: 'night', name: '🌙 Noche',
-    sky0: '#070b19', sky1: '#1e1b4b',
-    g0: '#0f172a', g1: '#090d16',
+    sky0: '#030712', sky1: '#1e1b4b',
+    g0: '#0b0f19', g1: '#05070d',
     sun: 0.0, lamp: 1.0, star: 1.0,
     trainCol: '#8b5cf6',
-    hor_: [13, 148, 136],
+    hor_: [49, 46, 129],
     stationName: 'Cyber Track · Noche Neón'
   },
   dawn: {
     id: 'dawn', name: '🌅 Alba',
-    sky0: '#312e81', sky1: '#fb7185',
-    g0: '#9f1239', g1: '#4c0519',
+    sky0: '#1e1b4b', sky1: '#fb7185',
+    g0: '#1f1324', g1: '#0e0612',
     sun: 0.75, lamp: 0.25, star: 0.15,
     trainCol: '#ec4899',
-    hor_: [254, 240, 138],
+    hor_: [254, 215, 170],
     stationName: 'Dawn Horizon · Alba Fresca'
   }
 };
