@@ -231,26 +231,29 @@ var COLLECTIONS_DATA = [
 var PALETTES = {
   day: {
     id: 'day', name: '☀️ Día',
-    sky0: '#1d4ed8', sky1: '#93c5fd',
-    g0: '#1e293b', g1: '#0f172a',
+    sky0: '#0284c7', sky1: '#7dd3fc',
+    g0: '#22c55e', g1: '#16a34a',
+    ballast0: '#a8896c', ballast1: '#785c40',
     sun: 1.0, lamp: 0.0, star: 0.0,
-    trainCol: '#ef4444',
+    trainCol: '#ea580c',
     hor_: [186, 230, 253],
     stationName: 'Central Tech · Día Soleado'
   },
   sunset: {
     id: 'sunset', name: '🌇 Ocaso',
-    sky0: '#311042', sky1: '#ea580c',
-    g0: '#26131d', g1: '#120710',
+    sky0: '#581c87', sky1: '#f97316',
+    g0: '#b45309', g1: '#78350f',
+    ballast0: '#8c6d4f', ballast1: '#573d26',
     sun: 0.65, lamp: 0.55, star: 0.25,
-    trainCol: '#ea580c',
+    trainCol: '#f97316',
     hor_: [253, 186, 116],
     stationName: 'Sunset Valley · Atardecer Dorado'
   },
   night: {
     id: 'night', name: '🌙 Noche',
     sky0: '#030712', sky1: '#1e1b4b',
-    g0: '#0b0f19', g1: '#05070d',
+    g0: '#0f172a', g1: '#020617',
+    ballast0: '#27272a', ballast1: '#18181b',
     sun: 0.0, lamp: 1.0, star: 1.0,
     trainCol: '#8b5cf6',
     hor_: [49, 46, 129],
@@ -259,7 +262,8 @@ var PALETTES = {
   dawn: {
     id: 'dawn', name: '🌅 Alba',
     sky0: '#1e1b4b', sky1: '#fb7185',
-    g0: '#1f1324', g1: '#0e0612',
+    g0: '#831843', g1: '#37184a',
+    ballast0: '#6b485d', ballast1: '#3b2333',
     sun: 0.75, lamp: 0.25, star: 0.15,
     trainCol: '#ec4899',
     hor_: [254, 215, 170],

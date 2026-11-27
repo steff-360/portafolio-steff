@@ -80,7 +80,7 @@ var P = {
 
 function jump() {
   if (state !== 'play') return;
-  var onSurface = (P.y <= 0.08) || (P.onTrain && P.y <= 1.48);
+  var onSurface = (P.y <= 0.08) || (P.onTrain && P.y <= 1.42);
   if (onSurface || P.jumpBuf > 0) {
     var jumpPower = pw.sneakers > 0 ? 17.5 : 13.5;
     P.vy = jumpPower;
@@ -95,7 +95,7 @@ function jump() {
 
 function slide() {
   if (state !== 'play') return;
-  if (P.y > (P.onTrain ? 1.45 : 0.05)) {
+  if (P.y > (P.onTrain ? 1.40 : 0.05)) {
     P.vy = -34; // Inmersión rápida (fast-fall dive) en el aire
   }
   P.slide = 0.75;
@@ -151,7 +151,7 @@ function spawnRow(z, safe) {
     }
     // Monedas sobre el tren
     for (var zi = 1; zi < len - 1; zi += 1.6) {
-      ents.push({ t: 'coin', lane: lane, z: z + zi, y: 1.6 });
+      ents.push({ t: 'coin', lane: lane, z: z + zi, y: 1.52 });
     }
     return len + 4;
   } else if (rowType === 'barriers') {
@@ -315,7 +315,7 @@ function update(dt) {
     P.vy -= 38 * dt; // Gravedad
     P.y += P.vy * dt;
 
-    var floorY = P.onTrain ? 1.4 : 0;
+    var floorY = P.onTrain ? 1.35 : 0;
     if (P.y <= floorY) {
       P.y = floorY;
       P.vy = 0;
@@ -343,7 +343,7 @@ function update(dt) {
       var inZ = (e.z <= 0.6 && e.z + e.len >= -0.4);
       var inLane = Math.abs(px - e.lane) < 0.75;
       if (inZ && inLane) {
-        if (py >= 1.35) {
+        if (py >= 1.28) {
           trainOccupied = true;
         } else if (P.inv <= 0 && !e.ghost) {
           crash(e);
@@ -354,7 +354,7 @@ function update(dt) {
     // Colisión con Rampas
     if (e.t === 'ramp') {
       if (Math.abs(e.z) < 0.6 && Math.abs(px - e.lane) < 0.65) {
-        P.y = Math.max(P.y, 1.4);
+        P.y = Math.max(P.y, 1.35);
         P.vy = 12;
         sfx('jump');
         emit(sx(P.x, 1), groundY - P.y * unit, 8, { s: 120, up: 60, g: 300, l: 0.35, r: 2.8, c: '#ffd23f' });

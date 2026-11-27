@@ -11,8 +11,8 @@ function drawPlayer() {
   var sk = getActiveOutfit();
 
   // 1. SOMBRA 3D EN EL PISO O TECHO DEL TREN
-  var shadowFloor = sy(1) - (P.onTrain ? 1.4 * S : 0);
-  var heightAboveFloor = Math.max(0, P.y - (P.onTrain ? 1.4 : 0));
+  var shadowFloor = sy(1) - (P.onTrain ? 1.35 * S : 0);
+  var heightAboveFloor = Math.max(0, P.y - (P.onTrain ? 1.35 : 0));
   var shadowScale = Math.max(0.3, 1.0 - heightAboveFloor * 0.35);
   ctx.fillStyle = 'rgba(10, 16, 22, 0.42)';
   ctx.beginPath();
@@ -34,7 +34,7 @@ function drawPlayer() {
   ctx.translate(0, 0.52 * S);
 
   var isHoverboard = (pw.shield > 0);
-  var air = P.y > (P.onTrain ? 1.42 : 0.05);
+  var air = P.y > (P.onTrain ? 1.38 : 0.05);
   var isSlide = (P.slide > 0);
 
   // 2. PATINETA HOVERBOARD (Renderizada bajo los pies)
