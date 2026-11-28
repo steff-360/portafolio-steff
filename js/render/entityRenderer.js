@@ -6,257 +6,63 @@
 
 function drawTrain(e) {
   var zf = Math.max(e.z, -0.3), zb = Math.max(e.z + e.len, -0.3);
-  var p1 = F / (F + zf), p2 = F / (F + zb);
-  var TH = 1.35; // Altura áurea optimizada con ángulo de cámara elevado
-  var halfW = 0.44; // Ancho del vagón
-  var xl = e.lane - halfW, xr = e.lane + halfW;
+  var p1 = F / (F + zf), p2 = F / (F + zb), c = e.c || TRAINCOL[0], TH = 1.9;
+  var xl = e.lane - 0.42, xr = e.lane + 0.42;
+  var y1 = sy(p1), y1t = y1 - TH * unit * p1, y2 = sy(p2), y2t = y2 - TH * unit * p2;
+  var x1l = sx(xl, p1), x1r = sx(xr, p1), x2l = sx(xl, p2), x2r = sx(xr, p2);
 
-  var y1 = sy(p1), y1t = y1 - TH * unit * p1;
-  var y2 = sy(p2), y2t = y2 - TH * unit * p2;
-  var x1l = sx(xl, p1), x1r = sx(xr, p1);
-  var x2l = sx(xl, p2), x2r = sx(xr, p2);
-  var w1 = x1r - x1l, h1 = y1 - y1t;
-  var w2 = x2r - x2l, h2 = y2 - y2t;
-
-  // Selección de librea auténtica de Subway Surfers (según referencia del usuario)
-  // 0: Tren clásico de metro (Imagen 1: Techo azul marino, cabina blanca, laterales naranjas)
-  // 1: Tren bala moderno (Imagen 2: Carrocería blanca plateada con franja roja de competición)
-  var isBullet = (Math.abs(Math.floor(e.lane * 3 + e.len)) % 2 === 1);
-
-  // 1. SOMBRA DE CONTACTO 3D Y BOGIES BAJO EL VAGÓN
-  var shadowGrad = ctx.createLinearGradient(0, y2, 0, y1);
-  shadowGrad.addColorStop(0, 'rgba(0,0,0,0.22)');
-  shadowGrad.addColorStop(1, 'rgba(0,0,0,0.55)');
-  poly([[x1l - 0.04 * w1, y1 + 2], [x1r + 0.04 * w1, y1 + 2], [x2r + 0.04 * w2, y2 + 1], [x2l - 0.04 * w2, y2 + 1]], shadowGrad);
-
-  var bogieW = w1 * 0.18, bogieH = h1 * 0.1;
-  ctx.fillStyle = '#0f172a';
-  ctx.fillRect(x1l + w1 * 0.12, y1 - bogieH * 0.8, bogieW, bogieH);
-  ctx.fillRect(x1r - w1 * 0.3, y1 - bogieH * 0.8, bogieW, bogieH);
-
-  // 2. HAZ DE LUZ DE LOS FAROS PROYECTADO SOBRE LA VÍA
-  if (e.z > -0.4 && e.z < 28) {
-    var lightLen = Math.min(8.5, 3.8 + (28 - e.z) * 0.2);
-    var plF = F / (F + Math.max(0, e.z - lightLen));
-    var lyG = sy(plF);
-    var lxL = sx(e.lane - 0.72, plF), lxR = sx(e.lane + 0.72, plF);
-    var bGrad = ctx.createLinearGradient(x1l + w1 / 2, y1, x1l + w1 / 2, lyG);
-    var beamAlpha = 0.25 + pal.lamp * 0.35;
-    bGrad.addColorStop(0, 'rgba(255, 240, 180, ' + beamAlpha + ')');
-    bGrad.addColorStop(0.65, 'rgba(255, 220, 130, ' + (beamAlpha * 0.35) + ')');
-    bGrad.addColorStop(1, 'rgba(255, 220, 130, 0)');
-    poly([[x1l, y1], [x1r, y1], [lxR, lyG], [lxL, lyG]], bGrad);
+  // Flanco lateral en perspectiva 3D con ventanas iluminadas y franja inferior
+  if (Math.abs(e.lane - P.x) > 0.08 || e.lane !== 0) {
+    var showLeftSide = (e.lane < P.x) || (e.lane < 0 && Math.abs(e.lane - P.x) <= 0.08);
+    var sn = showLeftSide ? x1r : x1l;
+    var sf = showLeftSide ? x2r : x2l;
+    poly([[sn, y1], [sf, y2], [sf, y2t], [sn, y1t]], c.s);
+    poly([[sn, y1 - 0.95 * unit * p1], [sf, y2 - 0.95 * unit * p2], [sf, y2 - 1.5 * unit * p2], [sn, y1 - 1.5 * unit * p1]], 'rgba(12,20,26,.85)');
+    poly([[sn, y1 - 1.0 * unit * p1], [sf, y2 - 1.0 * unit * p2], [sf, y2 - 1.45 * unit * p2], [sn, y1 - 1.45 * unit * p1]], 'rgba(255,205,115,' + (0.1 + pal.lamp * 0.28) + ')');
+    poly([[sn, y1 - 0.35 * unit * p1], [sf, y2 - 0.35 * unit * p2], [sf, y2 - 0.45 * unit * p2], [sn, y1 - 0.45 * unit * p1]], 'rgba(244,239,230,.5)');
   }
 
-  // 3. FLANCO LATERAL EN PERSPECTIVA 3D CON VENTANAS DE PASAJEROS
-  var showLeft = (e.lane > P.x + 0.05);
-  var showRight = (e.lane < P.x - 0.05);
+  // Techo 3D con franja central sombreada
+  poly([[x1l, y1t], [x1r, y1t], [x2r, y2t], [x2l, y2t]], c.t || c.f);
+  poly([[sx(e.lane - 0.12, p1), y1t], [sx(e.lane + 0.12, p1), y1t], [sx(e.lane + 0.12, p2), y2t], [sx(e.lane - 0.12, p2), y2t]], 'rgba(0,0,0,.18)');
 
-  if (showLeft) {
-    // Pared lateral izquierda
-    var sCol = isBullet ? '#e2e8f0' : '#1e293b';
-    poly([[x1l, y1t], [x2l, y2t], [x2l, y2], [x1l, y1]], sCol);
+  // Frontal limpio y proporcional estilo Vía Libre
+  ctx.fillStyle = c.f;
+  ctx.fillRect(x1l, y1t, x1r - x1l, y1 - y1t);
+  var w = x1r - x1l, h = y1 - y1t;
 
-    // Franja decorativa lateral (Naranja para metro clásico, Roja para tren bala)
-    var stripeCol = isBullet ? '#dc2626' : '#ea580c';
-    var b1yTop = y1t + h1 * 0.38, b1yBot = y1t + h1 * 0.86;
-    var b2yTop = y2t + h2 * 0.38, b2yBot = y2t + h2 * 0.86;
-    poly([[x1l, b1yTop], [x2l, b2yTop], [x2l, b2yBot], [x1l, b1yBot]], stripeCol);
+  // Parabrisas panorámico con reflejo superior cálido
+  ctx.fillStyle = '#0f1a22';
+  ctx.fillRect(x1l + w * 0.12, y1t + h * 0.12, w * 0.76, h * 0.34);
+  ctx.fillStyle = 'rgba(255,210,63,.28)';
+  ctx.fillRect(x1l + w * 0.12, y1t + h * 0.12, w * 0.76, h * 0.08);
 
-    // Ventanas tintadas de pasajeros a lo largo del lateral
-    var nWins = Math.max(2, Math.floor(e.len * 1.05));
-    for (var wi = 0; wi < nWins; wi++) {
-      var wz1 = e.z + (wi + 0.18) * (e.len / nWins);
-      var wz2 = e.z + (wi + 0.76) * (e.len / nWins);
-      if (wz1 > ZFAR || wz2 < -0.3) continue;
-      var wp1 = F / (F + Math.max(wz1, -0.3)), wp2 = F / (F + Math.max(wz2, -0.3));
-      var wx1 = sx(xl, wp1), wy1T = sy(wp1) - TH * unit * wp1 + (TH * unit * wp1 * 0.42), wy1B = wy1T + (TH * unit * wp1 * 0.26);
-      var wx2 = sx(xl, wp2), wy2T = sy(wp2) - TH * unit * wp2 + (TH * unit * wp2 * 0.42), wy2B = wy2T + (TH * unit * wp2 * 0.26);
-      poly([[wx1, wy1T], [wx2, wy2T], [wx2, wy2B], [wx1, wy1B]], '#0f172a');
-      poly([[wx1 + 1, wy1T + 1], [wx2 - 1, wy2T + 1], [wx2 - 1, wy2B - 1], [wx1 + 1, wy1B - 1]], 'rgba(56, 189, 248, 0.55)');
-    }
-  } else if (showRight) {
-    // Pared lateral derecha
-    var sCol = isBullet ? '#e2e8f0' : '#1e293b';
-    poly([[x1r, y1t], [x2r, y2t], [x2r, y2], [x1r, y1]], sCol);
+  // Franja decorativa crema y parachoques inferior oscuro
+  ctx.fillStyle = 'rgba(244,239,230,.85)';
+  ctx.fillRect(x1l, y1t + h * 0.56, w, h * 0.07);
+  ctx.fillStyle = '#0f1a22';
+  ctx.fillRect(x1l, y1 - h * 0.1, w, h * 0.1);
 
-    var stripeCol = isBullet ? '#dc2626' : '#ea580c';
-    var b1yTop = y1t + h1 * 0.38, b1yBot = y1t + h1 * 0.86;
-    var b2yTop = y2t + h2 * 0.38, b2yBot = y2t + h2 * 0.86;
-    poly([[x1r, b1yTop], [x2r, b2yTop], [x2r, b2yBot], [x1r, b1yBot]], stripeCol);
-
-    var nWins = Math.max(2, Math.floor(e.len * 1.05));
-    for (var wi = 0; wi < nWins; wi++) {
-      var wz1 = e.z + (wi + 0.18) * (e.len / nWins);
-      var wz2 = e.z + (wi + 0.76) * (e.len / nWins);
-      if (wz1 > ZFAR || wz2 < -0.3) continue;
-      var wp1 = F / (F + Math.max(wz1, -0.3)), wp2 = F / (F + Math.max(wz2, -0.3));
-      var wx1 = sx(xr, wp1), wy1T = sy(wp1) - TH * unit * wp1 + (TH * unit * wp1 * 0.42), wy1B = wy1T + (TH * unit * wp1 * 0.26);
-      var wx2 = sx(xr, wp2), wy2T = sy(wp2) - TH * unit * wp2 + (TH * unit * wp2 * 0.42), wy2B = wy2T + (TH * unit * wp2 * 0.26);
-      poly([[wx1, wy1T], [wx2, wy2T], [wx2, wy2B], [wx1, wy1B]], '#0f172a');
-      poly([[wx1 - 1, wy1T + 1], [wx2 + 1, wy2T + 1], [wx2 + 1, wy2B - 1], [wx1 - 1, wy1B - 1]], 'rgba(56, 189, 248, 0.55)');
-    }
-  }
-
-  // 4. TECHO 3D CURVADO Y PISABLE (Visible con perspectiva aérea)
-  var roofCol = isBullet ? '#cbd5e1' : '#1e3a8a'; // Gris metálico o Azul Marino clásico
-  var rGrad = ctx.createLinearGradient(0, y2t, 0, y1t);
-  rGrad.addColorStop(0, isBullet ? '#94a3b8' : '#172554');
-  rGrad.addColorStop(1, roofCol);
-  poly([[x1l, y1t], [x1r, y1t], [x2r, y2t], [x2l, y2t]], rGrad);
-
-  // Pista central transitable sobre el techo
-  var rWalkW = 0.54;
-  var rxl1 = sx(e.lane - halfW * rWalkW, p1), rxr1 = sx(e.lane + halfW * rWalkW, p1);
-  var rxl2 = sx(e.lane - halfW * rWalkW, p2), rxr2 = sx(e.lane + halfW * rWalkW, p2);
-  poly([[rxl1, y1t], [rxr1, y1t], [rxr2, y2t], [rxl2, y2t]], isBullet ? '#b91c1c' : '#334155');
-
-  // Nervaduras y unidades de climatización en el techo
-  var nRibs = Math.floor(e.len * 1.5);
-  for (var r = 0; r < nRibs; r++) {
-    var rz = e.z + (r + 0.5) * (e.len / nRibs);
-    if (rz < -0.2 || rz > ZFAR) continue;
-    var rp = F / (F + rz), ry = sy(rp) - TH * unit * rp;
-    var rxl = sx(xl, rp), rxr = sx(xr, rp);
-    ctx.strokeStyle = isBullet ? '#64748b' : '#3b82f6';
-    ctx.lineWidth = Math.max(1, 0.03 * unit * rp);
-    ctx.beginPath(); ctx.moveTo(rxl, ry); ctx.lineTo(rxr, ry); ctx.stroke();
-
-    if (r % 3 === 0 && unit * rp > 12) {
-      var acW = (rxr - rxl) * 0.44, acH = Math.max(2, 0.07 * unit * rp);
-      var acX = (rxl + rxr) * 0.5 - acW * 0.5;
-      ctx.fillStyle = '#475569';
-      rr(acX, ry - acH, acW, acH, 2);
-    }
-  }
-
-  // 5. CABINA FRONTAL AUTÉNTICA (SUBWAY SURFERS AAA)
-  var cabCorner = Math.max(4, 0.14 * w1);
-  ctx.save();
-
-  // A) Cúpula superior arqueada (Navy Blue en clásico / Gris plateado en bullet)
-  var domeH = h1 * 0.28;
-  var dGrad = ctx.createLinearGradient(x1l, y1t, x1l, y1t + domeH);
-  dGrad.addColorStop(0, isBullet ? '#cbd5e1' : '#1e3a8a');
-  dGrad.addColorStop(1, isBullet ? '#94a3b8' : '#172554');
-  ctx.fillStyle = dGrad;
-  rr(x1l, y1t, w1, domeH + 4, cabCorner);
-
-  // B) Cuerpo inferior de la cabina con sombreado cilíndrico curvo 3D
-  var lowerH = h1 - domeH;
-  var sideShade = ctx.createLinearGradient(x1l, 0, x1r, 0);
-  if (isBullet) {
-    sideShade.addColorStop(0, '#cbd5e1');
-    sideShade.addColorStop(0.18, '#f8fafc');
-    sideShade.addColorStop(0.82, '#f8fafc');
-    sideShade.addColorStop(1, '#cbd5e1');
-  } else {
-    sideShade.addColorStop(0, '#c2410c');
-    sideShade.addColorStop(0.18, '#ea580c');
-    sideShade.addColorStop(0.82, '#ea580c');
-    sideShade.addColorStop(1, '#c2410c');
-  }
-  ctx.fillStyle = sideShade;
-  rr(x1l, y1t + domeH, w1, lowerH, cabCorner);
-
-  // C) Columna vertical central blanca (rasgo distintivo de Subway Surfers - Imagen 1)
-  if (!isBullet) {
-    var colW = w1 * 0.46;
-    ctx.fillStyle = '#f8fafc';
-    ctx.fillRect(x1l + (w1 - colW) * 0.5, y1t + domeH * 0.65, colW, h1 * 0.55);
-  }
-
-  // D) Parabrisas aerodinámico triple con cristales tintados oceánicos y reflejo
-  var winY = y1t + h1 * 0.16, winH = h1 * 0.32;
-  var winCenterW = w1 * 0.46, winSideW = w1 * 0.16;
-  var gap = w1 * 0.04;
-  var winStartX = x1l + (w1 - (winCenterW + winSideW * 2 + gap * 2)) * 0.5;
-
-  // Panel izquierdo
-  ctx.fillStyle = '#090d16';
-  rr(winStartX, winY, winSideW, winH, 3);
-  ctx.fillStyle = 'rgba(2, 132, 199, 0.82)';
-  rr(winStartX + 1, winY + 1, winSideW - 2, winH - 2, 2);
-
-  // Panel central panorámico
-  var winCenterX = winStartX + winSideW + gap;
-  ctx.fillStyle = '#090d16';
-  rr(winCenterX, winY, winCenterW, winH, 3);
-  ctx.fillStyle = 'rgba(2, 132, 199, 0.82)';
-  rr(winCenterX + 1, winY + 1, winCenterW - 2, winH - 2, 2);
-  // Reflejo diagonal de luz
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
-  ctx.beginPath();
-  ctx.moveTo(winCenterX + winCenterW * 0.22, winY + 2);
-  ctx.lineTo(winCenterX + winCenterW * 0.46, winY + 2);
-  ctx.lineTo(winCenterX + winCenterW * 0.3, winY + winH - 2);
-  ctx.lineTo(winCenterX + winCenterW * 0.06, winY + winH - 2);
-  ctx.fill();
-
-  // Panel derecho
-  var winRightX = winCenterX + winCenterW + gap;
-  ctx.fillStyle = '#090d16';
-  rr(winRightX, winY, winSideW, winH, 3);
-  ctx.fillStyle = 'rgba(2, 132, 199, 0.82)';
-  rr(winRightX + 1, winY + 1, winSideW - 2, winH - 2, 2);
-
-  // E) Emblema heráldico de la línea del metro (rombo dorado elegante)
-  var emblemY = y1t + h1 * 0.58, emblemS = Math.max(3, w1 * 0.06);
+  // Faros delanteros con halo luminoso
+  var hl = Math.max(1, h * 0.06);
   ctx.fillStyle = '#ffd23f';
-  ctx.beginPath();
-  ctx.moveTo(x1l + w1 * 0.5, emblemY - emblemS);
-  ctx.lineTo(x1l + w1 * 0.5 + emblemS, emblemY);
-  ctx.lineTo(x1l + w1 * 0.5, emblemY + emblemS);
-  ctx.lineTo(x1l + w1 * 0.5 - emblemS, emblemY);
-  ctx.closePath();
-  ctx.fill();
-  ctx.fillStyle = '#b45309';
-  ctx.beginPath();
-  ctx.arc(x1l + w1 * 0.5, emblemY, emblemS * 0.35, 0, Math.PI * 2);
-  ctx.fill();
+  ctx.beginPath(); ctx.arc(x1l + w * 0.2, y1 - h * 0.22, hl, 0, 6.283); ctx.fill();
+  ctx.beginPath(); ctx.arc(x1r - w * 0.2, y1 - h * 0.22, hl, 0, 6.283); ctx.fill();
 
-  // F) Faros frontales duales con halos cálidos luminosos
-  var lampY = y1 - h1 * 0.24, lRad = Math.max(3, w1 * 0.08);
-  var lampLeftX = x1l + w1 * 0.2, lampRightX = x1r - w1 * 0.2;
-  [lampLeftX, lampRightX].forEach(function (lx) {
-    var lGlow = ctx.createRadialGradient(lx, lampY, lRad * 0.3, lx, lampY, lRad * 2.2);
-    lGlow.addColorStop(0, 'rgba(255, 245, 170, 0.95)');
-    lGlow.addColorStop(0.5, 'rgba(255, 215, 80, 0.45)');
-    lGlow.addColorStop(1, 'rgba(255, 215, 80, 0)');
-    ctx.fillStyle = lGlow;
-    ctx.beginPath(); ctx.arc(lx, lampY, lRad * 2.2, 0, Math.PI * 2); ctx.fill();
-
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath(); ctx.arc(lx, lampY, lRad, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1.5; ctx.stroke();
-  });
-
-  // G) Parachoques inferior (Cowcatcher) con franjas chevron de seguridad (Imagen 2)
-  var bumpH = h1 * 0.13, bumpY = y1 - bumpH;
-  ctx.fillStyle = '#0f172a';
-  rr(x1l - 2, bumpY, w1 + 4, bumpH, 2);
-
-  var nStripes = 6, sStep = w1 / nStripes;
-  for (var si = 0; si < nStripes; si++) {
-    var sx1 = x1l + si * sStep;
-    ctx.fillStyle = (si % 2 === 0) ? '#f8fafc' : '#ef4444';
-    ctx.beginPath();
-    ctx.moveTo(sx1, bumpY + bumpH);
-    ctx.lineTo(sx1 + sStep * 0.5, bumpY);
-    ctx.lineTo(sx1 + sStep, bumpY);
-    ctx.lineTo(sx1 + sStep * 0.5, bumpY + bumpH);
-    ctx.closePath();
-    ctx.fill();
+  if (pal.lamp > 0.25 && e.z > 0) {
+    var gl = ctx.createRadialGradient(x1l + w / 2, y1 - h * 0.22, 0, x1l + w / 2, y1 - h * 0.22, w * 0.9);
+    gl.addColorStop(0, 'rgba(255,235,160,' + pal.lamp * 0.35 + ')');
+    gl.addColorStop(1, 'rgba(255,235,160,0)');
+    ctx.fillStyle = gl;
+    ctx.fillRect(x1l - w * 0.4, y1 - h * 0.9, w * 1.8, h);
   }
-
-  ctx.restore();
 }
 
 function drawRamp(e) {
   var zf = Math.max(e.z, -0.3), zb = Math.max(e.z + 2.5, -0.3);
   var p1 = F / (F + zf), p2 = F / (F + zb);
   var xl = e.lane - 0.4, xr = e.lane + 0.4;
-  var y1 = sy(p1), y2 = sy(p2) - 1.35 * unit * p2;
+  var y1 = sy(p1), y2 = sy(p2) - 1.9 * unit * p2;
   var x1l = sx(xl, p1), x1r = sx(xr, p1), x2l = sx(xl, p2), x2r = sx(xr, p2);
 
   // Superficie de la rampa metálica

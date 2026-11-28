@@ -4,7 +4,7 @@
    ============================================================ */
 
 var W = 0, H = 0, cx = 0, horizon = 0, groundY = 0, unit = 0;
-var F = 18.0, ZFAR = 56, PN = 1.35;
+var F = 8, ZFAR = 72, PN = 1.4;
 
 function sx(x, p) { return cx + (x - camX) * unit * p; }
 function sy(p) { return horizon + (groundY - horizon) * p + camY * unit * p; }
@@ -80,7 +80,7 @@ var P = {
 
 function jump() {
   if (state !== 'play') return;
-  var onSurface = (P.y <= 0.08) || (P.onTrain && P.y <= 1.42);
+  var onSurface = (P.y <= 0.08) || (P.onTrain && P.y <= 1.98);
   if (onSurface || P.jumpBuf > 0) {
     var jumpPower = pw.sneakers > 0 ? 17.5 : 13.5;
     P.vy = jumpPower;
@@ -95,7 +95,7 @@ function jump() {
 
 function slide() {
   if (state !== 'play') return;
-  if (P.y > (P.onTrain ? 1.40 : 0.05)) {
+  if (P.y > (P.onTrain ? 1.95 : 0.05)) {
     P.vy = -34; // Inmersión rápida (fast-fall dive) en el aire
   }
   P.slide = 0.75;
@@ -137,21 +137,21 @@ function spawnRow(z, safe) {
 
   if (rowType === 'trains') {
     var lane = Math.floor(Math.random() * 3) - 1;
-    var len = 8 + Math.floor(Math.random() * 6);
+    var len = 5 + Math.random() * 4;
     ents.push({
       t: 'train',
       lane: lane,
       z: z,
       len: len,
-      c: { f: pal.trainCol, s: '#1e293b' }
+      c: TRAINCOL[Math.floor(Math.random() * TRAINCOL.length)]
     });
     // Rampa antes del tren en ocasiones
     if (Math.random() < 0.45) {
       ents.push({ t: 'ramp', lane: lane, z: z - 2.5 });
     }
     // Monedas sobre el tren
-    for (var zi = 1; zi < len - 1; zi += 1.6) {
-      ents.push({ t: 'coin', lane: lane, z: z + zi, y: 1.52 });
+    for (var zi = 1; zi < len - 1; zi += 1.4) {
+      ents.push({ t: 'coin', lane: lane, z: z + zi, y: 2.1 });
     }
     return len + 4;
   } else if (rowType === 'barriers') {
@@ -294,8 +294,8 @@ function update(dt) {
     if (inspector.dist > 5.5) inspector.active = false;
   }
 
-  // Movimiento lateral fluido y reactivo de runner 3D
-  P.x += (P.lane - P.x) * Math.min(1, dt * 20);
+  // Movimiento lateral fluido y reactivo (estilo Vía Libre)
+  P.x += (P.lane - P.x) * Math.min(1, dt * 14);
 
   // Cámara aérea dinámica: eleva suavemente el encuadre al volar o saltar para nunca perder al personaje de vista
   var targetCamY = 0;
@@ -315,7 +315,7 @@ function update(dt) {
     P.vy -= 38 * dt; // Gravedad
     P.y += P.vy * dt;
 
-    var floorY = P.onTrain ? 1.35 : 0;
+    var floorY = P.onTrain ? 1.9 : 0;
     if (P.y <= floorY) {
       P.y = floorY;
       P.vy = 0;
@@ -343,7 +343,7 @@ function update(dt) {
       var inZ = (e.z <= 0.6 && e.z + e.len >= -0.4);
       var inLane = Math.abs(px - e.lane) < 0.75;
       if (inZ && inLane) {
-        if (py >= 1.28) {
+        if (py >= 1.85) {
           trainOccupied = true;
         } else if (P.inv <= 0 && !e.ghost) {
           crash(e);
@@ -354,7 +354,7 @@ function update(dt) {
     // Colisión con Rampas
     if (e.t === 'ramp') {
       if (Math.abs(e.z) < 0.6 && Math.abs(px - e.lane) < 0.65) {
-        P.y = Math.max(P.y, 1.35);
+        P.y = Math.max(P.y, 1.9);
         P.vy = 12;
         sfx('jump');
         emit(sx(P.x, 1), groundY - P.y * unit, 8, { s: 120, up: 60, g: 300, l: 0.35, r: 2.8, c: '#ffd23f' });

@@ -350,9 +350,9 @@ function resize() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
   cx = W * 0.5;
-  horizon = H * 0.26;
-  groundY = H * 0.88;
-  unit = Math.min(W, H) * 0.29;
+  horizon = H * 0.34;
+  groundY = H * 0.86;
+  unit = Math.min(W * 0.3, H * 0.24);
 
   // Canvas del vestidor
   var scCv = $('ssCharCanvas');

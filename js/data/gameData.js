@@ -228,45 +228,51 @@ var COLLECTIONS_DATA = [
   { id: 'col4', name: 'Estación 4: Contacto', desc: 'Llega a la última parada y desbloquea el canal directo.', rCoins: 500, rKeys: 10 }
 ];
 
+var TRAINCOL = [
+  { f: '#e8503a', s: '#a6331f', t: '#ff7b62' },
+  { f: '#e0a82e', s: '#9a7314', t: '#f7c95a' },
+  { f: '#2fb8a6', s: '#1b7c6f', t: '#5fe0cd' }
+];
+
 var PALETTES = {
   day: {
     id: 'day', name: '☀️ Día',
-    sky0: '#0284c7', sky1: '#7dd3fc',
-    g0: '#22c55e', g1: '#16a34a',
-    ballast0: '#a8896c', ballast1: '#785c40',
-    sun: 1.0, lamp: 0.0, star: 0.0,
-    trainCol: '#ea580c',
-    hor_: [186, 230, 253],
-    stationName: 'Central Tech · Día Soleado'
+    sky0: '#0d1923', sky1: '#2a3a4d', hor: '#f08a4b',
+    bld: '#142029', bld2: '#22323f',
+    g0: '#5b4b46', g1: '#2e3238',
+    sun: 0.7, lamp: 0.35, star: 0.4,
+    trainCol: '#e8503a',
+    hor_: [240, 138, 75],
+    stationName: 'Central Tech · Atardecer Urbano'
   },
   sunset: {
     id: 'sunset', name: '🌇 Ocaso',
-    sky0: '#581c87', sky1: '#f97316',
-    g0: '#b45309', g1: '#78350f',
-    ballast0: '#8c6d4f', ballast1: '#573d26',
-    sun: 0.65, lamp: 0.55, star: 0.25,
-    trainCol: '#f97316',
-    hor_: [253, 186, 116],
-    stationName: 'Sunset Valley · Atardecer Dorado'
+    sky0: '#16213f', sky1: '#6a5a86', hor: '#ffc27a',
+    bld: '#171f33', bld2: '#2a3350',
+    g0: '#6a5a58', g1: '#323640',
+    sun: 0.65, lamp: 0.55, star: 0.55,
+    trainCol: '#e0a82e',
+    hor_: [255, 194, 122],
+    stationName: 'Sunset Valley · Horizonte Dorado'
   },
   night: {
     id: 'night', name: '🌙 Noche',
-    sky0: '#030712', sky1: '#1e1b4b',
-    g0: '#0f172a', g1: '#020617',
-    ballast0: '#27272a', ballast1: '#18181b',
+    sky0: '#050a12', sky1: '#13293a', hor: '#2f8f9a',
+    bld: '#0a121a', bld2: '#13212c',
+    g0: '#1f3d47', g1: '#1a2a33',
     sun: 0.0, lamp: 1.0, star: 1.0,
-    trainCol: '#8b5cf6',
-    hor_: [49, 46, 129],
+    trainCol: '#2fb8a6',
+    hor_: [47, 143, 154],
     stationName: 'Cyber Track · Noche Neón'
   },
   dawn: {
     id: 'dawn', name: '🌅 Alba',
-    sky0: '#1e1b4b', sky1: '#fb7185',
-    g0: '#831843', g1: '#37184a',
-    ballast0: '#6b485d', ballast1: '#3b2333',
-    sun: 0.75, lamp: 0.25, star: 0.15,
-    trainCol: '#ec4899',
-    hor_: [254, 215, 170],
+    sky0: '#102538', sky1: '#3a6a8a', hor: '#ffb884',
+    bld: '#132638', bld2: '#213d54',
+    g0: '#5c524f', g1: '#2b3238',
+    sun: 0.85, lamp: 0.25, star: 0.2,
+    trainCol: '#e8503a',
+    hor_: [255, 184, 132],
     stationName: 'Dawn Horizon · Alba Fresca'
   }
 };
